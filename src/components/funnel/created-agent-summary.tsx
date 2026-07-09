@@ -15,6 +15,7 @@ type SavedAgent = {
   state?: {
     industry?: string;
     goal?: string;
+    goals?: string[];
     channel?: string;
     voice?: string;
     website?: string;
@@ -95,7 +96,11 @@ export function CreatedAgentSummary() {
           <SummaryRow
             icon={<Bot aria-hidden className="size-4" />}
             label="Workflow"
-            value={saved?.state?.goal ?? "Capture qualified conversations"}
+            value={
+              saved?.state?.goals?.length
+                ? saved.state.goals.join(" + ")
+                : saved?.state?.goal ?? "Capture qualified conversations"
+            }
           />
           <SummaryRow
             icon={<Globe2 aria-hidden className="size-4" />}

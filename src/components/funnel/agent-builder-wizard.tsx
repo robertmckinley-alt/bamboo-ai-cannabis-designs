@@ -29,7 +29,7 @@ import { LeadCaptureForm } from "@/components/funnel/forms";
 
 type BuilderState = {
   industry: string;
-  goal: string;
+  goals: string[];
   channel: string;
   voice: string;
   businessName: string;
@@ -42,7 +42,7 @@ const storageKey = "bamboo-agent-builder";
 
 const defaults: BuilderState = {
   industry: "",
-  goal: "",
+  goals: [],
   channel: "",
   voice: "",
   businessName: "",
@@ -53,7 +53,7 @@ const defaults: BuilderState = {
 
 const demoPreset: BuilderState = {
   industry: "Sales",
-  goal: "Capture and qualify leads",
+  goals: ["Capture and qualify leads", "Book appointments"],
   channel: "Website chat",
   voice: "Helpful expert",
   businessName: "Bamboo Demo Co",
@@ -66,7 +66,7 @@ const demoPreset: BuilderState = {
 
 const steps = [
   { id: "industry", title: "Choose industry", icon: Building2 },
-  { id: "goal", title: "Choose agent goal", icon: WandSparkles },
+  { id: "goals", title: "Choose 1-2 goals", icon: WandSparkles },
   { id: "channel", title: "Choose channel", icon: Radio },
   { id: "voice", title: "Choose voice", icon: UserRound },
   { id: "business", title: "Add business info", icon: Building2 },
@@ -79,7 +79,7 @@ type StepId = (typeof steps)[number]["id"];
 
 const stepDefaults: Record<StepId, Partial<BuilderState>> = {
   industry: { industry: demoPreset.industry },
-  goal: { goal: demoPreset.goal },
+  goals: { goals: demoPreset.goals },
   channel: { channel: demoPreset.channel },
   voice: { voice: demoPreset.voice },
   business: {
@@ -94,6 +94,20 @@ const stepDefaults: Record<StepId, Partial<BuilderState>> = {
   lead: {},
 };
 
+function normalizeSavedState(saved: string): BuilderState {
+  const parsed = JSON.parse(saved) as Partial<BuilderState> & { goal?: string };
+
+  return {
+    ...defaults,
+    ...parsed,
+    goals: Array.isArray(parsed.goals)
+      ? parsed.goals.filter(Boolean).slice(0, 2)
+      : parsed.goal
+        ? [parsed.goal]
+        : [],
+  };
+}
+
 export function AgentBuilderWizard() {
   const router = useRouter();
   const [state, setState] = useState<BuilderState>(defaults);
@@ -105,7 +119,7 @@ export function AgentBuilderWizard() {
     window.setTimeout(() => {
       if (saved) {
         try {
-          setState({ ...defaults, ...JSON.parse(saved) });
+          setState(normalizeSavedState(saved));
         } catch {
           setState(defaults);
         }
@@ -122,30 +136,34 @@ export function AgentBuilderWizard() {
   }, [loaded, state]);
 
   const readiness = useMemo(() => {
-    const fields: (keyof BuilderState)[] = [
-      "industry",
-      "goal",
-      "channel",
-      "voice",
-      "businessName",
-      "businessInfo",
-      "website",
-      "knowledgeSource",
+    const checks = [
+      Boolean(state.industry),
+      state.goals.length > 0,
+      Boolean(state.channel),
+      Boolean(state.voice),
+      Boolean(state.businessName),
+      Boolean(state.businessInfo),
+      Boolean(state.website),
+      Boolean(state.knowledgeSource),
     ];
-    const filled = fields.filter((field) => state[field].trim()).length;
+    const filled = checks.filter(Boolean).length;
     return Math.min(100, 18 + filled * 10);
   }, [state]);
 
   const agent = useMemo(() => {
     const industry = state.industry || "your industry";
-    const goal = state.goal || "capture qualified conversations";
+    const primaryGoal = state.goals[0] || "capture qualified conversations";
+    const secondaryGoal = state.goals[1];
+    const goalSummary = secondaryGoal
+      ? `${primaryGoal.toLowerCase()} and ${secondaryGoal.toLowerCase()}`
+      : primaryGoal.toLowerCase();
     const channel = state.channel || "Website chat";
     const voice = state.voice || "Helpful expert";
     const business = state.businessName || "Your business";
 
     return {
-      name: `${business} ${goal.split(" ")[0]} Agent`,
-      greeting: `Hi, I am the ${business} AI assistant. I can help you ${goal.toLowerCase()} and connect you with the right next step.`,
+      name: `${business} ${primaryGoal.split(" ")[0]} Agent`,
+      greeting: `Hi, I am the ${business} AI assistant. I can help you ${goalSummary} and connect you with the right next step.`,
       summary: `A ${voice.toLowerCase()} agent for ${industry.toLowerCase()} teams, designed for ${channel.toLowerCase()}.`,
       nextStep:
         readiness > 78
@@ -154,8 +172,29 @@ export function AgentBuilderWizard() {
     };
   }, [readiness, state]);
 
-  function update(field: keyof BuilderState, value: string) {
+  function update(field: Exclude<keyof BuilderState, "goals">, value: string) {
     setState((current) => ({ ...current, [field]: value }));
+  }
+
+  function chooseSingle(field: "industry" | "channel" | "voice", value: string) {
+    setState((current) => ({ ...current, [field]: value }));
+    trackEvent(field === "industry" ? "industry_selected" : "builder_step_completed", {
+      step: steps[step].id,
+      value,
+      index: step + 1,
+    });
+    setStep((current) => Math.min(current + 1, steps.length - 1));
+  }
+
+  function toggleGoal(goal: string) {
+    setState((current) => {
+      const alreadySelected = current.goals.includes(goal);
+      const goals = alreadySelected
+        ? current.goals.filter((item) => item !== goal)
+        : [...current.goals, goal].slice(0, 2);
+
+      return { ...current, goals };
+    });
   }
 
   function fillDemoPreset(targetStep = step) {
@@ -170,9 +209,19 @@ export function AgentBuilderWizard() {
 
     setState((current) => {
       const next = { ...current };
-      for (const [key, value] of Object.entries(currentDefaults) as [keyof BuilderState, string][]) {
-        if (!next[key].trim()) {
-          next[key] = value;
+      for (const [key, value] of Object.entries(currentDefaults) as [
+        keyof BuilderState,
+        BuilderState[keyof BuilderState],
+      ][]) {
+        if (key === "goals") {
+          if (next.goals.length === 0 && Array.isArray(value)) {
+            next.goals = value.slice(0, 2);
+          }
+          continue;
+        }
+
+        if (typeof value === "string" && typeof next[key] === "string" && !next[key].trim()) {
+          next[key] = value as never;
         }
       }
       return next;
@@ -252,31 +301,35 @@ export function AgentBuilderWizard() {
 
           <div className="mt-8">
             {step === 0 ? (
-              <ChoiceGrid
+              <SingleChoiceGrid
                 options={builderChoices.industries}
                 selected={state.industry}
-                onSelect={(value) => update("industry", value)}
+                onSelect={(value) => chooseSingle("industry", value)}
+                prompt="Pick an industry to move to goals."
               />
             ) : null}
             {step === 1 ? (
-              <ChoiceGrid
+              <GoalChoiceGrid
                 options={builderChoices.goals}
-                selected={state.goal}
-                onSelect={(value) => update("goal", value)}
+                selected={state.goals}
+                onToggle={toggleGoal}
+                onContinue={goNext}
               />
             ) : null}
             {step === 2 ? (
-              <ChoiceGrid
+              <SingleChoiceGrid
                 options={builderChoices.channels}
                 selected={state.channel}
-                onSelect={(value) => update("channel", value)}
+                onSelect={(value) => chooseSingle("channel", value)}
+                prompt="Pick the first channel. We will move you forward."
               />
             ) : null}
             {step === 3 ? (
-              <ChoiceGrid
+              <SingleChoiceGrid
                 options={builderChoices.voices}
                 selected={state.voice}
-                onSelect={(value) => update("voice", value)}
+                onSelect={(value) => chooseSingle("voice", value)}
+                prompt="Pick the agent personality. Next is business info."
               />
             ) : null}
             {step === 4 ? (
@@ -474,7 +527,7 @@ function StepRail({
 }) {
   const completed: Record<StepId, boolean> = {
     industry: Boolean(state.industry),
-    goal: Boolean(state.goal),
+    goals: state.goals.length > 0,
     channel: Boolean(state.channel),
     voice: Boolean(state.voice),
     business: Boolean(state.businessName || state.businessInfo),
@@ -528,6 +581,7 @@ export function StepCard({
   description,
   meta,
   active,
+  disabled,
   onClick,
 }: {
   icon: React.ReactNode;
@@ -535,13 +589,15 @@ export function StepCard({
   description: string;
   meta?: string;
   active?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
 }) {
   const className = cn(
     "w-full rounded-lg border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70",
     active
       ? "border-bamboo/35 bg-bamboo/10"
-      : "border-white/10 bg-white/[0.035] hover:border-bamboo/30 hover:bg-bamboo/10"
+      : "border-white/10 bg-white/[0.035] hover:border-bamboo/30 hover:bg-bamboo/10",
+    disabled && "cursor-not-allowed opacity-45 hover:border-white/10 hover:bg-white/[0.035]"
   );
   const content = (
       <div className="flex items-start gap-3">
@@ -563,7 +619,7 @@ export function StepCard({
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={className}>
+      <button type="button" onClick={onClick} className={className} disabled={disabled}>
         {content}
       </button>
     );
@@ -572,27 +628,103 @@ export function StepCard({
   return <div className={className}>{content}</div>;
 }
 
-function ChoiceGrid({
+function SingleChoiceGrid({
   options,
   selected,
   onSelect,
+  prompt,
 }: {
   options: string[];
   selected: string;
   onSelect: (value: string) => void;
+  prompt: string;
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {options.map((option) => (
-        <StepCard
-          key={option}
-          active={selected === option}
-          onClick={() => onSelect(option)}
-          icon={<Sparkles aria-hidden className="size-5" />}
-          title={option}
-          description="Use this as the starting point. You can edit the agent after preview."
-        />
-      ))}
+    <div className="grid gap-4">
+      <div className="rounded-lg border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/62">
+        {selected ? `Selected: ${selected}. Choosing another option will move you forward.` : prompt}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {options.map((option) => (
+          <StepCard
+            key={option}
+            active={selected === option}
+            onClick={() => onSelect(option)}
+            icon={<Sparkles aria-hidden className="size-5" />}
+            title={option}
+            description="Select this and Bamboo will guide you to the next step."
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GoalChoiceGrid({
+  options,
+  selected,
+  onToggle,
+  onContinue,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (value: string) => void;
+  onContinue: () => void;
+}) {
+  const maxSelected = selected.length >= 2;
+
+  return (
+    <div className="grid gap-4">
+      <div className="rounded-lg border border-bamboo/20 bg-bamboo/10 p-4">
+        <p className="text-sm font-semibold text-white">Select 1 or 2 goals.</p>
+        <p className="mt-1 text-sm leading-6 text-white/62">
+          {selected.length === 0
+            ? "Pick your primary goal. You can add one more before continuing."
+            : selected.length === 1
+              ? "Good. Add one more goal or continue to channel."
+              : "Two goals selected. Continue to channel when ready."}
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {options.map((option) => {
+          const active = selected.includes(option);
+          const disabled = maxSelected && !active;
+
+          return (
+            <StepCard
+              key={option}
+              active={active}
+              disabled={disabled}
+              onClick={() => onToggle(option)}
+              icon={<Sparkles aria-hidden className="size-5" />}
+              title={option}
+              description={
+                disabled
+                  ? "Remove a selected goal before choosing this one."
+                  : active
+                    ? "Selected. Click again to remove it."
+                    : "Add this as a goal for your agent."
+              }
+            />
+          );
+        })}
+      </div>
+      <div className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-white/62">
+          {selected.length > 0
+            ? `Selected: ${selected.join(" + ")}`
+            : "Choose at least one goal to keep going."}
+        </div>
+        <Button
+          type="button"
+          className="h-10 bg-bamboo text-black hover:bg-bamboo/90"
+          onClick={onContinue}
+          disabled={selected.length === 0}
+        >
+          Continue to Channel
+          <ArrowRight aria-hidden className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -645,7 +777,10 @@ function LivePreview({
               </p>
               <dl className="mt-4 grid gap-3 text-sm">
                 <PreviewRow label="Industry" value={state.industry || "Choose industry"} />
-                <PreviewRow label="Goal" value={state.goal || "Choose goal"} />
+                <PreviewRow
+                  label="Goals"
+                  value={state.goals.length > 0 ? state.goals.join(" + ") : "Choose 1-2 goals"}
+                />
                 <PreviewRow label="Channel" value={state.channel || "Choose channel"} />
                 <PreviewRow label="Voice" value={state.voice || "Choose voice"} />
               </dl>
