@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bamboo AI — Free Agent Builder Prototype</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%8B%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#FBFBF8; --ink:#14181A; --ink2:#3A423E; --muted:#5A6360; --soft:#8A938E;
+    --bam:#1E7A4A; --bam-deep:#0F5C36; --shoot:#2FA36B; --mist:#E7F2EB;
+    --line:#E4E7E2; --card:#FFFFFF; --dark:#12171A; --darkline:#26312C;
+    --sh1:0 1px 2px rgba(16,21,18,.06); --sh2:0 12px 32px -12px rgba(16,21,18,.18);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  button{font:inherit;cursor:pointer}
+  .proto-note{background:var(--ink);color:#B9C4BD;font-size:11.5px;text-align:center;padding:7px 12px}
+  .proto-note b{color:#fff}
+
+  /* Chrome */
+  .chrome{position:sticky;top:0;z-index:30;background:rgba(251,251,248,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .chrome .in{max-width:1060px;margin:0 auto;display:flex;align-items:center;gap:18px;height:58px;padding:0 22px}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:-.02em}
+  .logo .leaf{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--bam),var(--bam-deep));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+  .pbar{flex:1;height:5px;background:var(--line);border-radius:99px;overflow:hidden;max-width:360px}
+  .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--bam),var(--shoot));border-radius:99px;width:0;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+  .ppct{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--bam-deep);font-weight:700;min-width:36px;font-variant-numeric:tabular-nums}
+  .autosave{font-size:11px;color:var(--soft);margin-left:auto}
+
+  .stage{max-width:1060px;margin:0 auto;padding:40px 22px 80px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:44px;align-items:start}
+
+  /* Question panel */
+  .q-step{display:none}
+  .q-step.on{display:block;animation:rise .35s cubic-bezier(.2,.7,.3,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .stepno{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.15em;color:var(--bam-deep);text-transform:uppercase}
+  .q-step h1{font-size:clamp(24px,3.4vw,34px);letter-spacing:-.03em;font-weight:800;line-height:1.1;margin:10px 0 8px;text-wrap:balance}
+  .q-step .support{color:var(--muted);font-size:15px;margin:0 0 26px;max-width:52ch}
+
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:26px}
+  .opt{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;text-align:left;display:flex;gap:12px;align-items:center;transition:border-color .12s,box-shadow .12s;min-height:56px}
+  .opt:hover{border-color:var(--soft);box-shadow:var(--sh1)}
+  .opt.sel{border-color:var(--bam);background:var(--mist);box-shadow:var(--sh1)}
+  .opt .ico{font-size:19px;width:26px;text-align:center;flex-shrink:0}
+  .opt b{font-size:14px;display:block;line-height:1.25}
+  .opt small{font-size:12px;color:var(--muted)}
+  .opt .radio{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex-shrink:0}
+  .opt.sel .radio{border-color:var(--bam);background:radial-gradient(circle at center,var(--bam) 45%,transparent 50%)}
+
+  .voice .play{width:34px;height:34px;border-radius:50%;background:var(--bam);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+  .voice .vw{display:flex;align-items:flex-end;gap:2px;height:14px;margin-left:6px;visibility:hidden}
+  .voice.playing .vw{visibility:visible}
+  .voice .vw i{width:3px;background:var(--bam);border-radius:2px;animation:wv 1s ease-in-out infinite}
+  .voice .vw i:nth-child(2){animation-delay:.15s}.voice .vw i:nth-child(3){animation-delay:.3s}.voice .vw i:nth-child(4){animation-delay:.1s}
+  @keyframes wv{0%,100%{height:4px}50%{height:13px}}
+
+  .field{margin-bottom:18px}
+  .field label{font-size:12.5px;font-weight:700;display:block;margin-bottom:6px}
+  .field input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px 14px;font:inherit;background:var(--card);color:var(--ink)}
+  .field input:focus{outline:none;border-color:var(--bam);box-shadow:0 0 0 3px rgba(30,122,74,.12)}
+  .field .hint{font-size:12px;color:var(--soft);margin-top:5px}
+
+  .navrow{display:flex;align-items:center;gap:14px}
+  .btn-p{background:var(--bam);color:#fff;border:none;border-radius:10px;padding:13px 26px;font-size:14.5px;font-weight:750;box-shadow:var(--sh1)}
+  .btn-p:hover{background:var(--bam-deep);box-shadow:var(--sh2)}
+  .btn-p:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+  .backlink{background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;padding:8px 4px}
+  .backlink:hover{color:var(--ink)}
+  .skiplink{background:none;border:none;color:var(--soft);font-size:12.5px;margin-left:auto;border-bottom:1px dotted var(--soft);padding:0}
+  .btn-p:focus-visible,.opt:focus-visible,.backlink:focus-visible,.skiplink:focus-visible{outline:2px solid var(--bam);outline-offset:2px}
+
+  /* Scrape simulation */
+  .scrape{display:none;background:var(--card);border:1.5px solid var(--mist);border-radius:12px;padding:16px 18px;margin-bottom:20px}
+  .scrape .row{display:flex;gap:10px;align-items:center;font-size:13.5px;padding:5px 0;color:var(--muted)}
+  .scrape .row.done{color:var(--ink)}
+  .scrape .row .tick{width:18px;text-align:center;color:var(--bam);font-weight:800}
+
+  /* Test call sim */
+  .callsim{display:none;background:var(--card);border:1.5px solid var(--mist);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:var(--sh2)}
+  .callsim .head{display:flex;gap:13px;align-items:center;margin-bottom:12px}
+  .ringer{position:relative;width:42px;height:42px;flex-shrink:0}
+  .ringer .core{position:absolute;inset:8px;border-radius:50%;background:var(--bam);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+  .ringer .pulse{position:absolute;inset:0;border-radius:50%;border:2px solid var(--shoot);animation:pulse 1.6s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(.55);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+  .callsim b{display:block;font-size:14.5px}
+  .callsim small{color:var(--muted)}
+  .qsug{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .qsug button{font-size:12px;border:1.5px solid var(--line);background:var(--paper);border-radius:99px;padding:6px 13px;color:var(--ink2);font-weight:600}
+  .qsug button:hover{border-color:var(--bam);color:var(--bam-deep)}
+  .qsug button.asked{background:var(--mist);border-color:var(--bam);color:var(--bam-deep)}
+  .answer{display:none;font-size:13.5px;background:var(--mist);border-radius:10px;padding:11px 14px;margin-top:12px;color:var(--ink2)}
+  .answer b{display:inline;font-size:13.5px}
+
+  /* Publish step */
+  .planrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+  .plan{border:1.5px solid var(--line);border-radius:12px;padding:17px;background:var(--card);text-align:left}
+  .plan.sel{border-color:var(--bam);background:var(--mist)}
+  .plan b{font-size:14.5px}
+  .plan .pr{font-family:ui-monospace,Consolas,monospace;font-size:23px;font-weight:700;margin:4px 0;font-variant-numeric:tabular-nums}
+  .plan .pr small{font-size:11.5px;color:var(--muted);font-weight:400}
+  .plan p{font-size:12px;color:var(--muted);margin:0}
+  .fineline{font-size:12px;color:var(--soft);margin:14px 0 0;text-align:center}
+
+  /* Agent preview rail */
+  .rail{position:sticky;top:82px}
+  .agentcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 22px;text-align:center;box-shadow:var(--sh2)}
+  .ringwrap{position:relative;width:112px;height:112px;margin:0 auto 14px}
+  .ringwrap svg{transform:rotate(-90deg)}
+  .ringwrap .track{stroke:var(--line)}
+  .ringwrap .prog{stroke:var(--bam);stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.7,.3,1)}
+  .ringwrap .face{position:absolute;inset:12px;border-radius:50%;background:var(--mist);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:var(--bam-deep)}
+  .aname{font-size:19px;font-weight:800;letter-spacing:-.02em;min-height:26px}
+  .aname .cursor{color:var(--soft);font-weight:400}
+  .atraits{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px;min-height:26px}
+  .trait{font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.05em;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--muted);animation:rise .3s}
+  .trait.hot{border-color:var(--bam);color:var(--bam-deep);background:var(--mist)}
+  .ready{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--soft);margin-top:8px}
+  .ready b{color:var(--bam-deep);font-size:13px;font-variant-numeric:tabular-nums}
+  .talkbtn{display:none;margin:16px auto 0;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700}
+  .talkbtn:hover{background:#000}
+  .speech{display:none;margin-top:14px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink2);text-align:left;line-height:1.5}
+  .speech .who{font-family:ui-monospace,Consolas,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--bam-deep);display:block;margin-bottom:3px}
+  .milestone{font-size:11.5px;color:var(--bam-deep);margin-top:12px;font-weight:700;min-height:16px}
+
+  /* Confetti */
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden;display:none}
+  .confetti i{position:absolute;top:-12px;width:8px;height:12px;opacity:.9;animation:fall 1.8s ease-in forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(560deg);opacity:.7}}
+
+  /* Success screen */
+  .done-screen{display:none;text-align:center;max-width:520px;margin:0 auto;padding:70px 22px}
+  .done-screen.on{display:block;animation:rise .4s}
+  .done-screen .big{font-size:52px;margin-bottom:8px}
+  .done-screen h1{font-size:30px;letter-spacing:-.03em;font-weight:800;margin:0 0 10px}
+  .done-screen p{color:var(--muted);margin:0 0 22px}
+  .done-screen .numline{font-family:ui-monospace,Consolas,monospace;font-size:19px;background:var(--card);border:1.5px solid var(--bam);border-radius:12px;padding:14px;margin-bottom:22px;font-variant-numeric:tabular-nums}
+
+  @media (prefers-reduced-motion:reduce){
+    .q-step.on,.trait{animation:none}
+    .ringer .pulse,.voice .vw i{animation:none}
+    .pbar i,.ringwrap .prog{transition:none}
+    .confetti{display:none!important}
+  }
+  @media (max-width:880px){
+    .stage{grid-template-columns:1fr;gap:26px}
+    .rail{position:static;order:-1}
+    .agentcard{display:flex;align-items:center;gap:18px;text-align:left;padding:16px 18px;border-radius:14px}
+    .ringwrap{width:72px;height:72px;margin:0;flex-shrink:0}
+    .ringwrap .face{font-size:22px;inset:8px}
+    .atraits{justify-content:flex-start}
+    .talkbtn{margin:10px 0 0}
+    .speech{display:none!important}
+    .opts{grid-template-columns:1fr}
+    .planrow{grid-template-columns:1fr}
+  }
+</style>
+
+<div class="proto-note"><b>Prototype</b> — the 8-step free builder per blueprint Parts 04–06. Scrape, voices, test call, and checkout are simulated; all copy is production copy.</div>
+
+<div class="chrome"><div class="in">
+  <span class="logo"><span class="leaf">🎋</span>Bamboo <span style="color:var(--bam)">AI</span></span>
+  <div class="pbar"><i id="pfill"></i></div>
+  <span class="ppct" id="ppct">0%</span>
+  <span class="autosave" id="autosave">saves automatically</span>
+</div></div>
+
+<div class="stage" id="stage">
+<div class="qcol">
+
+  <!-- STEP 1 -->
+  <div class="q-step on" data-step="1">
+    <div class="stepno">Step 1 of 8 · Industry</div>
+    <h1>What kind of business is this for?</h1>
+    <p class="support">We'll tune everything — voice, vocabulary, priorities — to how your industry actually talks.</p>
+    <div class="opts" data-pick="industry">
+      <button class="opt"><span class="ico">🦷</span><span><b>Dental practice</b><small>booking · recalls · insurance</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🍽️</span><span><b>Restaurant</b><small>reservations · waitlist · hours</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🏠</span><span><b>Real estate</b><small>lead qualifying · viewings</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">⚖️</span><span><b>Law firm</b><small>intake · consult booking</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🏥</span><span><b>Healthcare / clinic</b><small>scheduling · triage routing</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">💪</span><span><b>Fitness / gym</b><small>tours · memberships</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🏨</span><span><b>Hospitality</b><small>reservations · concierge</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">📦</span><span><b>Something else</b><small>we'll adapt</small></span><span class="radio"></span></button>
+    </div>
+    <div class="navrow"><button class="btn-p" disabled>Continue</button></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="q-step" data-step="2">
+    <div class="stepno">Step 2 of 8 · First job</div>
+    <h1>What should your agent nail first?</h1>
+    <p class="support">Pick one to start. You can add more jobs later — great employees start with one clear responsibility.</p>
+    <div class="opts" data-pick="goal">
+      <button class="opt"><span class="ico">📅</span><span><b>Book appointments</b><small>fill the calendar automatically</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">❓</span><span><b>Answer questions</b><small>hours, prices, services, directions</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🌙</span><span><b>Catch after-hours calls</b><small>the 6pm–9am goldmine</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🎯</span><span><b>Qualify new leads</b><small>ask the right questions, route the good ones</small></span><span class="radio"></span></button>
+    </div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" disabled>Continue</button></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="q-step" data-step="3">
+    <div class="stepno">Step 3 of 8 · Voice</div>
+    <h1>Pick a voice.</h1>
+    <p class="support">Tap ▶ to hear each one say your greeting. There's no wrong answer — you can change it anytime.</p>
+    <div class="opts" data-pick="voice">
+      <button class="opt voice"><span class="play">▶</span><span><b>Riley</b><small>warm · unhurried · reassuring</small></span><span class="vw"><i></i><i></i><i></i><i></i></span><span class="radio"></span></button>
+      <button class="opt voice"><span class="play">▶</span><span><b>Jordan</b><small>crisp · efficient · friendly</small></span><span class="vw"><i></i><i></i><i></i><i></i></span><span class="radio"></span></button>
+      <button class="opt voice"><span class="play">▶</span><span><b>Sam</b><small>deep · calm · confident</small></span><span class="vw"><i></i><i></i><i></i><i></i></span><span class="radio"></span></button>
+      <button class="opt voice"><span class="play">▶</span><span><b>Ava</b><small>bright · upbeat · quick</small></span><span class="vw"><i></i><i></i><i></i><i></i></span><span class="radio"></span></button>
+    </div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" disabled>Sounds right</button></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="q-step" data-step="4">
+    <div class="stepno">Step 4 of 8 · Personality</div>
+    <h1>How should it carry itself?</h1>
+    <p class="support">This sets word choice and pace, not just tone — "warm" says "of course!", "formal" says "certainly."</p>
+    <div class="opts" data-pick="personality">
+      <button class="opt"><span class="ico">☀️</span><span><b>Warm &amp; welcoming</b><small>like your friendliest regular hire</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">⚡</span><span><b>Efficient &amp; direct</b><small>respects everyone's time</small></span><span class="radio"></span></button>
+      <button class="opt"><span class="ico">🎩</span><span><b>Polished &amp; formal</b><small>white-tablecloth manners</small></span><span class="radio"></span></button>
+    </div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" disabled>Continue</button></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="q-step" data-step="5">
+    <div class="stepno">Step 5 of 8 · Knowledge</div>
+    <h1>Teach it your business in one paste.</h1>
+    <p class="support">Drop your website URL. We'll pull your hours, services, and FAQs — and you approve everything before anyone hears it.</p>
+    <div class="field"><label for="siteurl">Your website</label><input id="siteurl" type="url" placeholder="ridgelinedental.com"><div class="hint">No website? <a href="#" onclick="return false" style="color:var(--bam-deep)">Type the basics instead</a> — takes 2 minutes.</div></div>
+    <div class="scrape" id="scrape">
+      <div class="row" data-t="Reading your site…"><span class="tick">·</span><span>Reading your site…</span></div>
+      <div class="row" data-t="hours"><span class="tick">·</span><span>Business hours found</span></div>
+      <div class="row" data-t="services"><span class="tick">·</span><span>14 services catalogued</span></div>
+      <div class="row" data-t="faq"><span class="tick">·</span><span>FAQ page learned</span></div>
+    </div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" disabled>Learn my business</button></div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="q-step" data-step="6">
+    <div class="stepno">Step 6 of 8 · Save</div>
+    <h1><span class="agent-name-slot">Riley</span> is ready to remember you.</h1>
+    <p class="support">Enter your email and we'll save your agent — no password, we'll send a magic link. Everything you've built stays exactly as you left it.</p>
+    <div class="field"><label for="email">Work email</label><input id="email" type="email" placeholder="you@yourbusiness.com"><div class="hint">One email. No sequences you didn't ask for. Unsubscribe forever in one click.</div></div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" disabled>Save my agent</button><button class="skiplink">Keep building without saving</button></div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="q-step" data-step="7">
+    <div class="stepno">Step 7 of 8 · The test</div>
+    <h1>Grill it.</h1>
+    <p class="support">This is the moment. Ask the hard questions — hours, prices, "can I talk to a human?" If it stumbles, fix it with a sentence.</p>
+    <div class="callsim" id="callsim">
+      <div class="head"><div class="ringer"><div class="pulse"></div><div class="core">📞</div></div><div><b id="callState">Calling your phone…</b><small id="callSub">Pick up and say hello to your new hire.</small></div></div>
+      <div class="qsug" id="qsug">
+        <button data-a="“We're open 8 to 5 weekdays, and Saturday mornings until noon.”">What are your hours?</button>
+        <button data-a="“A standard cleaning is $120 — and we're in-network with Delta and MetLife.”">How much is a cleaning?</button>
+        <button data-a="“Of course — one moment while I connect you. I'll pass along everything we discussed.”">Can I talk to a human?</button>
+      </div>
+      <div class="answer" id="callAnswer"></div>
+    </div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" id="testBtn">Call me for the test</button><button class="skiplink">Test in browser instead</button></div>
+  </div>
+
+  <!-- STEP 8 -->
+  <div class="q-step" data-step="8">
+    <div class="stepno">Step 8 of 8 · Go live</div>
+    <h1>Give <span class="agent-name-slot">Riley</span> a phone line.</h1>
+    <p class="support">Everything so far is free forever. Connecting a live number is the only part that costs money — and it's covered by a 14-day money-back guarantee.</p>
+    <div class="planrow" data-pick="plan">
+      <button class="plan"><b>Starter</b><div class="pr">$119<small>/mo</small></div><p>1 number · 450 min · transcripts · calendar connect</p></button>
+      <button class="plan"><b>Growth</b> <span class="mono" style="font-size:9.5px;color:var(--bam-deep);letter-spacing:.08em">MOST POPULAR</span><div class="pr">$269<small>/mo</small></div><p>3 numbers · 1,000 min · CRM · white-label · priority support</p></button>
+    </div>
+    <div class="navrow"><button class="backlink">← Back</button><button class="btn-p" disabled id="publishBtn">Go live →</button><button class="skiplink">Not yet — keep my agent in the sandbox</button></div>
+    <p class="fineline">14-day money-back guarantee · no contracts · cancel in two clicks · overage $0.35/min, heads-up at 80%</p>
+  </div>
+
+</div>
+
+<!-- Agent preview rail -->
+<aside class="rail" aria-label="Your agent preview">
+  <div class="agentcard">
+    <div class="ringwrap">
+      <svg width="112" height="112" viewBox="0 0 112 112" aria-hidden="true">
+        <circle class="track" cx="56" cy="56" r="52" fill="none" stroke-width="5"/>
+        <circle class="prog" id="ringProg" cx="56" cy="56" r="52" fill="none" stroke-width="5" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+      </svg>
+      <div class="face" id="face">?</div>
+    </div>
+    <div style="min-width:0;flex:1">
+      <div class="aname" id="aname">Your agent<span class="cursor">_</span></div>
+      <div class="atraits" id="traits"></div>
+      <div class="ready">readiness <b id="readyPct">0%</b></div>
+      <button class="talkbtn" id="talkBtn">💬 Say something, <span class="talk-name">Riley</span></button>
+      <div class="speech" id="speech"></div>
+      <div class="milestone" id="milestone"></div>
+    </div>
+  </div>
+</aside>
+</div>
+
+<!-- Success screen -->
+<div class="done-screen" id="doneScreen">
+  <div class="big">🎋</div>
+  <h1><span class="agent-name-slot">Riley</span> is on the line.</h1>
+  <p>Your agent is live. From this moment, no call to this number goes unanswered.</p>
+  <div class="numline" id="liveNumber">(509) 555-0182</div>
+  <p><b>Do this now:</b> call it yourself — the first transcript in your dashboard should be yours. Then forward your business line whenever you're ready (takes 30 seconds, guide's in your dashboard).</p>
+  <button class="btn-p" onclick="return false">Open my dashboard →</button>
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+(function(){
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var state = {step:1, industry:null, goal:null, voice:null, personality:null, url:null, email:null, tested:false, plan:null};
+  var AGENTS = {"Riley":"R","Jordan":"J","Sam":"S","Ava":"A"};
+  var READY = {1:0,2:15,3:30,4:50,5:62,6:78,7:88,8:100};
+  var MILES = {2:"Nice — a clear first job.",3:"It has a voice now. Hear that?",4:"Personality locked in.",5:"It knows your business.",6:"Saved. Riley remembers you now.",7:"88% — one test call from done.",8:""};
+
+  var $ = function(s,c){return (c||document).querySelector(s)};
+  var $$ = function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+
+  function agentName(){ return state.voice || "Riley"; }
+
+  function render(){
+    /* progress */
+    var pct = READY[state.step] || 0;
+    if(state.tested && state.step>=8) pct = 100;
+    $("#pfill").style.width = pct+"%";
+    $("#ppct").textContent = pct+"%";
+    $("#readyPct").textContent = pct+"%";
+    var C = 326.7;
+    $("#ringProg").style.strokeDashoffset = String(C - C*pct/100);
+
+    /* steps */
+    $$(".q-step").forEach(function(el){ el.classList.toggle("on", +el.dataset.step === state.step); });
+
+    /* agent card */
+    var n = state.voice ? agentName() : null;
+    $("#aname").innerHTML = n ? n : 'Your agent<span class="cursor">_</span>';
+    $("#face").textContent = n ? AGENTS[n] : "?";
+    $$(".agent-name-slot").forEach(function(el){ el.textContent = agentName(); });
+    $$(".talk-name").forEach(function(el){ el.textContent = agentName(); });
+    var traits = [];
+    if(state.industry) traits.push([state.industry,true]);
+    if(state.goal) traits.push([state.goal,false]);
+    if(state.personality) traits.push([state.personality,false]);
+    if(state.url) traits.push(["knows "+state.url,false]);
+    $("#traits").innerHTML = traits.map(function(t){return '<span class="trait'+(t[1]?' hot':'')+'">'+t[0]+"</span>";}).join("");
+    $("#talkBtn").style.display = state.voice ? "inline-flex" : "none";
+    $("#milestone").textContent = MILES[state.step] || "";
+    /* autosave whisper */
+    $("#autosave").textContent = state.email ? "saved to "+state.email : "saves automatically";
+  }
+
+  function goto(n){ state.step = Math.max(1, Math.min(8, n)); render(); window.scrollTo({top:0, behavior: reduced ? "auto" : "smooth"}); }
+
+  /* option pickers */
+  $$(".opts,[data-pick].planrow").forEach(function(grp){
+    var key = grp.dataset.pick;
+    $$(".opt,.plan",grp).forEach(function(opt){
+      opt.addEventListener("click",function(e){
+        if(e.target.closest(".play")) return; /* voice preview, not selection */
+        $$(".opt,.plan",grp).forEach(function(o){o.classList.remove("sel")});
+        opt.classList.add("sel");
+        state[key] = $("b",opt).textContent;
+        var stepEl = grp.closest(".q-step");
+        var btn = $(".btn-p",stepEl);
+        if(btn) btn.disabled = false;
+        render();
+      });
+    });
+  });
+
+  /* voice previews */
+  $$(".voice .play").forEach(function(pl){
+    pl.addEventListener("click",function(e){
+      e.stopPropagation();
+      $$(".voice").forEach(function(v){v.classList.remove("playing")});
+      var v = pl.closest(".voice");
+      v.classList.add("playing");
+      setTimeout(function(){v.classList.remove("playing")},2500);
+    });
+  });
+
+  /* continue buttons */
+  $$(".q-step").forEach(function(stepEl){
+    var n = +stepEl.dataset.step;
+    var btn = $(".btn-p",stepEl);
+    var back = $(".backlink",stepEl);
+    if(back) back.addEventListener("click",function(){goto(n-1)});
+    if(!btn) return;
+    btn.addEventListener("click",function(){
+      if(n===5){ /* scrape simulation */
+        var url = $("#siteurl").value.trim().replace(/^https?:\/\//,"") || "yourbusiness.com";
+        state.url = url;
+        var sc = $("#scrape"); sc.style.display="block"; btn.disabled = true;
+        $$(".row",sc).forEach(function(r,i){
+          setTimeout(function(){ r.classList.add("done"); $(".tick",r).textContent="✓";
+            if(i===3){ btn.disabled=false; btn.textContent="Looks right — continue"; btn.onclick=function(){goto(6)}; render(); }
+          }, reduced? 0 : 600+(i*800));
+        });
+        return;
+      }
+      if(n===6){ state.email = $("#email").value.trim(); goto(7); return; }
+      if(n===8){ finish(); return; }
+      goto(n+1);
+    });
+  });
+
+  /* step 5 input enables button */
+  $("#siteurl").addEventListener("input",function(){ $('.q-step[data-step="5"] .btn-p').disabled = this.value.trim().length<4; });
+  /* step 6 email validation */
+  $("#email").addEventListener("input",function(){ $('.q-step[data-step="6"] .btn-p').disabled = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.value.trim()); });
+  /* step 6 skip */
+  $('.q-step[data-step="6"] .skiplink').addEventListener("click",function(){ goto(7); });
+
+  /* step 7 test call */
+  $("#testBtn").addEventListener("click",function(){
+    var sim = $("#callsim"); sim.style.display="block"; this.style.display="none";
+    setTimeout(function(){
+      $("#callState").textContent = "You're talking to "+agentName()+".";
+      $("#callSub").textContent = "Tap a question to hear how it answers.";
+    }, reduced?0:1800);
+  });
+  $$("#qsug button").forEach(function(q){
+    q.addEventListener("click",function(){
+      q.classList.add("asked");
+      var a = $("#callAnswer");
+      a.style.display="block";
+      a.innerHTML = "<b>"+agentName()+":</b> "+q.dataset.a;
+      if(!state.tested){
+        state.tested = true;
+        setTimeout(function(){
+          var btn = $('.q-step[data-step="7"] .btn-p');
+          btn.style.display="inline-flex"; btn.textContent="It passed. Take it live →";
+          btn.onclick=function(){goto(8)};
+        }, 1200);
+      }
+    });
+  });
+  $('.q-step[data-step="7"] .skiplink').addEventListener("click",function(){
+    state.tested = true; goto(8);
+  });
+
+  /* talk button on rail */
+  $("#talkBtn").addEventListener("click",function(){
+    var lines = {
+      "Warm & welcoming":"Thanks so much for calling — this is "+agentName()+"! How can I brighten your day?",
+      "Efficient & direct":"This is "+agentName()+". What can I get done for you?",
+      "Polished & formal":"Good afternoon, you've reached "+(state.url||"your business")+". This is "+agentName()+" — how may I assist?"
+    };
+    var sp = $("#speech");
+    sp.style.display="block";
+    sp.innerHTML = '<span class="who">'+agentName()+' · preview</span>'+(lines[state.personality]||("Hi, this is "+agentName()+" — try picking a personality to hear the difference."));
+  });
+
+  /* step 8 publish */
+  function finish(){
+    if(!state.plan) return;
+    $("#stage").style.display="none";
+    $(".chrome").style.display="none";
+    $("#doneScreen").classList.add("on");
+    render();
+    if(!reduced) confetti();
+  }
+  var pubBtn = $("#publishBtn");
+  $$('.planrow .plan').forEach(function(p){ p.addEventListener("click",function(){ pubBtn.disabled=false; pubBtn.textContent="Go live with "+$("b",p).textContent+" →"; }); });
+
+  function confetti(){
+    var box = $("#confetti"); box.style.display="block";
+    var colors = ["#1E7A4A","#2FA36B","#E7F2EB","#14181A","#F2C94C"];
+    for(var i=0;i<90;i++){
+      var f = document.createElement("i");
+      f.style.left = Math.random()*100+"vw";
+      f.style.background = colors[i%colors.length];
+      f.style.animationDelay = (Math.random()*0.7)+"s";
+      f.style.transform = "rotate("+(Math.random()*360)+"deg)";
+      box.appendChild(f);
+    }
+    setTimeout(function(){ box.style.display="none"; box.innerHTML=""; },2600);
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>

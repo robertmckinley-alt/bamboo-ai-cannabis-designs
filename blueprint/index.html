@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bamboo AI — Conversion Funnel Blueprint</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%8B%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<style>
+  :root{
+    --paper:#FBFBF8; --ink:#14181A; --muted:#5A6360; --soft:#8A938E;
+    --accent:#1E7A4A; --accent-ink:#0F5C36; --accent-soft:#E7F2EB;
+    --line:#E3E6E1; --card:#FFFFFF; --wire:#F3F5F1; --mono-bg:#10151233;
+    --warn:#B45309; --warn-bg:#FEF3E2;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#101411; --ink:#E8ECE7; --muted:#9BA69F; --soft:#6E7A72;
+      --accent:#43B879; --accent-ink:#5FCB90; --accent-soft:#16281D;
+      --line:#242B26; --card:#161B17; --wire:#151A16; --warn:#E8A64C; --warn-bg:#2A2113; }
+  }
+  :root[data-theme="dark"]{ --paper:#101411; --ink:#E8ECE7; --muted:#9BA69F; --soft:#6E7A72;
+    --accent:#43B879; --accent-ink:#5FCB90; --accent-soft:#16281D;
+    --line:#242B26; --card:#161B17; --wire:#151A16; --warn:#E8A64C; --warn-bg:#2A2113; }
+  :root[data-theme="light"]{ --paper:#FBFBF8; --ink:#14181A; --muted:#5A6360; --soft:#8A938E;
+    --accent:#1E7A4A; --accent-ink:#0F5C36; --accent-soft:#E7F2EB;
+    --line:#E3E6E1; --card:#FFFFFF; --wire:#F3F5F1; --warn:#B45309; --warn-bg:#FEF3E2; }
+
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    line-height:1.62;font-size:15.5px;}
+  .mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,Menlo,monospace;}
+  a{color:var(--accent-ink);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .shell{display:grid;grid-template-columns:236px minmax(0,1fr);max-width:1100px;margin:0 auto;gap:48px;padding:0 28px}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:44px 0 44px;border-right:1px solid var(--line)}
+  nav.toc .brand{font-weight:800;letter-spacing:-.02em;font-size:15px;margin-bottom:2px}
+  nav.toc .brand b{color:var(--accent)}
+  nav.toc .sub{font-size:11px;color:var(--soft);margin-bottom:22px}
+  nav.toc a{display:flex;gap:9px;padding:4.5px 10px 4.5px 0;font-size:12.5px;color:var(--muted);border-radius:5px}
+  nav.toc a:hover{color:var(--ink);text-decoration:none}
+  nav.toc a .n{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;color:var(--soft);width:20px;flex-shrink:0;padding-top:2px}
+  main{padding:44px 0 120px;max-width:760px}
+
+  header.doc h1{font-size:clamp(30px,4.4vw,44px);line-height:1.06;letter-spacing:-.032em;font-weight:800;margin:10px 0 14px;text-wrap:balance}
+  header.doc .kicker{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+  header.doc p.lede{font-size:17px;color:var(--muted);max-width:60ch;margin:0 0 18px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+  .meta span{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.05em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:4px 11px;background:var(--card)}
+
+  section{margin-top:76px;scroll-margin-top:24px}
+  .eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+  section>h2{font-size:27px;letter-spacing:-.024em;font-weight:800;margin:6px 0 6px;text-wrap:balance}
+  section>p.dek{color:var(--muted);margin:0 0 22px;max-width:62ch}
+  h3{font-size:17px;letter-spacing:-.012em;font-weight:750;margin:34px 0 8px}
+  h4{font-size:13.5px;font-weight:700;margin:22px 0 6px}
+  p{max-width:68ch;margin:0 0 12px}
+  ul,ol{padding-left:22px;margin:0 0 14px;max-width:66ch}
+  li{margin-bottom:5px}
+  li::marker{color:var(--soft)}
+  strong{font-weight:700}
+  .lead-in{font-weight:700;color:var(--ink)}
+
+  table{border-collapse:collapse;width:100%;font-size:13px;margin:14px 0 20px}
+  th{text-align:left;font-family:ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom:1.5px solid var(--ink);padding:7px 12px 7px 0;font-weight:600}
+  td{border-bottom:1px solid var(--line);padding:8px 12px 8px 0;vertical-align:top}
+  td:first-child{font-weight:600;white-space:nowrap}
+  .num{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .tablewrap{overflow-x:auto}
+
+  .callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--card);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;max-width:70ch}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+  .callout .tag{font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);display:block;margin-bottom:4px}
+  .callout.warn .tag{color:var(--warn)}
+
+  pre.wire{font-family:ui-monospace,"SF Mono",Consolas,Menlo,monospace;font-size:11.5px;line-height:1.5;background:var(--wire);border:1px solid var(--line);border-radius:10px;padding:18px 20px;overflow-x:auto;color:var(--ink);margin:12px 0 22px}
+  pre.wire .c{color:var(--soft)}
+  pre.wire .g{color:var(--accent-ink);font-weight:700}
+
+  .copyblock{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin:12px 0 20px;max-width:none}
+  .copyblock .lbl{font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-bottom:8px}
+  .copyblock h5{font-size:21px;letter-spacing:-.02em;font-weight:800;margin:0 0 6px;line-height:1.15;text-wrap:balance}
+  .copyblock p{color:var(--muted);font-size:14px;margin-bottom:8px}
+  .copyblock .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .btn{display:inline-block;font-size:12.5px;font-weight:700;border-radius:8px;padding:8px 16px}
+  .btn.p{background:var(--accent);color:#fff}
+  .btn.s{border:1.5px solid var(--line);color:var(--ink);background:transparent}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 20px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0 20px}
+  .cardx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:15px 17px}
+  .cardx h5{margin:0 0 5px;font-size:13.5px;font-weight:750}
+  .cardx p{font-size:12.8px;color:var(--muted);margin:0}
+  .cardx .k{font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);display:block;margin-bottom:5px}
+
+  .flow{display:flex;flex-direction:column;gap:0;margin:16px 0 22px;max-width:560px}
+  .flow .step{display:flex;gap:14px;align-items:flex-start}
+  .flow .rail{display:flex;flex-direction:column;align-items:center;width:26px;flex-shrink:0}
+  .flow .dot{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);font-family:ui-monospace,Consolas,monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid var(--accent);flex-shrink:0}
+  .flow .bar{width:2px;flex:1;min-height:16px;background:var(--line)}
+  .flow .body{padding:2px 0 20px}
+  .flow .body b{font-size:14px}
+  .flow .body p{font-size:13px;color:var(--muted);margin:3px 0 0}
+  .flow .body .drop{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--warn);display:block;margin-top:4px}
+
+  .kbd{font-family:ui-monospace,Consolas,monospace;background:var(--wire);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px}
+  .pill{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.06em;border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted);background:var(--card)}
+  .swatches{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 18px}
+  .sw{width:118px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
+  .sw .chip{height:52px}
+  .sw .lab{padding:7px 10px;font-family:ui-monospace,Consolas,monospace;font-size:10px;color:var(--muted);line-height:1.5}
+  .sw .lab b{display:block;color:var(--ink);font-size:11px}
+
+  footer.doc{margin-top:90px;border-top:1px solid var(--line);padding-top:18px;font-size:12px;color:var(--soft)}
+
+  @media (max-width:860px){
+    .shell{display:block;padding:0 18px}
+    nav.toc{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);padding:26px 0 14px;display:block}
+    nav.toc .links{display:flex;flex-wrap:wrap;gap:2px 14px}
+    .grid2,.grid3{grid-template-columns:1fr}
+  }
+</style>
+
+<div class="shell">
+<nav class="toc">
+  <div class="brand">Bamboo <b>AI</b></div>
+  <div class="sub">Funnel Blueprint · v1 · 2026-07-09</div>
+  <div class="links">
+    <a href="#s1"><span class="n">01</span>Funnel Strategy</a>
+    <a href="#s2"><span class="n">02</span>User Psychology</a>
+    <a href="#s3"><span class="n">03</span>Site Map</a>
+    <a href="#s4"><span class="n">04</span>Funnel Map</a>
+    <a href="#s5"><span class="n">05</span>Wireframes</a>
+    <a href="#s6"><span class="n">06</span>Full Copy</a>
+    <a href="#s7"><span class="n">07</span>UI Components</a>
+    <a href="#s8"><span class="n">08</span>Design System</a>
+    <a href="#s9"><span class="n">09</span>Conversion Strategy</a>
+    <a href="#s10"><span class="n">10</span>Analytics</a>
+    <a href="#s11"><span class="n">11</span>Developer Notes</a>
+    <a href="#s12"><span class="n">12</span>Mobile Experience</a>
+    <a href="#s13"><span class="n">13</span>Desktop Experience</a>
+    <a href="#s14"><span class="n">14</span>Optimization Roadmap</a>
+  </div>
+</nav>
+
+<main>
+<header class="doc">
+  <div class="kicker">mybamboo.ai · acquisition funnel engagement</div>
+  <h1>The call is the close.</h1>
+  <p class="lede">A complete acquisition funnel for Bamboo AI, built around the one asset no competitor page has: within ten seconds of landing, a visitor's own phone rings and an AI answers like a great employee. Everything in this blueprint exists to get more people to that moment, and to carry them from it to a paid plan without ever needing a salesperson.</p>
+  <div class="meta">
+    <span>ICP: local service SMBs</span><span>Motion: 100% self-serve</span><span>Traffic: paid social + search + SEO</span><span>Stack today: none — specced from zero</span>
+  </div>
+</header>
+
+<!-- ============================================= 01 -->
+<section id="s1">
+  <div class="eyebrow">Part 01</div>
+  <h2>Funnel Strategy</h2>
+  <p class="dek">One thesis, three moves, and the honest constraint we design around.</p>
+
+  <h3>The thesis: demo-first, signup-late, publish-gated</h3>
+  <p>Voice AI has a property almost no other SaaS category has: <strong>the product can prove itself in 45 seconds over the visitor's own phone.</strong> A restaurant owner doesn't need a features grid to believe — she needs to hear an agent take a reservation, handle "actually, make it 7:30," and confirm by text. That experience does the job of every testimonial, logo wall, and explainer video combined.</p>
+  <p>So the funnel is built on three moves:</p>
+  <div class="grid3">
+    <div class="cardx"><span class="k">Move 1 — Prove</span><h5>The Instant Test Call</h5><p>Every entry page leads to one action: enter your number, your phone rings in seconds, you talk to a Bamboo agent tuned to your industry. No signup. No email. The demo IS the ad.</p></div>
+    <div class="cardx"><span class="k">Move 2 — Possess</span><h5>Build Before You Sign Up</h5><p>The free builder opens anonymously. Industry, goal, voice, personality — four choices in, the visitor has a named agent with a voice they picked. Email is asked only to <em>save</em> it. People don't abandon things they've named.</p></div>
+    <div class="cardx"><span class="k">Move 3 — Publish</span><h5>The Paywall Is the Phone Number</h5><p>Everything is free until the moment of real-world value: connecting a live phone number. "Your agent is ready. Give it a phone line" is the cleanest upgrade trigger in the category.</p></div>
+  </div>
+
+  <h3>The honest constraint: zero social proof today</h3>
+  <p>The current site has no customers on display, and the live-call widget shows fabricated stats ("47 outbound calls, 12 qualified leads"). For an SMB owner burned by software before, invented proof is worse than none.</p>
+  <div class="callout warn"><span class="tag">Non-negotiable</span>We do not fabricate logos, testimonials, or usage numbers. Until real ones exist, trust is built from things that are verifiably true right now: the live demo (proof by experience), transparent pricing with a 14-day money-back guarantee, a real founder with a name and a face, published latency/uptime numbers, and a security page written like adults wrote it. Every testimonial slot in this blueprint is marked <span class="kbd">[REAL-CUSTOMER]</span> and ships hidden until filled.</div>
+
+  <h3>Pricing architecture (proposed — you have final say)</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Plan</th><th>Price</th><th>What it's for</th><th>Funnel role</th></tr>
+    <tr><td>Sandbox</td><td class="num">$0</td><td>Build unlimited agents, 15 min of test calls/mo to your own verified number, browser talk-to-agent unlimited</td><td>The free tier IS the demo. Removes all risk of trying.</td></tr>
+    <tr><td>Starter</td><td class="num">$119/mo</td><td>1 live phone number, 450 min, call transcripts, SMS confirmations, calendar connect</td><td>Solo locations. Drop the ".99" — whole numbers read B2B-honest.</td></tr>
+    <tr><td>Growth <span class="pill">Most popular</span></td><td class="num">$269/mo</td><td>3 numbers, 1,000 min, CRM integrations, custom workflows, white-label, priority support</td><td>Anchor plan. Multi-location + agencies.</td></tr>
+    <tr><td>Scale</td><td class="num">Custom</td><td>API, omni-channel, volume minutes, SLA</td><td>Talk-to-us track; the only sales-touched path.</td></tr>
+  </table></div>
+  <ul>
+    <li><strong>Annual = 2 months free</strong>, shown as monthly-equivalent ("$99/mo billed annually").</li>
+    <li><strong>14-day money-back guarantee</strong> on first payment, stated at the point of card entry, not buried.</li>
+    <li><strong>Overage stated plainly</strong> ($0.35/min beyond plan) — surprise billing is the #1 SMB churn trigger.</li>
+    <li>Every price appears next to the ROI line it beats: <em>"One missed customer a week costs most businesses more than this plan."</em></li>
+  </ul>
+
+  <h3>Channel-to-page mapping</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Channel</th><th>Lands on</th><th>First ask</th><th>Why</th></tr>
+    <tr><td>Meta / TikTok</td><td>Industry landing page matching the ad creative</td><td>Test call (phone-first UI)</td><td>Interruption traffic converts on instant gratification, not reading</td></tr>
+    <tr><td>Google Ads</td><td>Industry or use-case page matching the keyword</td><td>Test call, builder as secondary</td><td>High intent; message-match to the exact query ("ai receptionist for dental office")</td></tr>
+    <tr><td>SEO / content</td><td>Knowledge center, comparisons, templates, ROI calculator</td><td>Soft: calculator/quiz → builder</td><td>Earlier-stage readers; capture email via tools, not gates</td></tr>
+    <tr><td>Direct / brand</td><td>Homepage</td><td>Test call</td><td>Homepage is the flagship version of the same demo-first pattern</td></tr>
+  </table></div>
+
+  <h3>North-star metrics</h3>
+  <ul>
+    <li><strong>Demo-call rate</strong> — % of sessions that complete a test call (target: 12–18% on paid industry pages).</li>
+    <li><strong>Build-start rate</strong> — % entering the builder (target: 25% of demo completers).</li>
+    <li><strong>Activation</strong> — agent created + test call to own number completed (the "aha" event; target: 55% of builder starts).</li>
+    <li><strong>Free→paid</strong> — publish-gate conversion within 14 days (target: 8–12% of activated).</li>
+  </ul>
+</section>
+
+<!-- ============================================= 02 -->
+<section id="s2">
+  <div class="eyebrow">Part 02</div>
+  <h2>User Psychology</h2>
+  <p class="dek">Who's on the other end of the click, what they're afraid of, and which levers actually move them.</p>
+
+  <h3>The buyer</h3>
+  <p>A local service business owner or office manager — dental practice, restaurant, real-estate team, gym, small law office. They answer (or fail to answer) their own phones. They are not evaluating "AI platforms"; they are trying to stop bleeding: missed calls at lunch rush, voicemail nobody checks, a receptionist who costs $3,200/month and quits in the spring.</p>
+
+  <h3>Awareness stages → what each needs</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Stage</th><th>They're thinking</th><th>We give them</th></tr>
+    <tr><td>Problem-aware</td><td>"We keep missing calls and I know it's costing us."</td><td>ROI calculator, "cost of a missed call" content, quiz</td></tr>
+    <tr><td>Solution-aware</td><td>"Answering services exist… AI ones now too?"</td><td>Comparison pages (vs. answering service, vs. voicemail, vs. hiring), the test call</td></tr>
+    <tr><td>Product-aware</td><td>"Is Bamboo the one? Is it hard? What's the catch?"</td><td>Builder, transparent pricing, guarantee, security page</td></tr>
+    <tr><td>Ready</td><td>"Fine — but will it work on MY phones with MY hours?"</td><td>Onboarding that imports their business in one field (website URL), publish flow with number porting help</td></tr>
+  </table></div>
+
+  <h3>The five objections, ranked, and their kill-shots</h3>
+  <ol>
+    <li><strong>"It'll embarrass me in front of customers."</strong> → The test call. Then: barge-in handling, human handoff shown in the demo script on purpose (the agent gracefully transfers). We <em>show the failure mode being handled</em>, not perfection.</li>
+    <li><strong>"This is going to be complicated."</strong> → "Built by 6,000 non-technical owners" only when true; until then: the 5-minute builder with a visible progress bar and a timer badge in marketing ("avg. setup: 4m 51s" — measured, real).</li>
+    <li><strong>"Hidden costs / minute-billing games."</strong> → Whole-number pricing, overage rate printed on the pricing card, "no contracts, cancel in two clicks" line.</li>
+    <li><strong>"What happens to my callers' data?"</strong> → Security page: recordings retention control, no training on your calls, HIPAA-readiness path for medical/dental (BAA on Growth+ when available — do not claim before true).</li>
+    <li><strong>"AI is a fad / I'll wait."</strong> → Loss framing: the calculator shows their monthly leak in dollars. Waiting has a price and we name it.</li>
+  </ol>
+
+  <h3>Emotional triggers we use (and two we refuse)</h3>
+  <ul>
+    <li><strong>Relief</strong> — the dominant note. Copy voice: "the phone is handled." Not excitement — <em>exhale</em>.</li>
+    <li><strong>Pride of authorship</strong> — the builder makes them a creator ("meet the employee you just built"). Named agent, chosen voice → endowment effect.</li>
+    <li><strong>Loss aversion</strong> — missed-call math, always concrete and theirs (their volume × their ticket), never generic scare stats.</li>
+    <li><strong>Status</strong> — "answers like a Fortune-500 front desk" for a taco shop. Small business, big-company phone presence.</li>
+    <li>We refuse: <strong>fake scarcity</strong> (countdown timers on evergreen pages) and <strong>fake social proof</strong>. Both poison SMB trust permanently.</li>
+  </ul>
+
+  <h3>Why visitors leave (friction inventory of the current site)</h3>
+  <ul>
+    <li>Nav promises five pages that are all the same page → broken-site smell. Fix: real pages or honest single-page anchors.</li>
+    <li>Zero proof + invented dashboard stats → skepticism at the exact moment of interest.</li>
+    <li>"Create Account" before any value → asks for commitment before demonstration.</li>
+    <li>$119.99 with no guarantee, no overage terms, no cancel terms → pricing anxiety.</li>
+    <li>No industry scent: an ad about dental offices lands on a generic page → message mismatch, instant bounce.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 03 -->
+<section id="s3">
+  <div class="eyebrow">Part 03</div>
+  <h2>Site Map</h2>
+  <p class="dek">Every page, its single job, and its primary conversion event. Build order runs top to bottom — the first eleven pages are the launch set.</p>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>Page</th><th>URL</th><th>Single job</th><th>Primary event</th></tr>
+    <tr><td class="num">1</td><td>Homepage</td><td class="mono">/</td><td>Get a test call started</td><td class="mono">demo_call_completed</td></tr>
+    <tr><td class="num">2</td><td>Free Agent Builder</td><td class="mono">/build</td><td>Anonymous → activated agent owner</td><td class="mono">agent_activated</td></tr>
+    <tr><td class="num">3</td><td>Pricing</td><td class="mono">/pricing</td><td>Remove billing anxiety, start checkout</td><td class="mono">checkout_started</td></tr>
+    <tr><td class="num">4–11</td><td>Industry pages ×8 (dental, restaurants, real estate, law, healthcare, fitness, hospitality, e-commerce)</td><td class="mono">/for/dental …</td><td>Message-matched demo call in that vertical's language</td><td class="mono">demo_call_completed</td></tr>
+    <tr><td class="num">12</td><td>ROI / Missed-Call Calculator</td><td class="mono">/calculator</td><td>Make the leak concrete; capture email with the report</td><td class="mono">calculator_email_submitted</td></tr>
+    <tr><td class="num">13</td><td>Comparisons ×3 (vs. answering service, vs. voicemail, vs. hiring a receptionist)</td><td class="mono">/compare/…</td><td>Win solution-aware searchers</td><td class="mono">demo_call_started</td></tr>
+    <tr><td class="num">14</td><td>Templates gallery</td><td class="mono">/templates</td><td>"That one's mine" → builder with template preloaded</td><td class="mono">builder_started(template)</td></tr>
+    <tr><td class="num">15</td><td>Security &amp; Trust</td><td class="mono">/security</td><td>Answer the data question like adults</td><td>assist page (no gate)</td></tr>
+    <tr><td class="num">16</td><td>Case studies</td><td class="mono">/customers</td><td>Real stories with real numbers — <span class="kbd">[REAL-CUSTOMER]</span>, ships when filled</td><td class="mono">demo_call_started</td></tr>
+    <tr><td class="num">17</td><td>Knowledge center / blog</td><td class="mono">/learn</td><td>SEO capture for problem-aware queries</td><td>scroll → calculator CTA</td></tr>
+    <tr><td class="num">18</td><td>Docs</td><td class="mono">/docs</td><td>Pre-purchase capability proof + post-purchase success</td><td>assist</td></tr>
+    <tr><td class="num">19</td><td>Book-a-walkthrough</td><td class="mono">/demo</td><td>Optional human help (calendar embed) — kept, but never the primary CTA</td><td class="mono">demo_booked</td></tr>
+    <tr><td class="num">20</td><td>Thank-you pages ×3</td><td class="mono">/thanks/…</td><td>Next-step momentum (post-checkout, post-booking, post-report)</td><td>next-step click</td></tr>
+    <tr><td class="num">21</td><td>App: onboarding, dashboard entry, empty states, upgrade &amp; referral screens</td><td class="mono">app.mybamboo.ai</td><td>Activation → expansion</td><td class="mono">agent_published</td></tr>
+  </table></div>
+  <div class="callout"><span class="tag">Cut list</span>Interactive quiz, webinars, and long-form video are deliberately NOT in the launch set. The test call replaces them all at higher conversion and zero production cost. Revisit in the roadmap (Part 14) once volume justifies them.</div>
+</section>
+
+<!-- ============================================= 04 -->
+<section id="s4">
+  <div class="eyebrow">Part 04</div>
+  <h2>Funnel Map</h2>
+  <p class="dek">The full journey with every decision point and every recovery loop. Drop-offs aren't failures — each has a named catcher.</p>
+  <div class="flow">
+    <div class="step"><div class="rail"><div class="dot">1</div><div class="bar"></div></div><div class="body"><b>Ad / search result / organic link</b><p>Creative promise = page promise, always. Dental ad → dental page → dental-tuned agent.</p></div></div>
+    <div class="step"><div class="rail"><div class="dot">2</div><div class="bar"></div></div><div class="body"><b>Landing page (industry or home)</b><p>Decision: take the test call, start building, or bounce.</p><span class="drop">Bounce catcher → exit-intent: "Leave with the demo line — text yourself the number." (SMS capture, one field)</span></div></div>
+    <div class="step"><div class="rail"><div class="dot">3</div><div class="bar"></div></div><div class="body"><b>Test call — the proof moment</b><p>Phone rings in &lt;10s. 45–90s scripted-but-live conversation. Ends with the agent saying: "Want one of me for your business? It takes about five minutes at mybamboo.ai/build."</p><span class="drop">No-answer catcher → SMS: "Missed us? Call this number anytime to talk to the demo agent: (xxx) xxx-xxxx"</span></div></div>
+    <div class="step"><div class="rail"><div class="dot">4</div><div class="bar"></div></div><div class="body"><b>Builder, steps 1–5 (anonymous)</b><p>Industry → goal → voice → personality → knowledge (paste website URL; we scrape hours/services/FAQs). Agent preview talks in-browser after step 3.</p><span class="drop">Abandon catcher → progress auto-saved in localStorage; return visit resumes with "Riley is 60% ready."</span></div></div>
+    <div class="step"><div class="rail"><div class="dot">5</div><div class="bar"></div></div><div class="body"><b>Email gate — "Save your agent"</b><p>Asked AFTER the agent exists and has a name. One field + magic link. No password.</p><span class="drop">Refusal catcher → "Keep building without saving" stays available; gate re-offers at publish.</span></div></div>
+    <div class="step"><div class="rail"><div class="dot">6</div><div class="bar"></div></div><div class="body"><b>Activation — test call on their own number</b><p>The aha: their agent answers THEIR questions about THEIR business on THEIR phone. Readiness score hits 100. Confetti (once).</p><span class="drop">Stall catcher → email D+1: "Riley answered 3 practice questions perfectly. Hear the recording."</span></div></div>
+    <div class="step"><div class="rail"><div class="dot">7</div><div class="bar"></div></div><div class="body"><b>Publish gate — the paywall</b><p>"Give Riley a phone line." Plan picker inline; card; 14-day guarantee restated at the button.</p><span class="drop">Hesitation catcher → 7-day email sequence (Part 09 of copy), each email a use case + one CTA. Retargeting audience `activated_not_paid`.</span></div></div>
+    <div class="step"><div class="rail"><div class="dot">8</div><div class="bar"></div></div><div class="body"><b>Paid → expansion</b><p>Live agent → weekly "calls handled" digest email → usage-based nudges ("Riley hit 80% of minutes") → Growth upsell → referral loop ("give a month, get a month") → multi-location / white-label → Scale conversation.</p></div></div>
+    <div class="step"><div class="rail"><div class="dot">9</div></div><div class="body"><b>Optional human track (any point)</b><p>"Prefer a walkthrough?" persistent quiet link → /demo calendar. Never modal, never pushy — this is the escape valve for the 15% who want a human.</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================= 05 -->
+<section id="s5">
+  <div class="eyebrow">Part 05</div>
+  <h2>Wireframes</h2>
+  <p class="dek">Structural blueprints for the five pages that carry the funnel. The homepage and builder are also delivered as working coded prototypes alongside this document.</p>
+
+  <h3>5.1 Homepage</h3>
+<pre class="wire">┌────────────────────────────────────────────────────────────────┐
+│ ● Bamboo AI     Product  Industries  Pricing  Docs      <span class="g">[Try it free]</span> │  <span class="c">nav: 5 items max, 64px, blur-on-scroll</span>
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   EYEBROW: AI VOICE AGENTS FOR SMALL BUSINESS                  │
+│   H1: Your phone, answered.                                    │
+│   H1b: Every call. Every hour. ($119/mo, not $3,200)           │
+│   SUB: one sentence, 18px, muted                               │
+│                                                                │
+│   ┌──────────────────────────────────┐                         │
+│   │ 📞 (___) ___-____   <span class="g">[Call me now]</span> │  ← THE hero action     │  <span class="c">phone input + CTA, one row</span>
+│   └──────────────────────────────────┘                         │
+│   "Bamboo will call you in ~10 seconds. Free, no signup."      │
+│   secondary link: Talk in browser instead ↓  ·  Build free →   │
+│                                                                │
+│   ┌── LIVE TRANSCRIPT PANE (animates a real call) ──────────┐  │  <span class="c">right column ≥1024px, below on mobile</span>
+│   │ Caller: "Do you have anything tonight at 7?"            │  │
+│   │ ● Riley: "We do — table for two at 7:15 or 7:45…"       │  │
+│   └─────────────────────────────────────────────────────────┘  │
+├────────────────────────────────────────────────────────────────┤
+│ PROOF STRIP: <span class="c">real, measured numbers only:</span>                      │
+│ "~500ms response · 24/7 · answers 100% of calls · 4m51s setup" │
+├────────────────────────────────────────────────────────────────┤
+│ HOW IT WORKS — 3 steps, horizontal: Build → Test → Go live     │
+├────────────────────────────────────────────────────────────────┤
+│ BEFORE/AFTER — split panel: voicemail hell vs. Bamboo day      │
+├────────────────────────────────────────────────────────────────┤
+│ INDUSTRY GRID — 8 cards, each = agent name + one job line +    │
+│ "Hear Mia answer a dental call →" (plays 12s audio inline)     │
+├────────────────────────────────────────────────────────────────┤
+│ FEATURES — 4 rows, alternating; each anchored to a fear:       │
+│ handoff / interruptions / integrations / transcripts           │
+├────────────────────────────────────────────────────────────────┤
+│ PRICING TEASER — 3 cards, guarantee line, link to /pricing     │
+├────────────────────────────────────────────────────────────────┤
+│ [REAL-CUSTOMER] testimonial band — hidden until filled         │
+├────────────────────────────────────────────────────────────────┤
+│ FAQ — 6 items, accordion                                       │
+├────────────────────────────────────────────────────────────────┤
+│ FINAL CTA — full-bleed ink panel: phone input again            │
+│ FOOTER — 4 cols: product / industries / resources / legal      │
+└────────────────────────────────────────────────────────────────┘</pre>
+
+  <h3>5.2 Industry landing page (template ×8)</h3>
+<pre class="wire">┌────────────────────────────────────────────────────────────────┐
+│ nav (same)                                                     │
+│ EYEBROW: FOR DENTAL PRACTICES                                  │
+│ H1: The front desk that never puts a patient on hold.          │
+│ phone input CTA (agent = "Mia", dental-tuned)                  │
+│ transcript pane plays a DENTAL call (reschedule + insurance q) │
+├────────────────────────────────────────────────────────────────┤
+│ PAIN ROW — 3 stats framed as this industry's leaks             │  <span class="c">sourced stats w/ citations, or omit</span>
+│ "WHAT MIA HANDLES" — checklist: booking, recalls, insurance    │
+│ FAQs, emergencies routing, after-hours                         │
+├────────────────────────────────────────────────────────────────┤
+│ MINI ROI CALC — sliders: calls/day missed × avg patient value  │
+│ INTEGRATIONS ROW — the 3–4 tools THIS industry uses            │
+│ PRICING TEASER (same component)                                │
+│ FINAL CTA + FAQ (industry-specific: HIPAA q first for dental)  │
+└────────────────────────────────────────────────────────────────┘</pre>
+
+  <h3>5.3 Pricing page</h3>
+<pre class="wire">┌────────────────────────────────────────────────────────────────┐
+│ H1: Pricing that's cheaper than one missed customer.           │
+│ toggle: Monthly / Annual (–2 months)                           │
+│ ┌─────────┐  ┌─────────────┐  ┌─────────┐  ┌─────────┐         │
+│ │ Sandbox │  │ Starter     │  │ GROWTH ★│  │ Scale   │         │  <span class="c">Growth visually elevated</span>
+│ │ $0      │  │ $119        │  │ $269    │  │ custom  │         │
+│ │ build & │  │ 1 number    │  │ 3 nums  │  │ API     │         │
+│ │ test    │  │ 450 min     │  │ 1000min │  │ SLA     │         │
+│ └─────────┘  └─────────────┘  └─────────┘  └─────────┘         │
+│ under cards: "Overage $0.35/min · no contracts · cancel in     │
+│ two clicks · 14-day money-back guarantee"                      │
+├────────────────────────────────────────────────────────────────┤
+│ MINUTES ESTIMATOR — "How many minutes do I need?" slider       │
+│ COMPARISON TABLE — full feature matrix, sticky header          │
+│ GUARANTEE PANEL — plain-english, signed by founder             │
+│ FAQ (billing-specific) + final CTA                             │
+└────────────────────────────────────────────────────────────────┘</pre>
+
+  <h3>5.4 Free builder (8 steps — full spec in prototype)</h3>
+<pre class="wire">┌────────────────────────────────────────────────────────────────┐
+│ minimal chrome: logo · progress bar (%) · "saves automatically"│
+│ LEFT: one question per screen, huge tap targets                │
+│ RIGHT: agent preview card — name, voice, readiness ring        │
+│   updates live with every choice; TALK button after step 3    │
+│ steps: industry → goal → voice → personality → knowledge(URL)  │
+│        → save(email) → test call → publish/plan                │
+│ back link always visible · skip available where sane           │
+└────────────────────────────────────────────────────────────────┘</pre>
+
+  <h3>5.5 ROI calculator</h3>
+<pre class="wire">┌────────────────────────────────────────────────────────────────┐
+│ H1: What do missed calls cost you?                             │
+│ 3 inputs: calls/day · % missed (industry default) · avg $     │
+│ BIG OUTPUT: "$4,860/month walking past your front desk"        │  <span class="c">animated count-up, tabular-nums</span>
+│ breakdown table · vs. Bamboo cost line                         │
+│ CTA 1: email me this as a PDF (capture)                        │
+│ CTA 2: Stop the leak — build your agent →                      │
+└────────────────────────────────────────────────────────────────┘</pre>
+</section>
+
+<!-- ============================================= 06 -->
+<section id="s6">
+  <div class="eyebrow">Part 06</div>
+  <h2>Full Copy</h2>
+  <p class="dek">Production copy — paste-ready. Voice: plain, confident, first-grade words for million-dollar decisions. Every line earns its pixel.</p>
+
+  <h3>6.1 Homepage</h3>
+  <div class="copyblock">
+    <div class="lbl">Hero</div>
+    <h5>Your phone, answered. Every call, every hour.</h5>
+    <p>Bamboo builds you an AI voice agent that answers like your best employee — books appointments, answers questions, and hands real emergencies to a human. Set up in five minutes. From $119/month.</p>
+    <div class="btnrow"><span class="btn p">Call me now — hear it live</span><span class="btn s">Build your agent free</span></div>
+    <p style="margin-top:8px">Micro-line under input: <em>"Enter your number and Bamboo calls you in about ten seconds. Free. No signup. No sales call."</em></p>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">Proof strip (measured values only — wire to real telemetry)</div>
+    <p><b>~500ms</b> average response &nbsp;·&nbsp; <b>24/7/365</b> on the line &nbsp;·&nbsp; <b>100%</b> of calls answered &nbsp;·&nbsp; <b>4m 51s</b> average setup time</p>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">How it works</div>
+    <p><b>1 · Build.</b> Answer four questions, paste your website. Your agent learns your hours, services, and prices on its own.</p>
+    <p><b>2 · Test.</b> Call your agent and grill it. Change anything with a sentence: "Be warmer. Stop offering Tuesdays."</p>
+    <p><b>3 · Go live.</b> Connect a phone number. Keep yours or get a new one. From that moment, no call goes unanswered.</p>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">Before / after panel</div>
+    <p><b>Before:</b> Ring… ring… voicemail. "Hi, you've reached—" <em>click.</em> That caller booked with whoever answered.</p>
+    <p><b>After:</b> First ring. "Thanks for calling Ridgeline Dental — this is Mia. I can get you in Thursday at 2 or Friday at 10. Which works?"</p>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">Feature rows (each = fear → relief)</div>
+    <p><b>Hands off gracefully.</b> Anything your agent shouldn't handle — a furious customer, a real emergency — it transfers to a human instantly, with a summary, so nobody repeats themselves.</p>
+    <p><b>Handles interruptions like a person.</b> Callers change their minds mid-sentence. Your agent keeps up, because real conversations aren't scripts.</p>
+    <p><b>Plugs into what you already use.</b> Calendars, CRMs, booking systems. Appointments land where they've always landed — without you touching anything.</p>
+    <p><b>Every call, on paper.</b> Full transcripts and recordings. Read what happened over coffee instead of wondering what you missed.</p>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">Pricing teaser</div>
+    <h5>Cheaper than one missed customer a week.</h5>
+    <p>Free to build and test. From $119/month to go live. No contracts, cancel in two clicks, 14-day money-back guarantee.</p>
+    <div class="btnrow"><span class="btn s">See full pricing</span></div>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">FAQ (homepage six)</div>
+    <p><b>Will callers know it's AI?</b> Your agent introduces itself honestly and sounds natural. Most callers just care that someone answered and helped. You choose the voice and how it identifies itself.</p>
+    <p><b>What if it can't answer something?</b> It transfers to you (or takes a message with a callback promise) — your choice, per situation. You'll hear the whole exchange in the transcript.</p>
+    <p><b>Do I need to change my phone number?</b> No. Forward your existing line, or get a new number from us. Both take minutes.</p>
+    <p><b>How long does setup really take?</b> Under five minutes with a website. About ten if you type your details by hand. You can test before anyone else ever hears it.</p>
+    <p><b>What happens if I go over my minutes?</b> Calls keep getting answered at $0.35/minute — we never send your callers to voicemail because of a plan limit. You'll get a heads-up at 80%.</p>
+    <p><b>Can I cancel?</b> Two clicks, from your dashboard, any time. First 14 days: full refund, no questions.</p>
+  </div>
+  <div class="copyblock">
+    <div class="lbl">Final CTA band</div>
+    <h5>Hear it answer. Then make it yours.</h5>
+    <p>The demo takes 45 seconds and costs nothing — Bamboo calls you.</p>
+    <div class="btnrow"><span class="btn p">Call me now</span><span class="btn s">Build your agent free</span></div>
+  </div>
+
+  <h3>6.2 Industry page copy — headline matrix</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Vertical</th><th>Agent</th><th>H1</th><th>Sub-hook</th></tr>
+    <tr><td>Dental</td><td>Mia</td><td>The front desk that never puts a patient on hold.</td><td>Booking, recalls, insurance questions — answered on the first ring, even at lunch.</td></tr>
+    <tr><td>Restaurants</td><td>Luca</td><td>Every table booked. Even during the dinner rush.</td><td>Reservations, waitlists, and "are you open?" — handled while your staff plates food.</td></tr>
+    <tr><td>Real estate</td><td>Anne</td><td>Answer every buyer in 8 seconds, or your competitor will.</td><td>Qualifies leads, books viewings, follows up — nights and weekends included.</td></tr>
+    <tr><td>Law</td><td>Victor</td><td>Every potential client greeted like a partner answered.</td><td>Intake, conflict screening, consult booking — confidential and word-perfect.</td></tr>
+    <tr><td>Healthcare</td><td>Clara</td><td>Patients reach a calm voice. Your staff reaches Friday.</td><td>Scheduling, triage routing, refill requests — with a compliance-first design.</td></tr>
+    <tr><td>Fitness</td><td>Jake</td><td>Turn "do you have day passes?" into members.</td><td>Tours booked, memberships explained, no-shows chased.</td></tr>
+    <tr><td>Hospitality</td><td>Sofia</td><td>The concierge who never sleeps.</td><td>Reservations, upsells, and late-arrival calls at 1 a.m. — handled.</td></tr>
+    <tr><td>E-commerce</td><td>Max</td><td>"Where's my order?" — answered before they ask for a refund.</td><td>Order status, returns, and saves, around the clock.</td></tr>
+  </table></div>
+
+  <h3>6.3 Builder microcopy (all 8 steps)</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Step</th><th>Heading</th><th>Support line</th><th>Button</th></tr>
+    <tr><td>1 Industry</td><td>What kind of business is this for?</td><td>We'll tune everything — voice, vocabulary, priorities — to how your industry actually talks.</td><td>Continue</td></tr>
+    <tr><td>2 Goal</td><td>What should your agent nail first?</td><td>Pick one to start. You can add more jobs later.</td><td>Continue</td></tr>
+    <tr><td>3 Voice</td><td>Pick a voice.</td><td>Tap to hear each one say your greeting.</td><td>Sounds right</td></tr>
+    <tr><td>4 Personality</td><td>How should it carry itself?</td><td>Warm, efficient, or formal — this sets word choice and pace, not just tone.</td><td>Continue</td></tr>
+    <tr><td>5 Knowledge</td><td>Teach it your business in one paste.</td><td>Drop your website URL. We'll pull hours, services, and FAQs. You approve everything.</td><td>Learn my business</td></tr>
+    <tr><td>6 Save (email)</td><td>Riley is ready to remember you.</td><td>Enter your email and we'll save your agent — no password, we'll send a magic link.</td><td>Save my agent</td></tr>
+    <tr><td>7 Test call</td><td>Grill it.</td><td>We'll call you. Ask the hard questions — hours, prices, "can I speak to a human?"</td><td>Call me for the test</td></tr>
+    <tr><td>8 Publish</td><td>Give Riley a phone line.</td><td>Connect your number or get a new one. This is the only part that costs money.</td><td>Go live — from $119/mo</td></tr>
+  </table></div>
+  <p><span class="lead-in">Skip affordances:</span> Step 5 offers "I don't have a website — I'll type the basics" (3-field form). Step 6 offers "Keep building without saving." Step 7 offers "Test in browser instead."</p>
+
+  <h3>6.4 Email sequences</h3>
+  <h4>Sequence A — saved but not activated (no test call). 3 emails.</h4>
+  <ul>
+    <li><b>D0, +1h.</b> Subject: <em>Riley is standing by</em> — "Your agent is built and waiting for its first call. Grilling it takes 60 seconds." CTA: Call my agent.</li>
+    <li><b>D1.</b> Subject: <em>Ask Riley something hard</em> — three suggested stress-test questions for their industry. CTA: same.</li>
+    <li><b>D3.</b> Subject: <em>Should we let Riley go?</em> — playful, honest: "Agents that never take a call get lonely. One click keeps it." CTA + quiet unsubscribe-from-this-thread.</li>
+  </ul>
+  <h4>Sequence B — activated but not published. 5 emails over 7 days.</h4>
+  <ul>
+    <li><b>D0.</b> <em>You heard it. Here's what going live looks like.</em> Recording of their test call attached; the publish steps in three lines.</li>
+    <li><b>D1.</b> <em>What Riley would have handled yesterday</em> — industry-typical after-hours call examples. Loss framing, gently.</li>
+    <li><b>D3.</b> <em>The math on your first month</em> — mini ROI: plan cost vs. one recovered booking/customer at their industry's average ticket.</li>
+    <li><b>D5.</b> <em>"What if it messes up?"</em> — the guarantee email. Handoff behavior, transcripts, 14-day refund, cancel-in-two-clicks. Straight answers.</li>
+    <li><b>D7.</b> <em>Riley's line expires Friday</em> — TRUE scarcity only: reserved test number recycles. "Publishing keeps everything; waiting just means setting up again later."</li>
+  </ul>
+  <h4>Sequence C — post-purchase (activation to habit). 4 emails.</h4>
+  <ul>
+    <li><b>D0.</b> <em>You're live. Here's your first-week checklist.</em> Forwarding confirmed, business hours check, handoff number set.</li>
+    <li><b>D2.</b> <em>Riley's first calls</em> — link to transcripts view. "Read two. Adjust one thing."</li>
+    <li><b>D7.</b> <em>Your week, answered</em> — first weekly digest: calls, bookings, after-hours saves. (This email is the retention engine; it ships weekly forever.)</li>
+    <li><b>D14.</b> <em>Know someone drowning in calls?</em> — referral: give a month, get a month.</li>
+  </ul>
+  <h4>SMS (used sparingly, only after phone-based demo consent)</h4>
+  <ul>
+    <li>Post-demo, +2m: "That was Bamboo 🌱 Build your own in ~5 min: mybamboo.ai/build — or save this number and call the demo again anytime."</li>
+    <li>Exit-intent capture: "Here's the Bamboo demo line: (xxx) xxx-xxxx. Call it whenever. Build yours: mybamboo.ai/build"</li>
+  </ul>
+
+  <h3>6.5 System states</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Moment</th><th>Copy</th></tr>
+    <tr><td>Dashboard empty (no calls yet)</td><td><b>The quiet before the calls.</b> Riley is live on (509) 555-0182. Call it yourself — the first transcript should be yours.</td></tr>
+    <tr><td>Builder saving</td><td>Saved — Riley remembers everything.</td></tr>
+    <tr><td>Scrape in progress</td><td>Reading ridgelinedental.com… found your hours, 14 services, and your insurance page. Give me one more second.</td></tr>
+    <tr><td>Test call success</td><td><b>That was your agent.</b> Everything it said came from what you taught it. Adjust anything below, or take it live.</td></tr>
+    <tr><td>Payment success</td><td><b>Riley is on the line.</b> Your number is live. Forward your business line whenever you're ready — here's how (30 seconds).</td></tr>
+    <tr><td>Over-minutes warning (in-app + email)</td><td>Heads up: 80% of minutes used, 9 days left in the cycle. Calls keep getting answered no matter what — overage is $0.35/min, or upgrading to Growth saves you money at this volume.</td></tr>
+    <tr><td>Cancel flow</td><td>No hard feelings. Two things before you go: your transcripts export here, and if something broke, tell us — a human reads every one of these.</td></tr>
+    <tr><td>404</td><td>This page didn't answer. Unlike your phone, if you use Bamboo. → Home / Build an agent</td></tr>
+  </table></div>
+</section>
+
+<!-- ============================================= 07 -->
+<section id="s7">
+  <div class="eyebrow">Part 07</div>
+  <h2>UI Components</h2>
+  <p class="dek">The reusable kit. Every component lists its job, states, and where it appears. Build these once; assemble every page from them.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Component</th><th>Job</th><th>Key states / notes</th></tr>
+    <tr><td>PhoneCTA</td><td>The hero unit: phone input + "Call me now"</td><td>idle / validating / calling (ring animation) / in-call (live timer) / done ("How'd Riley do?" + builder CTA) / error (retry + browser-demo fallback). THE most-engineered component on the site.</td></tr>
+    <tr><td>TranscriptPane</td><td>Animated call transcript; the visual signature of the brand</td><td>autoplay (typed lines, 400ms cadence) / live (mirrors actual demo call via websocket) / static (reduced-motion)</td></tr>
+    <tr><td>AgentCard</td><td>Identity chip: avatar ring, name, industry, voice</td><td>preview (builder right rail, updates per step) / grid (industry cards) / dashboard (live status dot + calls today)</td></tr>
+    <tr><td>ReadinessRing</td><td>Gamified % around the agent avatar</td><td>animates on step complete; 100% state triggers success moment. Doubles as progress bar in builder chrome.</td></tr>
+    <tr><td>AudioChip</td><td>12-second inline call sample ("Hear Mia handle a reschedule")</td><td>play/pause, waveform progress, only one plays at a time, transcript tooltip</td></tr>
+    <tr><td>PricingCard</td><td>Plan display</td><td>default / featured (Growth: lifted, filled button) / annual-toggled (price crossfade). Guarantee line lives OUTSIDE cards, once, centered.</td></tr>
+    <tr><td>ROISliders</td><td>3-input calculator</td><td>output uses count-up animation, tabular-nums; email-gate only on "send me the report," never on seeing the number</td></tr>
+    <tr><td>ComparisonTable</td><td>Bamboo vs. alternative</td><td>sticky first column on mobile; checks are text ("Yes, included") not bare icons</td></tr>
+    <tr><td>FAQAccordion</td><td>Objection handling</td><td>schema.org FAQPage markup for SEO; one open at a time; deep-linkable</td></tr>
+    <tr><td>TestimonialBand</td><td><span class="kbd">[REAL-CUSTOMER]</span> quotes</td><td>ships with `hidden` attribute; requires name, business, city, result metric to unhide</td></tr>
+    <tr><td>StickyMobileCTA</td><td>Bottom bar on mobile, appears after 60% scroll</td><td>"📞 Hear it live" — hides while PhoneCTA is in viewport; never covers form inputs</td></tr>
+    <tr><td>ExitIntentSheet</td><td>Desktop mouse-out / mobile back-intent</td><td>ONE offer: "Text yourself the demo line." One field. Shown once per 30 days (localStorage), never on pricing or checkout.</td></tr>
+    <tr><td>FloatingHelp</td><td>Quiet bottom-right "Questions? Talk or text a human"</td><td>collapsed dot → panel with call-me / SMS / calendar. Not a chatbot pretending to be a person.</td></tr>
+    <tr><td>ProgressChrome</td><td>Builder top bar</td><td>logo · step dots · % · "saves automatically" whisper</td></tr>
+    <tr><td>EmptyState / SuccessState</td><td>Dashboard moments</td><td>always: what happened, why it's fine, the ONE next action</td></tr>
+    <tr><td>UpgradePanel</td><td>Contextual upsell</td><td>triggers on usage (80% minutes), feature-touch (CRM connect on Starter), never random modals</td></tr>
+    <tr><td>ReferralCard</td><td>Give a month / get a month</td><td>appears in dashboard after first weekly digest; shareable link + status of sent invites</td></tr>
+  </table></div>
+</section>
+
+<!-- ============================================= 08 -->
+<section id="s8">
+  <div class="eyebrow">Part 08</div>
+  <h2>Design System</h2>
+  <p class="dek">"Botanical precision" — the calm of a well-run front desk. Warm paper, deep bamboo green, ink. Monospace is reserved for what machines say: transcripts, numbers, phone digits.</p>
+
+  <h3>Color</h3>
+  <div class="swatches">
+    <div class="sw"><div class="chip" style="background:#FBFBF8;border-bottom:1px solid #E3E6E1"></div><div class="lab"><b>Paper #FBFBF8</b>page ground (light)</div></div>
+    <div class="sw"><div class="chip" style="background:#14181A"></div><div class="lab"><b>Ink #14181A</b>text · dark sections</div></div>
+    <div class="sw"><div class="chip" style="background:#1E7A4A"></div><div class="lab"><b>Bamboo #1E7A4A</b>primary actions · brand</div></div>
+    <div class="sw"><div class="chip" style="background:#2FA36B"></div><div class="lab"><b>Shoot #2FA36B</b>accent on ink grounds</div></div>
+    <div class="sw"><div class="chip" style="background:#E7F2EB"></div><div class="lab"><b>Mist #E7F2EB</b>tints · selected states</div></div>
+    <div class="sw"><div class="chip" style="background:#5A6360"></div><div class="lab"><b>Slate #5A6360</b>secondary text</div></div>
+  </div>
+  <ul>
+    <li>Semantic colors (success/warn/error) are separate from brand green — success moments use green + motion, never green alone.</li>
+    <li>Dark sections are ink-grounded (not pure black) with Shoot green; the marketing site alternates paper/ink sections for rhythm.</li>
+    <li>Contrast: all text ≥ 4.5:1; green-on-paper buttons use white text on #1E7A4A (7.2:1).</li>
+  </ul>
+
+  <h3>Typography</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Role</th><th>Face</th><th>Spec</th></tr>
+    <tr><td>Display</td><td>System sans (SF/Segoe/Inter-class), weight 800</td><td>clamp(34→64px), letter-spacing −0.035em, line-height 1.03, text-wrap balance</td></tr>
+    <tr><td>Body</td><td>Same family, 400/600</td><td>16–17px, line-height 1.6, measure ≤ 68ch</td></tr>
+    <tr><td>Machine voice</td><td>ui-monospace (SF Mono/Cascadia)</td><td>Transcripts, phone numbers, prices in tables, eyebrows, metrics. tabular-nums everywhere digits align.</td></tr>
+  </table></div>
+  <p>System stack is a deliberate choice: zero font latency on paid-traffic pages (LCP is a conversion feature), and the mono-for-machine convention gives the brand its signature without a webfont dependency. If a licensed face is adopted later, it swaps into the Display slot only.</p>
+
+  <h3>Space, radius, elevation</h3>
+  <ul>
+    <li>Spacing scale: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 / 128. Sections breathe at 96–128 desktop, 64 mobile.</li>
+    <li>Grid: 12-col, 1120px max content, 24px gutters.</li>
+    <li>Radius: inputs/buttons 10px, cards 14px, panes 20px. One family, no pill buttons except tags.</li>
+    <li>Shadow: two levels only — resting (0 1px 2px rgba(16,21,18,.06)) and lifted (0 12px 32px −12px rgba(16,21,18,.18)). Elevation means interactivity.</li>
+  </ul>
+
+  <h3>Motion</h3>
+  <ul>
+    <li>Signature moment: the <strong>ring pulse</strong> — concentric rings emanating from the PhoneCTA while your phone is being called. It's the brand animation; nothing else on the page moves while it runs.</li>
+    <li>Scroll reveals: opacity 0→1 + 12px rise, 450ms cubic-bezier(.2,.7,.3,1), stagger 60ms, once only.</li>
+    <li>Transcript typing: 24 chars/sec with 300ms breath between speakers — fast enough to feel live, slow enough to read.</li>
+    <li>Count-ups on ROI numbers: 900ms ease-out. Confetti: exactly once, at readiness 100%, 1.8s, then never again for that user.</li>
+    <li><span class="kbd">prefers-reduced-motion</span>: all of the above become static end-states. The site must fully work with zero animation.</li>
+  </ul>
+
+  <h3>Accessibility baseline</h3>
+  <ul>
+    <li>Every interactive element keyboard-reachable with a visible 2px Bamboo focus ring.</li>
+    <li>Audio components ship transcripts; the demo call has a text-chat equivalent ("Talk in browser" has a type-instead mode).</li>
+    <li>Form errors: text + icon + described-by, never color alone. Touch targets ≥ 44px.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 09 -->
+<section id="s9">
+  <div class="eyebrow">Part 09</div>
+  <h2>Conversion Strategy</h2>
+  <p class="dek">Testing program in priority order. One primary metric per test; no test ships without its events (Part 10) already firing.</p>
+
+  <h3>Instrument first, then test</h3>
+  <p>Weeks 1–2 are observation only: heatmaps + session recordings (PostHog, free tier) on homepage, one industry page, pricing, and the builder. We're looking for three things: where the PhoneCTA gets ignored, where builder steps stall, and what people do on pricing before leaving.</p>
+
+  <h3>Test queue (run in order; ~2 weeks or 300+ conversions per arm)</h3>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>Test</th><th>Arms</th><th>Metric</th><th>Hypothesis</th></tr>
+    <tr><td class="num">1</td><td>Hero action</td><td>"Call me now" (phone-out) vs. "Talk to it now" (browser mic)</td><td class="mono">demo_completed</td><td>Phone-out feels more magical; browser has less friction. Winner may differ by device.</td></tr>
+    <tr><td class="num">2</td><td>Headline frame</td><td>"Your phone, answered." (relief) vs. "Never miss another customer." (loss) vs. "Hire your best receptionist for $119/mo." (value)</td><td class="mono">demo_started</td><td>Relief wins on brand traffic; loss wins on cold social.</td></tr>
+    <tr><td class="num">3</td><td>Email gate position</td><td>After step 5 (save) vs. after test call (step 7)</td><td>activation × email capture (composite)</td><td>Later gate = more activation, fewer emails. Find the revenue-max point.</td></tr>
+    <tr><td class="num">4</td><td>Pricing anchor</td><td>3 cards vs. 4 cards (Sandbox shown) vs. 3 + "receptionist $3,200/mo" ghost column</td><td class="mono">checkout_started</td><td>The ghost column reframes $269 as cheap.</td></tr>
+    <tr><td class="num">5</td><td>Guarantee prominence</td><td>Line under cards vs. signed founder panel vs. badge at card button</td><td class="mono">checkout_completed</td><td>Proximity to the credit-card moment matters more than size.</td></tr>
+    <tr><td class="num">6</td><td>Industry page proof</td><td>AudioChip samples vs. animated transcript vs. both</td><td class="mono">demo_started</td><td>Hearing beats reading; both may be redundant.</td></tr>
+    <tr><td class="num">7</td><td>Sticky mobile CTA copy</td><td>"📞 Hear it live" vs. "Build free" vs. contextual (mirrors nearest section)</td><td>CTA CTR → demo_started</td><td>—</td></tr>
+    <tr><td class="num">8</td><td>Publish-gate framing</td><td>"Go live — $119/mo" vs. "Give Riley a phone line" (price on next screen)</td><td class="mono">checkout_completed</td><td>Naming the agent at the paywall leverages endowment.</td></tr>
+  </table></div>
+
+  <h3>Standing rules</h3>
+  <ul>
+    <li>Never test two things in the same pathway simultaneously.</li>
+    <li>Losers get archived with their data in a decisions log (same discipline as the SKU dashboard's Section 13).</li>
+    <li>Heatmap review is a standing weekly 30 minutes; recordings of every rage-click on PhoneCTA get watched, full stop.</li>
+    <li>Chat placement: FloatingHelp stays bottom-right, collapsed by default; we do NOT add a proactive chat popup — it competes with the demo call, which is strictly better.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 10 -->
+<section id="s10">
+  <div class="eyebrow">Part 10</div>
+  <h2>Analytics</h2>
+  <p class="dek">From zero to a full measurement stack. One canonical event schema, mirrored to every destination through a single dispatch layer.</p>
+
+  <h3>Stack</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Tool</th><th>Role</th><th>Notes</th></tr>
+    <tr><td>GA4</td><td>Traffic + ads ecosystem</td><td>Linked to Google Ads; conversions imported from GA4 events</td></tr>
+    <tr><td>PostHog</td><td>Product analytics, funnels, heatmaps, session replay, feature flags (A/B)</td><td>One tool instead of Mixpanel+Hotjar+Optimizely; generous free tier fits current stage</td></tr>
+    <tr><td>Meta Pixel + CAPI</td><td>Paid social optimization</td><td>Server-side CAPI for demo/checkout events — iOS signal loss makes browser-only pixels useless</td></tr>
+    <tr><td>Google Ads tag</td><td>Search conversion</td><td>Primary conversion: demo_call_completed (volume) + checkout_completed (value, with revenue)</td></tr>
+    <tr><td>Email platform (Loops/Customer.io class)</td><td>Sequences A/B/C + digest</td><td>Triggered off the same event stream via webhook</td></tr>
+  </table></div>
+  <p>HubSpot, LinkedIn, and TikTok pixels: deferred until those channels/sales motions exist. Don't collect what nothing consumes.</p>
+
+  <h3>Canonical event schema</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Event</th><th>Fires when</th><th>Key properties</th></tr>
+    <tr><td class="mono">page_viewed</td><td>Route change</td><td>page_type, industry, utm_*</td></tr>
+    <tr><td class="mono">demo_call_requested</td><td>Phone submitted in PhoneCTA</td><td>source_page, industry</td></tr>
+    <tr><td class="mono">demo_call_completed</td><td>Call ≥ 20s</td><td>duration, industry, answered_by (phone|browser)</td></tr>
+    <tr><td class="mono">builder_started</td><td>Step 1 rendered</td><td>entry (hero|post_demo|template|resume), template_id?</td></tr>
+    <tr><td class="mono">builder_step_completed</td><td>Each step</td><td>step (1–8), selections, ms_on_step</td></tr>
+    <tr><td class="mono">agent_saved</td><td>Email captured</td><td>agent_name, industry, voice</td></tr>
+    <tr><td class="mono">agent_activated</td><td>Own-number test call ≥ 20s</td><td>minutes_to_activate (from builder_started)</td></tr>
+    <tr><td class="mono">checkout_started / checkout_completed</td><td>Publish gate</td><td>plan, billing_period, value (→ Ads/CAPI with revenue)</td></tr>
+    <tr><td class="mono">calculator_used / calculator_email_submitted</td><td>ROI tool</td><td>computed_loss, inputs</td></tr>
+    <tr><td class="mono">exit_offer_shown / exit_offer_converted</td><td>ExitIntentSheet</td><td>page, variant</td></tr>
+    <tr><td class="mono">upgrade_viewed / upgraded</td><td>UpgradePanel</td><td>trigger (minutes|feature|digest), from_plan, to_plan</td></tr>
+    <tr><td class="mono">referral_sent / referral_converted</td><td>ReferralCard</td><td>—</td></tr>
+  </table></div>
+
+  <h3>Retargeting audiences (built from these events)</h3>
+  <ul>
+    <li><span class="kbd">demo_no_build</span> — completed a call, never started builder → ads: "You met Riley. Build yours."</li>
+    <li><span class="kbd">builder_abandoned</span> — started, no save → ads show their industry's agent.</li>
+    <li><span class="kbd">activated_not_paid</span> — the money audience; highest bid, guarantee-led creative.</li>
+    <li><span class="kbd">customers</span> — excluded from acquisition; targeted only for referral creative.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 11 -->
+<section id="s11">
+  <div class="eyebrow">Part 11</div>
+  <h2>Developer Notes</h2>
+  <p class="dek">How to build this so it's fast, testable, and doesn't rot.</p>
+  <ul>
+    <li><strong>Framework:</strong> Next.js (or Astro) with static generation for all marketing pages; industry pages are one template + a content collection (JSON per vertical: agent name, H1, pains, integrations, FAQ). Adding vertical #9 is a content PR, not a build.</li>
+    <li><strong>Performance budget (paid pages):</strong> LCP &lt; 1.8s on 4G, CLS &lt; 0.05, JS &lt; 120KB gzipped before the PhoneCTA hydrates. Transcript animation is CSS + a 3KB script, not a motion library. No third-party tag managers on landing pages — analytics loads after first interaction or 3s idle.</li>
+    <li><strong>PhoneCTA backend:</strong> rate-limit by IP + number hash (3 calls/number/day), country allowlist, verify via the call itself (answering = verification). Store consent timestamp for the post-demo SMS. Fallback chain: phone-out fails → offer browser call → offer callable demo line.</li>
+    <li><strong>Builder state:</strong> localStorage until email; server-side after. Resume link in save email deep-links to exact step. All copy strings in one file — copy tests without deploys (PostHog feature flags hold variants).</li>
+    <li><strong>Website scrape (step 5):</strong> timeout at 12s with graceful partial results ("Got your hours and services — add prices manually?"). Never block the flow on the crawler.</li>
+    <li><strong>Checkout:</strong> Stripe Checkout (hosted) at launch — it's the trust-maximal, PCI-free path. Inline Elements later if data justifies.</li>
+    <li><strong>Event dispatch:</strong> one <span class="kbd">track(event, props)</span> util fanning out to GA4/PostHog/CAPI. Nobody calls a vendor SDK directly. Server-side events (call completed, payment) go straight from backend to CAPI/GA4 Measurement Protocol — the browser is not the source of truth for money events.</li>
+    <li><strong>Testimonial discipline in code:</strong> TestimonialBand takes a required <span class="kbd">verified: true</span> prop sourced from a content file with name/business/date; renders nothing otherwise. Make fake proof structurally hard.</li>
+    <li><strong>SEO plumbing:</strong> FAQPage + Product schema, per-industry title/meta from the content collection, comparisons and /learn statically rendered, sitemap auto-generated.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 12 -->
+<section id="s12">
+  <div class="eyebrow">Part 12</div>
+  <h2>Mobile Experience</h2>
+  <p class="dek">70%+ of paid-social traffic is a phone held in one hand — and the product is literally about phones. Mobile is the primary design target, not the adaptation.</p>
+  <ul>
+    <li><strong>The demo is one thumb-tap better on mobile:</strong> the PhoneCTA becomes "📞 Call me" with the number field using <span class="kbd">type="tel"</span> + autofill; on iOS/Android we also offer "Call the demo line" (tap-to-dial a real number) — zero typing, the single lowest-friction demo on the site.</li>
+    <li>Hero stacks: headline → phone input → transcript pane (auto-playing, 60% viewport height max). Proof strip becomes a 2×2 grid.</li>
+    <li>StickyMobileCTA after 60% scroll; disappears when any input is focused (keyboard collision) and on pricing/checkout.</li>
+    <li>Builder: one question per screen already — on mobile each option is a full-width 56px row; voice previews auto-stop on scroll; progress is a thin top bar + % only.</li>
+    <li>Tables (pricing matrix, comparisons) collapse to stacked cards with a "compare" toggle that scrolls horizontally in its own container.</li>
+    <li>Tap targets 44px minimum; the FAQ accordion rows are 56px. No hover-dependent information anywhere.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 13 -->
+<section id="s13">
+  <div class="eyebrow">Part 13</div>
+  <h2>Desktop Experience</h2>
+  <p class="dek">Search and evaluation traffic skews desktop — the comparison shopper, the office manager with two tabs of competitors open. Desktop's job is confidence at a glance.</p>
+  <ul>
+    <li><strong>Hero split:</strong> left column = words + PhoneCTA; right column = TranscriptPane playing continuously. The transcript is the "product screenshot" this product doesn't otherwise have.</li>
+    <li>Persistent quiet nav CTA ("Try it free") that swaps to "Resume building — Riley is 60% ready" for returning builder-abandoners (localStorage).</li>
+    <li>Pricing page: 4 cards in one row, Growth elevated 8px with the lifted shadow; feature matrix below with a sticky header row.</li>
+    <li>Industry pages: two-column "What Mia handles" checklist next to the mini-ROI sliders — evaluation content side-by-side instead of stacked.</li>
+    <li>Subtle mouse-parallax (≤6px translate) on the hero transcript pane only. Nothing else follows the cursor.</li>
+    <li>Keyboard path: tab order lands on the phone input first; <span class="kbd">Enter</span> starts the call. The whole funnel is completable without a mouse.</li>
+  </ul>
+</section>
+
+<!-- ============================================= 14 -->
+<section id="s14">
+  <div class="eyebrow">Part 14</div>
+  <h2>Future Optimization Roadmap</h2>
+  <p class="dek">What we deliberately didn't build yet, and the trigger that unlocks each.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Phase</th><th>Unlock trigger</th><th>Ship</th></tr>
+    <tr><td>Now → 90d</td><td>—</td><td>Launch set (11 pages), builder, sequences A–C, analytics stack, test queue #1–4</td></tr>
+    <tr><td>90–180d</td><td>10+ consented customer results</td><td>Case studies + TestimonialBand unhidden; industry proof stats replace placeholders; comparison pages vs. named competitors</td></tr>
+    <tr><td>90–180d</td><td>500+ builder sessions of data</td><td>Template gallery ranked by real completion rates; "popular in your industry" recommendations in step 2</td></tr>
+    <tr><td>180d+</td><td>Organic ≥ 20% of traffic</td><td>Knowledge center expansion, programmatic "AI receptionist for [city] [vertical]" pages, quiz as a content asset</td></tr>
+    <tr><td>180d+</td><td>Agency signups ≥ 10%</td><td>Dedicated /agencies white-label funnel with its own pricing view and partner portal</td></tr>
+    <tr><td>180d+</td><td>Support volume justifies it</td><td>Bamboo answering Bamboo's own site calls as the public demo — the ultimate dogfood proof, marketed as such</td></tr>
+    <tr><td>When true</td><td>SOC 2 / HIPAA milestones</td><td>Compliance badges on /security and dental/medical pages; unlocks the medical mid-market</td></tr>
+  </table></div>
+
+  <footer class="doc">
+    Bamboo AI funnel blueprint · prepared 2026-07-09 · Companion prototypes: homepage + free agent builder (separate artifacts). All testimonial slots ship hidden until verified real. No fabricated proof, ever.
+  </footer>
+</section>
+</main>
+</div>
+
+</body>
+</html>

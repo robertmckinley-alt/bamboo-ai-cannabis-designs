@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bamboo AI — Homepage Prototype</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%8B%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<style>
+  /* Committed brand world: paper / ink / bamboo. Single-theme by design. */
+  :root{
+    --paper:#FBFBF8; --ink:#14181A; --ink2:#3A423E; --muted:#5A6360; --soft:#8A938E;
+    --bam:#1E7A4A; --bam-deep:#0F5C36; --shoot:#2FA36B; --mist:#E7F2EB;
+    --line:#E4E7E2; --card:#FFFFFF; --dark:#12171A; --dark2:#182023; --darkline:#26312C;
+    --r-s:10px; --r-m:14px; --r-l:20px;
+    --sh1:0 1px 2px rgba(16,21,18,.06); --sh2:0 12px 32px -12px rgba(16,21,18,.18);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  button{font:inherit;cursor:pointer}
+
+  .proto-note{background:var(--ink);color:#B9C4BD;font-size:11.5px;text-align:center;padding:7px 12px}
+  .proto-note b{color:#fff}
+
+  /* NAV */
+  nav.top{position:sticky;top:0;z-index:40;background:rgba(251,251,248,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:26px;height:62px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16.5px;letter-spacing:-.02em}
+  .logo .leaf{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--bam),var(--bam-deep));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+  nav.top .links{display:flex;gap:20px;font-size:13.5px;color:var(--muted);font-weight:600}
+  nav.top .links a:hover{color:var(--ink)}
+  nav.top .cta{margin-left:auto;display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;border-radius:var(--r-s);border:1.5px solid transparent;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-p{background:var(--bam);color:#fff;padding:9px 18px;font-size:13.5px;box-shadow:var(--sh1)}
+  .btn-p:hover{background:var(--bam-deep);box-shadow:var(--sh2)}
+  .btn-g{border-color:var(--line);color:var(--ink);padding:9px 18px;font-size:13.5px;background:transparent}
+  .btn-g:hover{border-color:var(--soft)}
+  .navlogin{font-size:13.5px;color:var(--muted);font-weight:600}
+  .btn:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--bam);outline-offset:2px}
+
+  /* HERO */
+  .hero{padding:76px 0 68px}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--bam-deep);font-weight:600}
+  h1{font-size:clamp(38px,5.2vw,60px);line-height:1.03;letter-spacing:-.035em;font-weight:800;margin:14px 0 16px;text-wrap:balance}
+  h1 .dim{color:var(--soft)}
+  .sub{font-size:17.5px;color:var(--muted);max-width:46ch;margin:0 0 26px}
+
+  /* PhoneCTA */
+  .phonecta{max-width:460px}
+  .pc-row{display:flex;gap:10px}
+  .pc-input{flex:1;display:flex;align-items:center;gap:9px;background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-s);padding:0 14px;box-shadow:var(--sh1)}
+  .pc-input:focus-within{border-color:var(--bam)}
+  .pc-input span{color:var(--soft)}
+  .pc-input input{border:none;outline:none;background:transparent;font-family:ui-monospace,Consolas,monospace;font-size:15.5px;padding:13px 0;width:100%;color:var(--ink);letter-spacing:.03em}
+  .pc-btn{position:relative;background:var(--bam);color:#fff;border:none;border-radius:var(--r-s);padding:0 22px;font-size:14.5px;font-weight:750;white-space:nowrap}
+  .pc-btn:hover{background:var(--bam-deep)}
+  .pc-micro{font-size:12.5px;color:var(--soft);margin-top:9px}
+  .pc-alt{font-size:12.5px;margin-top:7px}
+  .pc-alt a{color:var(--bam-deep);font-weight:650;border-bottom:1px dotted var(--bam)}
+  .pc-state{display:none;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--mist);border-radius:var(--r-m);padding:16px 18px;box-shadow:var(--sh2)}
+  .ringer{position:relative;width:44px;height:44px;flex-shrink:0}
+  .ringer .core{position:absolute;inset:8px;border-radius:50%;background:var(--bam);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+  .ringer .pulse{position:absolute;inset:0;border-radius:50%;border:2px solid var(--shoot);animation:pulse 1.6s ease-out infinite}
+  .ringer .pulse.p2{animation-delay:.8s}
+  @keyframes pulse{0%{transform:scale(.55);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+  .pc-state b{font-size:14.5px;display:block}
+  .pc-state small{color:var(--muted);font-size:12.5px}
+  .pc-state .timer{margin-left:auto;font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:15px;color:var(--bam-deep);font-weight:700}
+  .pc-done{display:none;background:var(--mist);border:1.5px solid var(--bam);border-radius:var(--r-m);padding:16px 18px}
+  .pc-done b{font-size:15px}
+  .pc-done p{font-size:13px;color:var(--ink2);margin:5px 0 12px}
+
+  /* Transcript pane */
+  .pane{background:var(--dark);border-radius:var(--r-l);padding:22px 22px 18px;box-shadow:var(--sh2);border:1px solid var(--darkline)}
+  .pane .bar{display:flex;align-items:center;gap:9px;margin-bottom:16px}
+  .pane .bar .dotlive{width:8px;height:8px;border-radius:50%;background:var(--shoot);box-shadow:0 0 0 3px rgba(47,163,107,.22);animation:blink 2s infinite}
+  @keyframes blink{50%{opacity:.45}}
+  .pane .bar span{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#7E8B84}
+  .pane .bar .len{margin-left:auto;color:#5C6963;font-variant-numeric:tabular-nums}
+  .tline{display:flex;gap:11px;margin-bottom:13px;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+  .tline.on{opacity:1;transform:none}
+  .tava{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;margin-top:2px}
+  .tava.caller{background:#26312C;color:#9FB0A7}
+  .tava.agent{background:var(--bam);color:#fff}
+  .tline .who{font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#67746D;display:block;margin-bottom:2px}
+  .tline p{margin:0;font-size:14px;line-height:1.5;color:#DCE4DE;max-width:44ch}
+  .tline.agent p{color:#EAF4EC}
+  .pane .foot{border-top:1px solid var(--darkline);margin-top:6px;padding-top:12px;font-size:11.5px;color:#67746D;display:flex;gap:8px;align-items:center}
+  .pane .foot .chip{font-family:ui-monospace,Consolas,monospace;background:#1C2621;border:1px solid var(--darkline);border-radius:99px;padding:2px 9px;font-size:10px;color:#8FA096}
+
+  /* Proof strip */
+  .proof{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card)}
+  .proof .wrap{display:grid;grid-template-columns:repeat(4,1fr);padding:22px 24px;gap:16px}
+  .proof .m{text-align:center}
+  .proof .m b{font-family:ui-monospace,Consolas,monospace;font-size:21px;letter-spacing:-.02em;display:block;color:var(--ink);font-variant-numeric:tabular-nums}
+  .proof .m span{font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+
+  /* Sections */
+  section{padding:88px 0}
+  .sec-head{max-width:640px;margin-bottom:44px}
+  .sec-head h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;font-weight:800;line-height:1.1;margin:10px 0 10px;text-wrap:balance}
+  .sec-head p{color:var(--muted);font-size:16px;margin:0}
+
+  /* How it works */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);padding:24px;box-shadow:var(--sh1)}
+  .step .n{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--bam-deep);letter-spacing:.14em}
+  .step h3{font-size:18px;letter-spacing:-.015em;margin:8px 0 7px;font-weight:750}
+  .step p{font-size:13.5px;color:var(--muted);margin:0}
+
+  /* Before / After */
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .ba .col{border-radius:var(--r-m);padding:26px;border:1px solid var(--line)}
+  .ba .before{background:var(--card)}
+  .ba .after{background:var(--dark);border-color:var(--darkline);color:#EAF4EC}
+  .ba .lbl{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+  .ba .before .lbl{color:#A9553B}
+  .ba .after .lbl{color:var(--shoot)}
+  .ba h3{font-size:17px;margin:9px 0 8px;font-weight:750;letter-spacing:-.01em}
+  .ba p{font-size:14px;margin:0}
+  .ba .before p{color:var(--muted)}
+  .ba .after p{color:#C4D2C9}
+
+  /* Industry grid */
+  .ind{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .icard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);padding:18px;transition:box-shadow .15s,transform .15s,border-color .15s;box-shadow:var(--sh1)}
+  .icard:hover{box-shadow:var(--sh2);transform:translateY(-2px);border-color:#CBD6CE}
+  .icard .who{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .icard .av{width:34px;height:34px;border-radius:50%;background:var(--mist);color:var(--bam-deep);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bam)}
+  .icard .who b{font-size:14.5px;display:block;line-height:1.2}
+  .icard .who span{font-size:11px;color:var(--soft)}
+  .icard p{font-size:12.5px;color:var(--muted);margin:0 0 12px;min-height:38px}
+  .listen{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--bam-deep);background:none;border:none;padding:0}
+  .listen .pl{width:22px;height:22px;border-radius:50%;background:var(--bam);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px}
+  .listen.playing .pl{background:var(--ink)}
+  .icard .snippet{display:none;font-size:12px;color:var(--ink2);background:var(--mist);border-radius:8px;padding:9px 11px;margin-top:10px;line-height:1.5}
+  .icard .snippet .mono{font-size:10px;color:var(--bam-deep)}
+  .wavebar{display:none;height:16px;margin-top:10px;align-items:flex-end;gap:2px}
+  .wavebar i{width:3px;background:var(--bam);border-radius:2px;animation:wv 1s ease-in-out infinite}
+  @keyframes wv{0%,100%{height:4px}50%{height:14px}}
+
+  /* Features */
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);padding:24px}
+  .fcard .fi{width:34px;height:34px;border-radius:9px;background:var(--mist);display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:12px}
+  .fcard h3{font-size:16.5px;margin:0 0 6px;font-weight:750;letter-spacing:-.01em}
+  .fcard p{font-size:13.5px;color:var(--muted);margin:0}
+
+  /* Pricing teaser */
+  .dark-sec{background:var(--dark);color:#EAF4EC}
+  .dark-sec .sec-head p{color:#9FB0A7}
+  .dark-sec .eyebrow{color:var(--shoot)}
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+  .plan{background:var(--dark2);border:1px solid var(--darkline);border-radius:var(--r-m);padding:24px;display:flex;flex-direction:column}
+  .plan.hot{border-color:var(--shoot);box-shadow:0 16px 44px -16px rgba(47,163,107,.35);position:relative}
+  .plan .tag{position:absolute;top:-11px;left:22px;background:var(--shoot);color:#0B1510;font-size:10.5px;font-weight:800;letter-spacing:.08em;border-radius:99px;padding:3px 11px;text-transform:uppercase}
+  .plan h3{font-size:15px;margin:0 0 3px;font-weight:750}
+  .plan .pr{font-family:ui-monospace,Consolas,monospace;font-size:30px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .plan .pr small{font-size:12.5px;color:#7E8B84;font-weight:400}
+  .plan ul{list-style:none;padding:0;margin:14px 0 20px;font-size:13px;color:#C4D2C9}
+  .plan li{padding:4px 0 4px 20px;position:relative}
+  .plan li::before{content:"✓";position:absolute;left:0;color:var(--shoot);font-weight:700}
+  .plan .btn{margin-top:auto;justify-content:center;padding:11px;font-size:13.5px;border-radius:var(--r-s)}
+  .plan .btn.ghost{border:1.5px solid var(--darkline);color:#EAF4EC}
+  .plan .btn.ghost:hover{border-color:var(--shoot)}
+  .plan .btn.fill{background:var(--shoot);color:#0B1510}
+  .plan .btn.fill:hover{background:#3DBD7E}
+  .guarantee{margin-top:22px;text-align:center;font-size:13px;color:#9FB0A7}
+  .guarantee b{color:#EAF4EC}
+
+  /* FAQ */
+  .faq{max-width:720px}
+  .qa{border-bottom:1px solid var(--line)}
+  .qa button.q{width:100%;text-align:left;background:none;border:none;padding:18px 4px;font-size:15.5px;font-weight:700;color:var(--ink);display:flex;justify-content:space-between;gap:16px;align-items:center;min-height:56px}
+  .qa .plus{font-family:ui-monospace,Consolas,monospace;color:var(--bam);font-size:17px;transition:transform .2s}
+  .qa.open .plus{transform:rotate(45deg)}
+  .qa .a{max-height:0;overflow:hidden;transition:max-height .28s ease}
+  .qa .a p{font-size:14px;color:var(--muted);margin:0 0 18px;max-width:62ch}
+
+  /* Final CTA */
+  .final{background:var(--dark);border-radius:var(--r-l);padding:56px 48px;text-align:center;color:#EAF4EC}
+  .final h2{font-size:clamp(26px,3.6vw,40px);letter-spacing:-.03em;font-weight:800;margin:0 0 10px;text-wrap:balance}
+  .final p{color:#9FB0A7;margin:0 0 24px;font-size:15.5px}
+  .final .phonecta{margin:0 auto}
+  .final .pc-input{background:#0E1412;border-color:var(--darkline)}
+  .final .pc-input input{color:#EAF4EC}
+  .final .pc-micro{color:#7E8B84}
+
+  footer.site{border-top:1px solid var(--line);padding:44px 0 60px;margin-top:88px}
+  footer.site .wrap{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:28px;font-size:13px}
+  footer.site h4{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin:0 0 12px;font-weight:600}
+  footer.site a{display:block;color:var(--muted);padding:3px 0}
+  footer.site a:hover{color:var(--ink)}
+  footer.site .fine{grid-column:1/-1;border-top:1px solid var(--line);margin-top:24px;padding-top:16px;color:var(--soft);font-size:12px}
+
+  /* Sticky mobile CTA */
+  .sticky-cta{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:50;background:var(--bam);color:#fff;border-radius:12px;padding:14px;text-align:center;font-weight:800;font-size:15px;box-shadow:0 10px 30px rgba(15,92,54,.4)}
+
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity .45s cubic-bezier(.2,.7,.3,1),transform .45s cubic-bezier(.2,.7,.3,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .ringer .pulse,.pane .bar .dotlive,.wavebar i{animation:none}
+    .tline{opacity:1;transform:none}
+    html{scroll-behavior:auto}
+  }
+
+  @media (max-width:960px){
+    .hero .wrap{grid-template-columns:1fr;gap:34px}
+    .steps,.ind,.feat,.plans{grid-template-columns:1fr 1fr}
+    nav.top .links{display:none}
+  }
+  @media (max-width:620px){
+    .steps,.ind,.feat,.plans,.ba,.proof .wrap{grid-template-columns:1fr}
+    .proof .wrap{grid-template-columns:1fr 1fr}
+    section{padding:60px 0}
+    .hero{padding:44px 0}
+    .sticky-cta.show{display:block}
+    .final{padding:40px 22px}
+    footer.site .wrap{grid-template-columns:1fr 1fr}
+    .pc-row{flex-direction:column}
+    .pc-btn{padding:13px}
+  }
+</style>
+
+<div class="proto-note"><b>Prototype</b> — coded homepage per blueprint Parts 05–08. Demo call + audio samples are simulated; testimonial band intentionally absent until real customers exist.</div>
+
+<nav class="top"><div class="wrap">
+  <a class="logo" href="#"><span class="leaf">🎋</span>Bamboo <span style="color:var(--bam)">AI</span></a>
+  <div class="links"><a href="#how">Product</a><a href="#industries">Industries</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+  <div class="cta"><a class="navlogin" href="#">Log in</a><a class="btn btn-p" href="#top">Try it free</a></div>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div>
+    <div class="eyebrow">AI voice agents for small business</div>
+    <h1>Your phone, answered. <span class="dim">Every call, every hour.</span></h1>
+    <p class="sub">Bamboo builds you an AI voice agent that answers like your best employee — books appointments, answers questions, and hands real emergencies to a human. Set up in five minutes. From $119/month.</p>
+
+    <div class="phonecta" id="pc">
+      <div class="pc-row" id="pcIdle">
+        <label class="pc-input"><span>📞</span><input id="pcNum" type="tel" placeholder="(509) 555-0134" aria-label="Your phone number" maxlength="14"></label>
+        <button class="pc-btn" id="pcGo">Call me now</button>
+      </div>
+      <div class="pc-state" id="pcCalling">
+        <div class="ringer"><div class="pulse"></div><div class="pulse p2"></div><div class="core">📞</div></div>
+        <div><b>Calling you now…</b><small>Pick up — that's Riley on the line.</small></div>
+        <div class="timer" id="pcTimer">0:00</div>
+      </div>
+      <div class="pc-done" id="pcDone">
+        <b>That was Bamboo. 45 seconds, zero humans.</b>
+        <p>Now imagine it knowing <em>your</em> hours, <em>your</em> services, <em>your</em> prices. That part takes five minutes.</p>
+        <a class="btn btn-p" href="/build">Build your agent free →</a>
+      </div>
+      <div class="pc-micro" id="pcMicro">Bamboo calls you in ~10 seconds. Free. No signup. No sales call.</div>
+      <div class="pc-alt">Prefer not to share your number? <a href="#" onclick="return false">Talk to it in your browser</a> · <a href="/build">Build free instead</a></div>
+    </div>
+  </div>
+
+  <div class="pane" aria-label="Live demo call transcript">
+    <div class="bar"><span class="dotlive" aria-hidden="true"></span><span>Live demo call</span><span class="len mono" id="callLen">00:41</span></div>
+    <div id="tlines">
+      <div class="tline"><div class="tava caller">C</div><div><span class="who">Caller</span><p>Hi — do you have anything tonight around 7 for two?</p></div></div>
+      <div class="tline agent"><div class="tava agent">R</div><div><span class="who">Riley · Bamboo agent</span><p>We do! I've got 7:15 on the patio or 7:45 inside. Which sounds better?</p></div></div>
+      <div class="tline"><div class="tava caller">C</div><div><span class="who">Caller</span><p>Hmm, actually — can we make it 7:30, and it might be three people.</p></div></div>
+      <div class="tline agent"><div class="tava agent">R</div><div><span class="who">Riley · Bamboo agent</span><p>No problem. Table for three at 7:30 tonight. I'll text you a confirmation now — anything else I can help with?</p></div></div>
+    </div>
+    <div class="foot"><span class="chip">booked → calendar</span><span class="chip">sms confirmation sent</span><span class="chip">0 humans interrupted</span></div>
+  </div>
+</div></header>
+
+<div class="proof"><div class="wrap">
+  <div class="m"><b>~500ms</b><span>average response time</span></div>
+  <div class="m"><b>24/7/365</b><span>on the line</span></div>
+  <div class="m"><b>100%</b><span>of calls answered</span></div>
+  <div class="m"><b>4m 51s</b><span>average setup time</span></div>
+</div></div>
+
+<section id="how"><div class="wrap">
+  <div class="sec-head reveal"><div class="eyebrow">How it works</div><h2>Build it before lunch. Live before dinner.</h2><p>No code, no consultants, no six-week onboarding. Three steps, and the third one is optional until you're convinced.</p></div>
+  <div class="steps">
+    <div class="step reveal"><div class="n">STEP 1 — 5 MIN</div><h3>Build</h3><p>Answer four questions, paste your website. Your agent learns your hours, services, and prices on its own.</p></div>
+    <div class="step reveal"><div class="n">STEP 2 — FREE, UNLIMITED</div><h3>Test</h3><p>Call your agent and grill it. Change anything with a sentence: "Be warmer. Stop offering Tuesdays."</p></div>
+    <div class="step reveal"><div class="n">STEP 3 — WHEN YOU'RE READY</div><h3>Go live</h3><p>Connect a phone number — keep yours or get a new one. From that moment, no call goes unanswered.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="ba">
+    <div class="col before reveal">
+      <div class="lbl">Before Bamboo</div>
+      <h3>Ring… ring… voicemail.</h3>
+      <p>"Hi, you've reached—" <em>click.</em> That caller didn't leave a message. They called the next place on Google, and they booked there. You'll never know it happened.</p>
+    </div>
+    <div class="col after reveal">
+      <div class="lbl">After Bamboo</div>
+      <h3>Answered on the first ring.</h3>
+      <p>"Thanks for calling Ridgeline Dental — this is Mia. I can get you in Thursday at 2 or Friday at 10. Which works better for you?"</p>
+    </div>
+  </div>
+</div></section>
+
+<section id="industries"><div class="wrap">
+  <div class="sec-head reveal"><div class="eyebrow">Built for your industry</div><h2>Meet the agents. They already speak your language.</h2><p>Each one is pre-tuned to how your industry actually talks — the vocabulary, the priorities, the questions that come up forty times a day. Tap to hear a sample.</p></div>
+  <div class="ind" id="indGrid">
+    <div class="icard reveal"><div class="who"><div class="av">M</div><div><b>Mia</b><span>Dental</span></div></div><p>Booking, recalls, and insurance questions — answered while your front desk breathes.</p><button class="listen" data-snip="“We take Delta and MetLife — want me to check your plan while I book you?”">▶ Hear Mia handle a reschedule</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">L</div><div><b>Luca</b><span>Restaurants</span></div></div><p>Reservations, waitlists, and "are you open?" — handled during the dinner rush.</p><button class="listen" data-snip="“Party of six on a Friday — I can do 6:30 or 8:45. Should I hold the 8:45?”">▶ Hear Luca book a party of 6</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">A</div><div><b>Anne</b><span>Real estate</span></div></div><p>Qualifies buyers, books viewings, follows up — nights and weekends included.</p><button class="listen" data-snip="“Are you pre-approved, or would a lender intro help? Either way, Saturday's showing has two slots left.”">▶ Hear Anne qualify a buyer</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">V</div><div><b>Victor</b><span>Law firms</span></div></div><p>Intake, conflict screening, consult booking — confidential and word-perfect.</p><button class="listen" data-snip="“I'll take a few details confidentially, and Ms. Alvarez can call you back before 4 today.”">▶ Hear Victor run an intake</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">C</div><div><b>Clara</b><span>Healthcare</span></div></div><p>Scheduling, triage routing, refill requests — with a compliance-first design.</p><button class="listen" data-snip="“That sounds urgent — I'm connecting you to our on-call line right now. Please stay with me.”">▶ Hear Clara route an urgent call</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">J</div><div><b>Jake</b><span>Fitness</span></div></div><p>Tours booked, memberships explained, day-pass questions turned into members.</p><button class="listen" data-snip="“First visit's free — want me to book you a tour tonight at 6, right after work?”">▶ Hear Jake book a tour</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">S</div><div><b>Sofia</b><span>Hospitality</span></div></div><p>Reservations, upsells, and the 1 a.m. late-arrival call — handled gracefully.</p><button class="listen" data-snip="“Your room's held — and since you land late, should I have the kitchen keep a plate warm?”">▶ Hear Sofia save a late check-in</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+    <div class="icard reveal"><div class="who"><div class="av">X</div><div><b>Max</b><span>E-commerce</span></div></div><p>"Where's my order?" answered before it becomes "I want a refund."</p><button class="listen" data-snip="“It's out for delivery — arriving by 6 tonight. Want tracking texted to this number?”">▶ Hear Max rescue an order call</button><div class="wavebar" aria-hidden="true"><i></i><i style="animation-delay:.1s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.05s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.25s"></i><i style="animation-delay:.12s"></i></div><div class="snippet"></div></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="sec-head reveal"><div class="eyebrow">Why owners trust it</div><h2>Built for the calls that scare you.</h2><p>Anyone can demo a happy path. These are the four fears that keep owners on voicemail — and how Bamboo handles each one.</p></div>
+  <div class="feat">
+    <div class="fcard reveal"><div class="fi">🤝</div><h3>Hands off gracefully</h3><p>Anything your agent shouldn't handle — a furious customer, a real emergency — it transfers to a human instantly, with a summary, so nobody repeats themselves.</p></div>
+    <div class="fcard reveal"><div class="fi">🔀</div><h3>Handles interruptions like a person</h3><p>Callers change their minds mid-sentence. Your agent keeps up, because real conversations aren't scripts.</p></div>
+    <div class="fcard reveal"><div class="fi">🔌</div><h3>Plugs into what you already use</h3><p>Calendars, CRMs, booking systems. Appointments land where they've always landed — without you touching anything.</p></div>
+    <div class="fcard reveal"><div class="fi">📄</div><h3>Every call, on paper</h3><p>Full transcripts and recordings. Read what happened over coffee instead of wondering what you missed.</p></div>
+  </div>
+</div></section>
+
+<section class="dark-sec" id="pricing"><div class="wrap">
+  <div class="sec-head reveal"><div class="eyebrow">Pricing</div><h2>Cheaper than one missed customer a week.</h2><p>Free to build and test. Pay only to go live. No contracts, cancel in two clicks.</p></div>
+  <div class="plans">
+    <div class="plan reveal"><h3>Sandbox</h3><div class="pr">$0<small> forever</small></div>
+      <ul><li>Build unlimited agents</li><li>Talk to them in your browser</li><li>15 min/mo of test calls to your phone</li></ul>
+      <a class="btn ghost" href="#" onclick="return false">Start building</a></div>
+    <div class="plan hot reveal"><div class="tag">Most popular</div><h3>Growth</h3><div class="pr">$269<small>/mo</small></div>
+      <ul><li>3 phone numbers · 1,000 minutes</li><li>CRM integrations &amp; custom workflows</li><li>White-label · priority support</li><li>Overage $0.35/min — stated, not sprung</li></ul>
+      <a class="btn fill" href="#" onclick="return false">Go live with Growth</a></div>
+    <div class="plan reveal"><h3>Starter</h3><div class="pr">$119<small>/mo</small></div>
+      <ul><li>1 phone number · 450 minutes</li><li>Transcripts &amp; SMS confirmations</li><li>Calendar connect</li></ul>
+      <a class="btn ghost" href="#" onclick="return false">Go live with Starter</a></div>
+  </div>
+  <div class="guarantee reveal">🌱 <b>14-day money-back guarantee</b> on your first payment · annual billing = 2 months free · overage $0.35/min, with a heads-up at 80%</div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="sec-head reveal"><div class="eyebrow">Questions owners actually ask</div><h2>The straight answers.</h2></div>
+  <div class="faq">
+    <div class="qa"><button class="q" aria-expanded="false">Will callers know it's AI?<span class="plus">+</span></button><div class="a"><p>Your agent introduces itself honestly and sounds natural. Most callers just care that someone answered and helped. You choose the voice and exactly how it identifies itself.</p></div></div>
+    <div class="qa"><button class="q" aria-expanded="false">What if it can't answer something?<span class="plus">+</span></button><div class="a"><p>It transfers to you, or takes a message with a callback promise — your choice, per situation. You'll see the whole exchange in the transcript either way.</p></div></div>
+    <div class="qa"><button class="q" aria-expanded="false">Do I need to change my phone number?<span class="plus">+</span></button><div class="a"><p>No. Forward your existing line, or get a new number from us. Both take minutes, and we walk you through it on screen.</p></div></div>
+    <div class="qa"><button class="q" aria-expanded="false">How long does setup really take?<span class="plus">+</span></button><div class="a"><p>Under five minutes if you have a website — we read it and learn your business automatically. About ten if you type the basics by hand. You can test everything before a single real caller hears it.</p></div></div>
+    <div class="qa"><button class="q" aria-expanded="false">What happens if I go over my minutes?<span class="plus">+</span></button><div class="a"><p>Calls keep getting answered at $0.35/minute — we never send your callers to voicemail because of a plan limit. You get a heads-up at 80% so nothing surprises you.</p></div></div>
+    <div class="qa"><button class="q" aria-expanded="false">Can I cancel?<span class="plus">+</span></button><div class="a"><p>Two clicks, from your dashboard, any time. And your first 14 days are covered by a full money-back guarantee — no questions, no retention call.</p></div></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="final reveal">
+    <h2>Hear it answer. Then make it yours.</h2>
+    <p>The demo takes 45 seconds and costs nothing — Bamboo calls you.</p>
+    <div class="phonecta">
+      <div class="pc-row">
+        <label class="pc-input"><span>📞</span><input type="tel" placeholder="(509) 555-0134" aria-label="Your phone number" id="pcNum2" maxlength="14"></label>
+        <button class="pc-btn" id="pcGo2">Call me now</button>
+      </div>
+      <div class="pc-micro">Free · no signup · no sales call. or <a href="/build" style="color:var(--shoot);font-weight:700">build your agent free →</a></div>
+    </div>
+  </div>
+</div></section>
+
+<footer class="site"><div class="wrap">
+  <div><a class="logo" href="#"><span class="leaf">🎋</span>Bamboo <span style="color:var(--bam)">AI</span></a>
+    <p style="font-size:12.5px;color:var(--soft);max-width:32ch;margin-top:10px">AI voice agents that answer like your best employee. Built for small business.</p></div>
+  <div><h4>Product</h4><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#" onclick="return false">Templates</a><a href="#" onclick="return false">Docs</a></div>
+  <div><h4>Industries</h4><a href="#industries">Dental</a><a href="#industries">Restaurants</a><a href="#industries">Real estate</a><a href="#industries">All industries →</a></div>
+  <div><h4>Company</h4><a href="#" onclick="return false">Security &amp; trust</a><a href="#" onclick="return false">Talk to a human</a><a href="#" onclick="return false">Terms</a><a href="#" onclick="return false">Privacy</a></div>
+  <div class="fine">© 2026 Bamboo AI · Every claim on this page is measured, not imagined. Testimonials appear when we've earned them.</div>
+</div></footer>
+
+<div class="sticky-cta" id="stickyCta">📞 Hear it live — Bamboo calls you</div>
+
+<script>
+(function(){
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Transcript loop */
+  var lines = document.querySelectorAll('#tlines .tline');
+  var lenEl = document.getElementById('callLen');
+  function playTranscript(){
+    lines.forEach(function(l){ l.classList.remove('on'); });
+    var t = 0, sec = 0;
+    lines.forEach(function(l, i){
+      t += (i===0? 400 : 1900);
+      setTimeout(function(){ l.classList.add('on'); }, reduced?0:t);
+    });
+    if(!reduced){
+      var timer = setInterval(function(){
+        sec++; if(sec>58){clearInterval(timer); playTranscript(); return;}
+        lenEl.textContent = '00:' + String(sec).padStart(2,'0');
+      },1000);
+    }
+  }
+  playTranscript();
+
+  /* PhoneCTA simulation */
+  function fmt(v){
+    var d = v.replace(/\D/g,'').slice(0,10);
+    if(d.length>6) return '('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6);
+    if(d.length>3) return '('+d.slice(0,3)+') '+d.slice(3);
+    return d;
+  }
+  var num = document.getElementById('pcNum');
+  num.addEventListener('input',function(){ num.value = fmt(num.value); });
+  var num2 = document.getElementById('pcNum2');
+  num2.addEventListener('input',function(){ num2.value = fmt(num2.value); });
+
+  document.getElementById('pcGo').addEventListener('click',function(){
+    if(num.value.replace(/\D/g,'').length<10){ num.focus(); num.closest('.pc-input').style.borderColor='#B45309'; return; }
+    document.getElementById('pcIdle').style.display='none';
+    document.getElementById('pcMicro').textContent='Simulated in this prototype — production dials your real number via the telephony API.';
+    var calling = document.getElementById('pcCalling');
+    calling.style.display='flex';
+    var s=0, tEl=document.getElementById('pcTimer');
+    var iv = setInterval(function(){
+      s++; tEl.textContent = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+      if(s>=6){ clearInterval(iv); calling.style.display='none'; document.getElementById('pcDone').style.display='block'; }
+    },700);
+  });
+  document.getElementById('pcGo2').addEventListener('click',function(){
+    document.getElementById('top').scrollIntoView();
+    setTimeout(function(){ num.focus(); },400);
+  });
+
+  /* Audio chip simulation */
+  document.querySelectorAll('.listen').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.icard').forEach(function(c){
+        c.querySelector('.wavebar').style.display='none';
+        c.querySelector('.snippet').style.display='none';
+        c.querySelector('.listen').classList.remove('playing');
+      });
+      var card = btn.closest('.icard');
+      btn.classList.add('playing');
+      card.querySelector('.wavebar').style.display='flex';
+      var sn = card.querySelector('.snippet');
+      sn.innerHTML = '<span class="mono">SAMPLE · 0:12</span><br>'+btn.dataset.snip;
+      sn.style.display='block';
+      setTimeout(function(){ card.querySelector('.wavebar').style.display='none'; btn.classList.remove('playing'); }, 5000);
+    });
+  });
+
+  /* FAQ accordion */
+  document.querySelectorAll('.qa .q').forEach(function(q){
+    q.addEventListener('click',function(){
+      var qa = q.parentElement, open = qa.classList.contains('open');
+      document.querySelectorAll('.qa').forEach(function(x){ x.classList.remove('open'); x.querySelector('.a').style.maxHeight=null; x.querySelector('.q').setAttribute('aria-expanded','false'); });
+      if(!open){ qa.classList.add('open'); var a=qa.querySelector('.a'); a.style.maxHeight=a.scrollHeight+'px'; q.setAttribute('aria-expanded','true'); }
+    });
+  });
+
+  /* Scroll reveals */
+  if(!reduced && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e,i){ if(e.isIntersecting){ setTimeout(function(){e.target.classList.add('in');}, (i%4)*60); io.unobserve(e.target);} });
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* Sticky mobile CTA after 60% scroll, hidden near hero/inputs */
+  var sticky = document.getElementById('stickyCta');
+  sticky.addEventListener('click',function(){ document.getElementById('top').scrollIntoView(); setTimeout(function(){num.focus();},400); });
+  window.addEventListener('scroll',function(){
+    var pct = window.scrollY / (document.body.scrollHeight - innerHeight);
+    var heroVisible = document.getElementById('pc').getBoundingClientRect().bottom > 0;
+    if(pct > .25 && !heroVisible && innerWidth <= 620) sticky.classList.add('show'); else sticky.classList.remove('show');
+  },{passive:true});
+})();
+</script>
+
+</body>
+</html>
