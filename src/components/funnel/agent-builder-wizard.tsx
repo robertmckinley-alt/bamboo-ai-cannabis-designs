@@ -51,6 +51,19 @@ const defaults: BuilderState = {
   knowledgeSource: "",
 };
 
+const demoPreset: BuilderState = {
+  industry: "Sales",
+  goal: "Capture and qualify leads",
+  channel: "Website chat",
+  voice: "Helpful expert",
+  businessName: "Bamboo Demo Co",
+  businessInfo:
+    "We help growing teams automate inbound sales and support conversations. The agent should qualify company size, urgency, and the workflow they want to automate.",
+  website: "https://mybamboo.ai",
+  knowledgeSource:
+    "Use the homepage, pricing page, FAQ, customer support notes, and demo booking rules as approved knowledge sources.",
+};
+
 const steps = [
   { id: "industry", title: "Choose industry", icon: Building2 },
   { id: "goal", title: "Choose agent goal", icon: WandSparkles },
@@ -61,6 +74,25 @@ const steps = [
   { id: "preview", title: "Preview agent", icon: Bot },
   { id: "lead", title: "Create account", icon: CheckCircle2 },
 ];
+
+type StepId = (typeof steps)[number]["id"];
+
+const stepDefaults: Record<StepId, Partial<BuilderState>> = {
+  industry: { industry: demoPreset.industry },
+  goal: { goal: demoPreset.goal },
+  channel: { channel: demoPreset.channel },
+  voice: { voice: demoPreset.voice },
+  business: {
+    businessName: demoPreset.businessName,
+    businessInfo: demoPreset.businessInfo,
+  },
+  knowledge: {
+    website: demoPreset.website,
+    knowledgeSource: demoPreset.knowledgeSource,
+  },
+  preview: {},
+  lead: {},
+};
 
 export function AgentBuilderWizard() {
   const router = useRouter();
@@ -126,7 +158,29 @@ export function AgentBuilderWizard() {
     setState((current) => ({ ...current, [field]: value }));
   }
 
+  function fillDemoPreset(targetStep = step) {
+    setState(demoPreset);
+    setStep(targetStep);
+    trackEvent("builder_step_skipped", { step: "demo_preset", index: targetStep + 1 });
+  }
+
+  function fillCurrentStepDefaults() {
+    const currentStep = steps[step].id;
+    const currentDefaults = stepDefaults[currentStep];
+
+    setState((current) => {
+      const next = { ...current };
+      for (const [key, value] of Object.entries(currentDefaults) as [keyof BuilderState, string][]) {
+        if (!next[key].trim()) {
+          next[key] = value;
+        }
+      }
+      return next;
+    });
+  }
+
   function goNext() {
+    fillCurrentStepDefaults();
     trackEvent("builder_step_completed", { step: steps[step].id, index: step + 1 });
     setStep((current) => Math.min(current + 1, steps.length - 1));
   }
@@ -138,17 +192,7 @@ export function AgentBuilderWizard() {
 
   function skipStep() {
     const current = steps[step].id;
-    const smartDefaults: Partial<BuilderState> = {
-      industry: "Sales",
-      goal: "Capture and qualify leads",
-      channel: "Website chat",
-      voice: "Helpful expert",
-      knowledgeSource: "Use website pages and FAQs",
-    };
-
-    if (current in smartDefaults) {
-      update(current as keyof BuilderState, smartDefaults[current as keyof BuilderState] ?? "");
-    }
+    fillCurrentStepDefaults();
     trackEvent("builder_step_skipped", { step: current, index: step + 1 });
     setStep((value) => Math.min(value + 1, steps.length - 1));
   }
@@ -176,6 +220,35 @@ export function AgentBuilderWizard() {
               <ProgressBar value={progress} />
             </div>
           </div>
+
+          <div className="mt-6 grid gap-4 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="text-sm font-semibold text-white">Demo mode</p>
+              <p className="mt-1 text-sm leading-6 text-white/58">
+                You can click through normally, or preload sample data and still visit every step.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 border-bamboo/30 bg-black/20 text-white hover:bg-bamboo/10 hover:text-white"
+                onClick={() => fillDemoPreset(step)}
+              >
+                <Sparkles aria-hidden className="size-4" />
+                Fill Demo Data
+              </Button>
+              <Button
+                type="button"
+                className="h-10 bg-bamboo text-black hover:bg-bamboo/90"
+                onClick={() => fillDemoPreset(6)}
+              >
+                Preview Demo Agent
+              </Button>
+            </div>
+          </div>
+
+          <StepRail currentStep={step} state={state} onStepChange={setStep} />
 
           <div className="mt-8">
             {step === 0 ? (
@@ -208,6 +281,22 @@ export function AgentBuilderWizard() {
             ) : null}
             {step === 4 ? (
               <div className="grid gap-4">
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9 border-white/10 bg-white/[0.035] text-white hover:bg-white/10 hover:text-white"
+                    onClick={() =>
+                      setState((current) => ({
+                        ...current,
+                        businessName: demoPreset.businessName,
+                        businessInfo: demoPreset.businessInfo,
+                      }))
+                    }
+                  >
+                    Use Demo Business Info
+                  </Button>
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="business-name" className="text-white/72">
                     Business name
@@ -236,6 +325,22 @@ export function AgentBuilderWizard() {
             ) : null}
             {step === 5 ? (
               <div className="grid gap-4">
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9 border-white/10 bg-white/[0.035] text-white hover:bg-white/10 hover:text-white"
+                    onClick={() =>
+                      setState((current) => ({
+                        ...current,
+                        website: demoPreset.website,
+                        knowledgeSource: demoPreset.knowledgeSource,
+                      }))
+                    }
+                  >
+                    Use Demo Knowledge
+                  </Button>
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="website" className="text-white/72">
                     Website
@@ -294,6 +399,14 @@ export function AgentBuilderWizard() {
                     website: state.website,
                     industry: state.industry,
                   }}
+                  demoLead={{
+                    name: "Jordan Lee",
+                    email: "jordan@bamboodemo.co",
+                    phone: "(555) 019-4432",
+                    company: state.businessName || demoPreset.businessName,
+                    website: state.website || demoPreset.website,
+                    industry: state.industry || demoPreset.industry,
+                  }}
                   onSubmit={(lead) => {
                     localStorage.setItem(
                       "bamboo-agent",
@@ -348,6 +461,65 @@ export function AgentBuilderWizard() {
 
 export function ProgressBar({ value }: { value: number }) {
   return <Progress value={value} className="h-2 bg-white/10 [&>div]:bg-bamboo" />;
+}
+
+function StepRail({
+  currentStep,
+  state,
+  onStepChange,
+}: {
+  currentStep: number;
+  state: BuilderState;
+  onStepChange: (step: number) => void;
+}) {
+  const completed: Record<StepId, boolean> = {
+    industry: Boolean(state.industry),
+    goal: Boolean(state.goal),
+    channel: Boolean(state.channel),
+    voice: Boolean(state.voice),
+    business: Boolean(state.businessName || state.businessInfo),
+    knowledge: Boolean(state.website || state.knowledgeSource),
+    preview: currentStep > 6,
+    lead: false,
+  };
+
+  return (
+    <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map((item, index) => {
+        const Icon = item.icon;
+        const isActive = currentStep === index;
+        const isComplete = completed[item.id];
+
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onStepChange(index)}
+            className={cn(
+              "flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70",
+              isActive
+                ? "border-bamboo/45 bg-bamboo/10"
+                : "border-white/10 bg-white/[0.03] hover:border-bamboo/30 hover:bg-white/[0.05]"
+            )}
+            aria-current={isActive ? "step" : undefined}
+          >
+            <span
+              className={cn(
+                "flex size-8 shrink-0 items-center justify-center rounded-md",
+                isComplete ? "bg-bamboo text-black" : "bg-white/10 text-bamboo"
+              )}
+            >
+              {isComplete ? <CheckCircle2 aria-hidden className="size-4" /> : <Icon aria-hidden className="size-4" />}
+            </span>
+            <span>
+              <span className="block text-xs text-white/42">Step {index + 1}</span>
+              <span className="block text-sm font-medium text-white">{item.title}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export function StepCard({

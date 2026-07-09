@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, CheckCircle2 } from "lucide-react";
+import { Bot, CheckCircle2, Globe2, Mail, UserRound } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
@@ -12,6 +12,18 @@ type SavedAgent = {
     summary?: string;
   };
   readiness?: number;
+  state?: {
+    industry?: string;
+    goal?: string;
+    channel?: string;
+    voice?: string;
+    website?: string;
+  };
+  lead?: {
+    name?: string;
+    email?: string;
+    company?: string;
+  };
 };
 
 export function CreatedAgentSummary() {
@@ -22,13 +34,15 @@ export function CreatedAgentSummary() {
     if (!raw) {
       return;
     }
-    window.setTimeout(() => {
+    const frame = window.requestAnimationFrame(() => {
       try {
         setSaved(JSON.parse(raw));
       } catch {
         setSaved(null);
       }
-    }, 0);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const readiness = saved?.readiness ?? 72;
@@ -67,7 +81,51 @@ export function CreatedAgentSummary() {
           <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0 text-bamboo" />
           The next call should confirm knowledge sources, handoff rules, and production integrations.
         </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <SummaryRow
+            icon={<UserRound aria-hidden className="size-4" />}
+            label="Lead"
+            value={saved?.lead?.name ?? "Demo lead"}
+          />
+          <SummaryRow
+            icon={<Mail aria-hidden className="size-4" />}
+            label="Email"
+            value={saved?.lead?.email ?? "demo@example.com"}
+          />
+          <SummaryRow
+            icon={<Bot aria-hidden className="size-4" />}
+            label="Workflow"
+            value={saved?.state?.goal ?? "Capture qualified conversations"}
+          />
+          <SummaryRow
+            icon={<Globe2 aria-hidden className="size-4" />}
+            label="Channel"
+            value={saved?.state?.channel ?? "Website chat"}
+          />
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+function SummaryRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-md border border-white/10 bg-white/[0.035] p-3">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-bamboo/10 text-bamboo">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs text-white/40">{label}</p>
+        <p className="truncate text-sm font-medium text-white/72">{value}</p>
+      </div>
+    </div>
   );
 }

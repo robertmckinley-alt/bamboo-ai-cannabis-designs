@@ -30,10 +30,12 @@ const emptyLead: LeadFormState = {
 
 export function LeadCaptureForm({
   initial,
+  demoLead,
   onSubmit,
   submitLabel = "Create My Agent",
 }: {
   initial?: Partial<LeadFormState>;
+  demoLead?: LeadFormState;
   onSubmit?: (lead: LeadFormState) => void;
   submitLabel?: string;
 }) {
@@ -68,6 +70,26 @@ export function LeadCaptureForm({
         onSubmit?.(lead);
       }}
     >
+      {demoLead ? (
+        <div className="flex flex-col gap-3 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm leading-6 text-white/64">
+            Want to finish the walkthrough fast? Load a sample lead and submit the mock agent.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 border-bamboo/30 bg-black/20 text-white hover:bg-bamboo/10 hover:text-white"
+            onClick={() => {
+              setLead(demoLead);
+              setStarted(true);
+              setError("");
+              trackEvent("lead_form_started", { source: "demo_lead_fill" });
+            }}
+          >
+            Use Demo Lead
+          </Button>
+        </div>
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name" htmlFor="lead-name" required>
           <Input
@@ -151,6 +173,17 @@ export function BookingForm() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  function useDemoRequest() {
+    setError("");
+    setForm({
+      name: "Jordan Lee",
+      email: "jordan@bamboodemo.co",
+      company: "Bamboo Demo Co",
+      teamSize: "10-50",
+      goal: "We want to launch a website chat agent that qualifies sales leads and books demos.",
+    });
+  }
+
   return (
     <Card className="rounded-lg border-white/10 bg-white/[0.045] shadow-none">
       <CardContent className="p-5">
@@ -173,6 +206,19 @@ export function BookingForm() {
             router.push("/thank-you");
           }}
         >
+          <div className="flex flex-col gap-3 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm leading-6 text-white/64">
+              Testing the flow? Fill this form with demo details and submit it.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 border-bamboo/30 bg-black/20 text-white hover:bg-bamboo/10 hover:text-white"
+              onClick={useDemoRequest}
+            >
+              Use Demo Request
+            </Button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Name" htmlFor="booking-name" required>
               <Input
