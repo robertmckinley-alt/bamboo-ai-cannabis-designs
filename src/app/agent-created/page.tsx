@@ -52,8 +52,8 @@ export default function AgentCreatedPage() {
               <Gift aria-hidden className="size-5" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">Ready to make it production-grade?</h2>
-              <p className="mt-2 text-sm leading-7 text-white/62">
+              <h2 className="font-heading text-xl font-semibold tracking-[-0.01em] text-white">Ready to make it production-grade?</h2>
+              <p className="mt-2 text-sm leading-7 text-white/68">
                 Upgrade planning covers embed placement, analytics, CRM capture, calendar routing, and approved knowledge.
               </p>
             </div>
@@ -77,13 +77,13 @@ function NextStep({
   text: string;
 }) {
   return (
-    <Card className="rounded-lg border-white/10 bg-white/[0.045] shadow-none">
+    <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
       <CardContent className="p-5">
         <div className="flex size-10 items-center justify-center rounded-md bg-bamboo/10 text-bamboo">
           {icon}
         </div>
-        <h2 className="mt-4 font-semibold text-white">{title}</h2>
-        <p className="mt-2 text-sm leading-7 text-white/58">{text}</p>
+        <h2 className="mt-4 font-heading font-semibold tracking-[-0.01em] text-white">{title}</h2>
+        <p className="mt-2 text-sm leading-7 text-white/64">{text}</p>
       </CardContent>
     </Card>
   );

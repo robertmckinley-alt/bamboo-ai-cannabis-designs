@@ -42,16 +42,16 @@ export function PricingSection() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-20">
+    <div className="mx-auto max-w-6xl px-5 py-20 md:py-24">
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <Badge className="border-bamboo/25 bg-bamboo/10 text-bamboo hover:bg-bamboo/10">
+          <Badge className="border-bamboo/25 bg-bamboo/12 text-bamboo hover:bg-bamboo/12">
             Pricing
           </Badge>
-          <h1 className="mt-5 text-balance text-4xl font-semibold tracking-normal text-white md:text-6xl">
+          <h1 className="mt-5 font-heading text-balance text-4xl font-semibold tracking-[-0.03em] text-white md:text-6xl">
             Start free. Upgrade when the agent proves demand.
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-white/62">
+          <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
             Sample packaging for the front-end funnel. Replace this data with official pricing when plans are finalized.
           </p>
         </div>
@@ -65,7 +65,7 @@ export function PricingSection() {
               type="button"
               variant="ghost"
               className={cn(
-                "h-9 rounded-md px-4 text-sm text-white/62 hover:bg-white/10 hover:text-white",
+                "h-9 rounded-md px-4 text-sm text-white/68 hover:bg-white/10 hover:text-white",
                 annual === value && "bg-bamboo text-black hover:bg-bamboo hover:text-black"
               )}
               onClick={() => setAnnual(value)}
@@ -81,8 +81,8 @@ export function PricingSection() {
           <Card
             key={plan.name}
             className={cn(
-              "rounded-lg border-white/10 bg-white/[0.045] shadow-none",
-              plan.featured && "border-bamboo/35 bg-bamboo/10 shadow-[0_0_54px_rgba(89,255,139,0.12)]"
+              "rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none",
+              plan.featured && "border-bamboo/35 bg-bamboo/10"
             )}
           >
             <CardContent className="flex h-full flex-col p-5">
@@ -91,15 +91,15 @@ export function PricingSection() {
                   Recommended
                 </Badge>
               ) : null}
-              <h2 className="text-xl font-semibold text-white">{plan.name}</h2>
-              <p className="mt-3 min-h-16 text-sm leading-7 text-white/58">{plan.description}</p>
+              <h2 className="font-heading text-xl font-semibold tracking-[-0.01em] text-white">{plan.name}</h2>
+              <p className="mt-3 min-h-16 text-sm leading-7 text-white/64">{plan.description}</p>
               <div className="mt-6">
-                <span className="text-4xl font-semibold text-white">{plan.price}</span>
-                <span className="ml-2 text-sm text-white/42">{plan.cadence}</span>
+                <span className="font-heading text-4xl font-semibold tracking-[-0.02em] text-white">{plan.price}</span>
+                <span className="ml-2 text-sm text-white/58">{plan.cadence}</span>
               </div>
               <ul className="mt-6 flex-1 space-y-3">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex gap-3 text-sm leading-6 text-white/68">
+                  <li key={feature} className="flex gap-3 text-sm leading-6 text-white/72">
                     <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0 text-bamboo" />
                     {feature}
                   </li>
@@ -120,31 +120,31 @@ export function PricingSection() {
         ))}
       </div>
 
-      <Card className="mt-10 rounded-lg border-white/10 bg-white/[0.04] shadow-none">
+      <Card className="mt-10 rounded-lg border-white/10 bg-white/[0.045] py-0 shadow-none">
         <CardContent className="p-0">
           <div className="flex items-center gap-3 border-b border-white/10 p-5">
             <Sparkles aria-hidden className="size-5 text-bamboo" />
-            <h2 className="text-lg font-semibold text-white">Feature comparison</h2>
+            <h2 className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">Feature comparison</h2>
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-white/10 hover:bg-transparent">
-                  <TableHead className="min-w-56 text-white/56">Feature</TableHead>
-                  <TableHead className="text-white/56">Free</TableHead>
-                  <TableHead className="text-white/56">Growth</TableHead>
-                  <TableHead className="text-white/56">Scale</TableHead>
-                  <TableHead className="text-white/56">Enterprise</TableHead>
+                  <TableHead className="min-w-56 text-white/64">Feature</TableHead>
+                  <TableHead className="text-white/64">Free</TableHead>
+                  <TableHead className="text-white/64">Growth</TableHead>
+                  <TableHead className="text-white/64">Scale</TableHead>
+                  <TableHead className="text-white/64">Enterprise</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {comparisonRows.map((row) => (
                   <TableRow key={row.feature} className="border-white/10 hover:bg-white/[0.03]">
                     <TableCell className="font-medium text-white">{row.feature}</TableCell>
-                    <TableCell className="text-white/58">{row.free}</TableCell>
-                    <TableCell className="text-white/58">{row.growth}</TableCell>
-                    <TableCell className="text-white/58">{row.scale}</TableCell>
-                    <TableCell className="text-white/58">{row.enterprise}</TableCell>
+                    <TableCell className="text-white/66">{row.free}</TableCell>
+                    <TableCell className="text-white/66">{row.growth}</TableCell>
+                    <TableCell className="text-white/66">{row.scale}</TableCell>
+                    <TableCell className="text-white/66">{row.enterprise}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

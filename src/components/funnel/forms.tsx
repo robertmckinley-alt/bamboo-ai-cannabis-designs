@@ -72,7 +72,7 @@ export function LeadCaptureForm({
     >
       {demoLead ? (
         <div className="flex flex-col gap-3 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm leading-6 text-white/64">
+          <p className="text-sm leading-6 text-white/68">
             Want to finish the walkthrough fast? Load a sample lead and submit the mock agent.
           </p>
           <Button
@@ -96,7 +96,7 @@ export function LeadCaptureForm({
             id="lead-name"
             value={lead.name}
             onChange={(event) => update("name", event.target.value)}
-            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
             placeholder="Jordan Lee"
             aria-invalid={Boolean(error && !lead.name.trim())}
           />
@@ -107,7 +107,7 @@ export function LeadCaptureForm({
             type="email"
             value={lead.email}
             onChange={(event) => update("email", event.target.value)}
-            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
             placeholder="jordan@company.com"
             aria-invalid={Boolean(error && !lead.email.includes("@"))}
           />
@@ -117,7 +117,7 @@ export function LeadCaptureForm({
             id="lead-phone"
             value={lead.phone}
             onChange={(event) => update("phone", event.target.value)}
-            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
             placeholder="(555) 019-4432"
           />
         </Field>
@@ -126,7 +126,7 @@ export function LeadCaptureForm({
             id="lead-company"
             value={lead.company}
             onChange={(event) => update("company", event.target.value)}
-            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
             placeholder="Bamboo Labs"
           />
         </Field>
@@ -135,7 +135,7 @@ export function LeadCaptureForm({
             id="lead-website"
             value={lead.website}
             onChange={(event) => update("website", event.target.value)}
-            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
             placeholder="https://example.com"
           />
         </Field>
@@ -144,7 +144,7 @@ export function LeadCaptureForm({
             id="lead-industry"
             value={lead.industry}
             onChange={(event) => update("industry", event.target.value)}
-            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+            className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
             placeholder="Sales"
           />
         </Field>
@@ -185,7 +185,7 @@ export function BookingForm() {
   }
 
   return (
-    <Card className="rounded-lg border-white/10 bg-white/[0.045] shadow-none">
+    <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
       <CardContent className="p-5">
         <form
           className="grid gap-4"
@@ -207,7 +207,7 @@ export function BookingForm() {
           }}
         >
           <div className="flex flex-col gap-3 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm leading-6 text-white/64">
+            <p className="text-sm leading-6 text-white/68">
               Testing the flow? Fill this form with demo details and submit it.
             </p>
             <Button
@@ -225,7 +225,7 @@ export function BookingForm() {
                 id="booking-name"
                 value={form.name}
                 onChange={(event) => update("name", event.target.value)}
-                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                 placeholder="Jordan Lee"
               />
             </Field>
@@ -235,7 +235,7 @@ export function BookingForm() {
                 type="email"
                 value={form.email}
                 onChange={(event) => update("email", event.target.value)}
-                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                 placeholder="jordan@company.com"
               />
             </Field>
@@ -244,7 +244,7 @@ export function BookingForm() {
                 id="booking-company"
                 value={form.company}
                 onChange={(event) => update("company", event.target.value)}
-                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                 placeholder="Company"
               />
             </Field>
@@ -253,7 +253,7 @@ export function BookingForm() {
                 id="booking-team-size"
                 value={form.teamSize}
                 onChange={(event) => update("teamSize", event.target.value)}
-                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                 placeholder="10-50"
               />
             </Field>
@@ -263,7 +263,7 @@ export function BookingForm() {
               id="booking-goal"
               value={form.goal}
               onChange={(event) => update("goal", event.target.value)}
-              className="min-h-28 border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+              className="min-h-28 border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
               placeholder="Lead capture, customer support, booking, or another workflow"
             />
           </Field>
@@ -278,7 +278,7 @@ export function BookingForm() {
             <CheckCircle2 aria-hidden className="size-4 text-bamboo" />
             Calendar embed placeholder
           </div>
-          <p className="mt-2 text-sm leading-7 text-white/54">
+          <p className="mt-2 text-sm leading-7 text-white/64">
             Drop Calendly, SavvyCal, HubSpot meetings, or your internal scheduling embed here.
           </p>
         </div>

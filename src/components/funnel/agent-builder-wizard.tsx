@@ -257,12 +257,12 @@ export function AgentBuilderWizard() {
               <Badge className="border-bamboo/25 bg-bamboo/10 text-bamboo hover:bg-bamboo/10">
                 Step {step + 1} of {steps.length}
               </Badge>
-              <h1 className="mt-4 text-balance text-3xl font-semibold text-white md:text-5xl">
+              <h1 className="mt-4 font-heading text-balance text-3xl font-semibold tracking-[-0.02em] text-white md:text-5xl">
                 {steps[step].title}
               </h1>
             </div>
             <div className="min-w-40">
-              <div className="mb-2 flex items-center justify-between text-xs text-white/48">
+              <div className="mb-2 flex items-center justify-between text-xs text-white/56">
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
@@ -273,7 +273,7 @@ export function AgentBuilderWizard() {
           <div className="mt-6 grid gap-4 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 md:grid-cols-[1fr_auto] md:items-center">
             <div>
               <p className="text-sm font-semibold text-white">Demo mode</p>
-              <p className="mt-1 text-sm leading-6 text-white/58">
+              <p className="mt-1 text-sm leading-6 text-white/64">
                 You can click through normally, or preload sample data and still visit every step.
               </p>
             </div>
@@ -358,7 +358,7 @@ export function AgentBuilderWizard() {
                     id="business-name"
                     value={state.businessName}
                     onChange={(event) => update("businessName", event.target.value)}
-                    className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                    className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                     placeholder="Bamboo Labs"
                   />
                 </div>
@@ -370,7 +370,7 @@ export function AgentBuilderWizard() {
                     id="business-info"
                     value={state.businessInfo}
                     onChange={(event) => update("businessInfo", event.target.value)}
-                    className="min-h-32 border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                    className="min-h-32 border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                     placeholder="Describe your offer, customers, key qualification rules, and what should happen after a good conversation."
                   />
                 </div>
@@ -402,7 +402,7 @@ export function AgentBuilderWizard() {
                     id="website"
                     value={state.website}
                     onChange={(event) => update("website", event.target.value)}
-                    className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                    className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                     placeholder="https://mybamboo.ai"
                   />
                 </div>
@@ -414,7 +414,7 @@ export function AgentBuilderWizard() {
                     id="knowledge"
                     value={state.knowledgeSource}
                     onChange={(event) => update("knowledgeSource", event.target.value)}
-                    className="min-h-28 border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                    className="min-h-28 border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                     placeholder="Paste FAQ links, help docs, policy notes, or a short list of approved answers."
                   />
                 </div>
@@ -430,7 +430,7 @@ export function AgentBuilderWizard() {
                   meta={`Readiness ${readiness}%`}
                 />
                 <div className="rounded-lg border border-white/10 bg-black/20 p-5">
-                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/38">
+                  <p className="text-xs font-medium text-white/54">
                     Preview greeting
                   </p>
                   <p className="mt-3 text-sm leading-7 text-white/68">{agent.greeting}</p>
@@ -443,7 +443,7 @@ export function AgentBuilderWizard() {
             ) : null}
             {step === 7 ? (
               <div>
-                <p className="mb-5 text-sm leading-7 text-white/62">
+                <p className="mb-5 text-sm leading-7 text-white/68">
                   Save the draft and create a lead profile. The production app can send this to your CRM or account system.
                 </p>
                 <LeadCaptureForm
@@ -565,7 +565,7 @@ function StepRail({
               {isComplete ? <CheckCircle2 aria-hidden className="size-4" /> : <Icon aria-hidden className="size-4" />}
             </span>
             <span>
-              <span className="block text-xs text-white/42">Step {index + 1}</span>
+              <span className="block text-xs text-white/54">Step {index + 1}</span>
               <span className="block text-sm font-medium text-white">{item.title}</span>
             </span>
           </button>
@@ -611,7 +611,7 @@ export function StepCard({
         </div>
         <div>
           <h3 className="font-semibold text-white">{title}</h3>
-          <p className="mt-2 text-sm leading-7 text-white/58">{description}</p>
+          <p className="mt-2 text-sm leading-7 text-white/64">{description}</p>
           {meta ? <p className="mt-3 text-xs font-medium text-bamboo">{meta}</p> : null}
         </div>
       </div>
@@ -641,7 +641,7 @@ function SingleChoiceGrid({
 }) {
   return (
     <div className="grid gap-4">
-      <div className="rounded-lg border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/62">
+      <div className="rounded-lg border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/68">
         {selected ? `Selected: ${selected}. Choosing another option will move you forward.` : prompt}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -677,7 +677,7 @@ function GoalChoiceGrid({
     <div className="grid gap-4">
       <div className="rounded-lg border border-bamboo/20 bg-bamboo/10 p-4">
         <p className="text-sm font-semibold text-white">Select 1 or 2 goals.</p>
-        <p className="mt-1 text-sm leading-6 text-white/62">
+        <p className="mt-1 text-sm leading-6 text-white/68">
           {selected.length === 0
             ? "Pick your primary goal. You can add one more before continuing."
             : selected.length === 1
@@ -710,7 +710,7 @@ function GoalChoiceGrid({
         })}
       </div>
       <div className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-white/62">
+        <div className="text-sm text-white/68">
           {selected.length > 0
             ? `Selected: ${selected.join(" + ")}`
             : "Choose at least one goal to keep going."}
@@ -740,7 +740,7 @@ function LivePreview({
 }) {
   return (
     <aside className="lg:sticky lg:top-24 lg:self-start">
-      <Card className="rounded-lg border-white/10 bg-[#07100d]/92 shadow-none">
+      <Card className="rounded-lg border-white/10 bg-[oklch(0.13_0.026_156/0.94)] py-0 shadow-none">
         <CardContent className="p-5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -749,7 +749,7 @@ function LivePreview({
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">Live Preview</p>
-                <p className="text-xs text-white/42">Autosaved locally</p>
+                <p className="text-xs text-white/54">Autosaved locally</p>
               </div>
             </div>
             <Badge className="border-bamboo/25 bg-bamboo/10 text-bamboo hover:bg-bamboo/10">
@@ -757,7 +757,7 @@ function LivePreview({
             </Badge>
           </div>
           <div className="mt-6">
-            <div className="mb-2 flex items-center justify-between text-xs text-white/48">
+            <div className="mb-2 flex items-center justify-between text-xs text-white/56">
               <span>Readiness score</span>
               <span>{readiness}%</span>
             </div>
@@ -769,10 +769,10 @@ function LivePreview({
                 <MessageSquareText aria-hidden className="size-4 text-bamboo" />
                 {agent.name}
               </div>
-              <p className="mt-3 text-sm leading-7 text-white/62">{agent.greeting}</p>
+              <p className="mt-3 text-sm leading-7 text-white/68">{agent.greeting}</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/36">
+              <p className="text-xs font-medium text-white/54">
                 Configuration
               </p>
               <dl className="mt-4 grid gap-3 text-sm">
@@ -795,7 +795,7 @@ function LivePreview({
 function PreviewRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <dt className="text-white/40">{label}</dt>
+      <dt className="text-white/56">{label}</dt>
       <dd className="text-right font-medium text-white/72">{value}</dd>
     </div>
   );

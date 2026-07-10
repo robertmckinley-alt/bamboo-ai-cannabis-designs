@@ -44,14 +44,14 @@ export default function BookDemoPage() {
                 text: "Leave with a clear production plan, pricing fit, or proof-of-concept path.",
               },
             ].map((item) => (
-              <Card key={item.title} className="rounded-lg border-white/10 bg-white/[0.045] shadow-none">
+              <Card key={item.title} className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
                 <CardContent className="flex gap-4 p-5">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-bamboo/10 text-bamboo">
                     {item.icon}
                   </div>
                   <div>
-                    <h2 className="font-semibold text-white">{item.title}</h2>
-                    <p className="mt-2 text-sm leading-7 text-white/58">{item.text}</p>
+                    <h2 className="font-heading font-semibold tracking-[-0.01em] text-white">{item.title}</h2>
+                    <p className="mt-2 text-sm leading-7 text-white/64">{item.text}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -63,7 +63,7 @@ export default function BookDemoPage() {
         </div>
         <div>
           <BookingForm />
-          <div className="mt-5 flex gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4 text-sm leading-7 text-white/58">
+          <div className="mt-5 flex gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/66">
             <CheckCircle2 aria-hidden className="mt-1 size-4 shrink-0 text-bamboo" />
             Qualified teams can bring an existing website, FAQs, CRM notes, or current intake form to the call.
           </div>

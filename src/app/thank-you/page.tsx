@@ -24,9 +24,9 @@ export default function ThankYouPage() {
           ctaHref="/free-agent-builder"
           ctaLabel="Build Free Agent"
         />
-        <Card className="rounded-lg border-white/10 bg-white/[0.045] shadow-none">
+        <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
           <CardContent className="p-5">
-            <h2 className="text-xl font-semibold text-white">What happens next</h2>
+            <h2 className="font-heading text-xl font-semibold tracking-[-0.01em] text-white">What happens next</h2>
             <div className="mt-6 grid gap-4">
               <NextStep
                 icon={<CalendarCheck className="size-5" />}
@@ -47,9 +47,9 @@ export default function ThankYouPage() {
             <div className="mt-6 rounded-lg border border-cyan-soft/20 bg-cyan-soft/10 p-5">
               <div className="flex items-center gap-3">
                 <Share2 aria-hidden className="size-5 text-cyan-soft" />
-                <h3 className="font-semibold text-white">Share Bamboo</h3>
+                <h3 className="font-heading font-semibold tracking-[-0.01em] text-white">Share Bamboo</h3>
               </div>
-              <p className="mt-3 text-sm leading-7 text-white/62">
+              <p className="mt-3 text-sm leading-7 text-white/68">
                 Send the free builder to a teammate who owns sales, support, operations, or customer success.
               </p>
               <div className="mt-5">
@@ -80,8 +80,8 @@ function NextStep({
         {icon}
       </div>
       <div>
-        <h3 className="font-semibold text-white">{title}</h3>
-        <p className="mt-2 text-sm leading-7 text-white/58">{text}</p>
+        <h3 className="font-heading font-semibold tracking-[-0.01em] text-white">{title}</h3>
+        <p className="mt-2 text-sm leading-7 text-white/64">{text}</p>
       </div>
     </div>
   );

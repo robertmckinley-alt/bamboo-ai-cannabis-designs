@@ -28,7 +28,7 @@ import { CTAButton } from "@/components/funnel/cta-button";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/76 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/94">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <Link
           href="/"
@@ -37,14 +37,14 @@ export function Navbar() {
           <span className="flex size-9 items-center justify-center rounded-lg bg-bamboo text-black">
             <Bot aria-hidden className="size-5" />
           </span>
-          <span className="text-base font-semibold text-white">Bamboo AI</span>
+          <span className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">Bamboo AI</span>
         </Link>
         <div className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-white/62 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70"
+              className="rounded-md px-3 py-2 text-sm font-medium text-white/66 transition hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70"
             >
               {link.label}
             </Link>
@@ -64,17 +64,17 @@ export function Navbar() {
               <Menu aria-hidden className="size-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent className="border-white/10 bg-[#07100d] text-white">
+          <SheetContent className="border-white/10 bg-background text-white">
             <SheetHeader>
-              <SheetTitle>Bamboo AI</SheetTitle>
-              <SheetDescription>Build your AI agent funnel.</SheetDescription>
+              <SheetTitle className="font-heading">Bamboo AI</SheetTitle>
+              <SheetDescription className="text-white/62">Build your AI agent funnel.</SheetDescription>
             </SheetHeader>
             <div className="grid gap-2 px-4">
               {navLinks.map((link) => (
                 <SheetClose asChild key={link.href}>
                   <Link
                     href={link.href}
-                    className="rounded-md px-3 py-3 text-sm font-medium text-white/72 hover:bg-white/10 hover:text-white"
+                    className="rounded-md px-3 py-3 text-sm font-medium text-white/72 hover:bg-white/8 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -105,9 +105,9 @@ export function Footer() {
             <span className="flex size-9 items-center justify-center rounded-lg bg-bamboo text-black">
               <Bot aria-hidden className="size-5" />
             </span>
-            <span className="font-semibold text-white">Bamboo AI</span>
+            <span className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">Bamboo AI</span>
           </Link>
-          <p className="mt-4 max-w-sm text-sm leading-7 text-white/54">
+          <p className="mt-4 max-w-sm text-sm leading-7 text-white/62">
             Build agents that answer questions, capture leads, book appointments, and support customers without code.
           </p>
         </div>
@@ -130,7 +130,7 @@ export function Footer() {
           ]}
         />
       </div>
-      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/38 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/54 sm:flex-row sm:items-center sm:justify-between">
         <span>© 2026 Bamboo AI. Front-end funnel prototype.</span>
         <span>No code required. Launch fast. Upgrade when ready.</span>
       </div>
@@ -147,10 +147,10 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <h3 className="font-heading text-sm font-semibold tracking-[-0.01em] text-white">{title}</h3>
       <div className="mt-4 grid gap-3">
         {links.map(([label, href]) => (
-          <Link key={href} href={href} className="text-sm text-white/52 transition hover:text-bamboo">
+          <Link key={href} href={href} className="text-sm text-white/58 transition hover:text-bamboo">
             {label}
           </Link>
         ))}
@@ -166,7 +166,6 @@ export function FloatingCTA() {
         href="/free-agent-builder"
         event="hero_cta_clicked"
         icon="sparkles"
-        className="shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
       >
         Build Free
       </CTAButton>
@@ -175,7 +174,7 @@ export function FloatingCTA() {
         event="book_demo_clicked"
         tone="secondary"
         icon="calendar"
-        className="bg-black/45 backdrop-blur"
+        className="bg-background/85"
       >
         Demo
       </CTAButton>
@@ -185,7 +184,7 @@ export function FloatingCTA() {
 
 export function MobileStickyCTA() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/78 p-3 backdrop-blur-xl md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/96 p-3 md:hidden">
       <Button
         asChild
         className="h-12 w-full rounded-lg bg-bamboo text-black hover:bg-bamboo/90"
@@ -231,16 +230,16 @@ export function ExitIntentModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         showCloseButton={false}
-        className="border-white/10 bg-[#07100d] text-white sm:max-w-md"
+        className="border-white/10 bg-background text-white sm:max-w-md"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl">Take the agent draft with you.</DialogTitle>
-          <DialogDescription className="text-white/58">
+          <DialogTitle className="font-heading text-2xl tracking-[-0.01em]">Take the agent draft with you.</DialogTitle>
+          <DialogDescription className="text-white/64">
             Save the free builder link and get the launch checklist for your first Bamboo agent.
           </DialogDescription>
         </DialogHeader>
         {submitted ? (
-          <div className="rounded-lg border border-bamboo/25 bg-bamboo/10 p-4 text-sm text-white/72">
+          <div className="rounded-lg border border-bamboo/25 bg-bamboo/10 p-4 text-sm text-white/76">
             Saved. Your next step is waiting in the free builder.
           </div>
         ) : (
@@ -265,7 +264,7 @@ export function ExitIntentModal() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/32"
+                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
                 placeholder="you@company.com"
               />
             </div>
