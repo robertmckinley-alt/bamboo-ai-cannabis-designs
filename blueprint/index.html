@@ -563,31 +563,31 @@
 <section id="s8">
   <div class="eyebrow">Part 08</div>
   <h2>Design System</h2>
-  <p class="dek">"Botanical precision" — the calm of a well-run front desk. Warm paper, deep bamboo green, ink. Monospace is reserved for what machines say: transcripts, numbers, phone digits.</p>
+  <p class="dek">"Field &amp; Line" (v2) — a daylight field with night sections, threaded by the phone line. Leaf-white ground, green-black ink, deep bamboo green, and an amber voicemail-lamp accent for the missed-call world. Monospace stays reserved for what machines say: transcripts, numbers, phone digits.</p>
 
   <h3>Color</h3>
   <div class="swatches">
-    <div class="sw"><div class="chip" style="background:#FBFBF8;border-bottom:1px solid #E3E6E1"></div><div class="lab"><b>Paper #FBFBF8</b>page ground (light)</div></div>
-    <div class="sw"><div class="chip" style="background:#14181A"></div><div class="lab"><b>Ink #14181A</b>text · dark sections</div></div>
-    <div class="sw"><div class="chip" style="background:#1E7A4A"></div><div class="lab"><b>Bamboo #1E7A4A</b>primary actions · brand</div></div>
-    <div class="sw"><div class="chip" style="background:#2FA36B"></div><div class="lab"><b>Shoot #2FA36B</b>accent on ink grounds</div></div>
-    <div class="sw"><div class="chip" style="background:#E7F2EB"></div><div class="lab"><b>Mist #E7F2EB</b>tints · selected states</div></div>
-    <div class="sw"><div class="chip" style="background:#5A6360"></div><div class="lab"><b>Slate #5A6360</b>secondary text</div></div>
+    <div class="sw"><div class="chip" style="background:#F5F7F0;border-bottom:1px solid #E3E6E1"></div><div class="lab"><b>Field #F5F7F0</b>page ground (green-biased, not cream)</div></div>
+    <div class="sw"><div class="chip" style="background:#111C15"></div><div class="lab"><b>Ink #111C15</b>text — a green-black, not neutral black</div></div>
+    <div class="sw"><div class="chip" style="background:#1B7449"></div><div class="lab"><b>Bamboo #1B7449</b>primary actions · brand</div></div>
+    <div class="sw"><div class="chip" style="background:#3FA972"></div><div class="lab"><b>Sprout #3FA972</b>accent on night grounds</div></div>
+    <div class="sw"><div class="chip" style="background:#0B1712"></div><div class="lab"><b>Night #0B1712</b>after-hours sections: before/after, pricing, final CTA</div></div>
+    <div class="sw"><div class="chip" style="background:#DE9F35"></div><div class="lab"><b>Lamp #DE9F35</b>the voicemail light — missed-call states, LIVE indicator</div></div>
   </div>
   <ul>
-    <li>Semantic colors (success/warn/error) are separate from brand green — success moments use green + motion, never green alone.</li>
-    <li>Dark sections are ink-grounded (not pure black) with Shoot green; the marketing site alternates paper/ink sections for rhythm.</li>
-    <li>Contrast: all text ≥ 4.5:1; green-on-paper buttons use white text on #1E7A4A (7.2:1).</li>
+    <li>Lamp amber is semantic, not decorative: it marks the world <em>without</em> Bamboo (blinking voicemail, missed calls) and the live-call indicator. It never appears on buttons.</li>
+    <li>Night sections are deep green-black (not neutral dark) with Sprout green — the page alternates field/night for rhythm, and night is where the product's promise lives (the call answered after dark).</li>
+    <li>Contrast: all text ≥ 4.5:1; green-on-field buttons use white text on #1B7449.</li>
   </ul>
 
   <h3>Typography</h3>
   <div class="tablewrap"><table>
     <tr><th>Role</th><th>Face</th><th>Spec</th></tr>
-    <tr><td>Display</td><td>System sans (SF/Segoe/Inter-class), weight 800</td><td>clamp(34→64px), letter-spacing −0.035em, line-height 1.03, text-wrap balance</td></tr>
-    <tr><td>Body</td><td>Same family, 400/600</td><td>16–17px, line-height 1.6, measure ≤ 68ch</td></tr>
-    <tr><td>Machine voice</td><td>ui-monospace (SF Mono/Cascadia)</td><td>Transcripts, phone numbers, prices in tables, eyebrows, metrics. tabular-nums everywhere digits align.</td></tr>
+    <tr><td>Display</td><td>Bricolage Grotesque (variable), 700–800</td><td>clamp(42→68px) hero, letter-spacing −0.031em, line-height ≤ 1.0, text-wrap balance, font-optical-sizing auto</td></tr>
+    <tr><td>Body</td><td>Instrument Sans, 400/600 (+ true italic)</td><td>16–17px, line-height 1.6, measure ≤ 60ch</td></tr>
+    <tr><td>Machine voice</td><td>ui-monospace (SF Mono/Cascadia)</td><td>Transcripts, phone numbers, prices, eyebrows, metrics, kickers. tabular-nums everywhere digits align.</td></tr>
   </table></div>
-  <p>System stack is a deliberate choice: zero font latency on paid-traffic pages (LCP is a conversion feature), and the mono-for-machine convention gives the brand its signature without a webfont dependency. If a licensed face is adopted later, it swaps into the Display slot only.</p>
+  <p>Both webfonts ship inlined as woff2 data URIs (latin subsets, ~165&nbsp;KB total): zero extra requests, zero FOUT, no CDN dependency — LCP stays a conversion feature. The mono-for-machine convention carries over from v1 and remains the brand's signature. Structural motifs: the <strong>node</strong> (a small ring marking every section eyebrow and each step on the line) and the <strong>culm</strong> (the builder's readiness meter — eight internodes, one grown per step, leaves at real milestones).</p>
 
   <h3>Space, radius, elevation</h3>
   <ul>
@@ -600,6 +600,8 @@
   <h3>Motion</h3>
   <ul>
     <li>Signature moment: the <strong>ring pulse</strong> — concentric rings emanating from the PhoneCTA while your phone is being called. It's the brand animation; nothing else on the page moves while it runs.</li>
+    <li>Builder signature: the <strong>culm growth</strong> — each completed step grows one internode of the readiness stalk (400ms fill); leaves unfold at voice, knowledge, and test milestones. The chrome progress bar is the same culm lying down: eight segments, not a continuous fill.</li>
+    <li>The <strong>lamp blink</strong> (2s opacity cycle) is reserved for exactly two places: the live-call indicator and the before-Bamboo voicemail light. If everything blinks, nothing is live.</li>
     <li>Scroll reveals: opacity 0→1 + 12px rise, 450ms cubic-bezier(.2,.7,.3,1), stagger 60ms, once only.</li>
     <li>Transcript typing: 24 chars/sec with 300ms breath between speakers — fast enough to feel live, slow enough to read.</li>
     <li>Count-ups on ROI numbers: 900ms ease-out. Confetti: exactly once, at readiness 100%, 1.8s, then never again for that user.</li>
