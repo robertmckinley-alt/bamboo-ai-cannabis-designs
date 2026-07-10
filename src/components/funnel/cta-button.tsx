@@ -39,11 +39,11 @@ export function CTAButton({
       asChild
       variant={tone === "ghost" ? "ghost" : tone === "secondary" ? "outline" : "default"}
       className={cn(
-        "h-12 rounded-lg px-5 text-sm font-semibold transition-[background,border-color,color,transform] duration-200 hover:-translate-y-0.5 focus-visible:ring-bamboo/50",
+        "h-12 rounded-md px-5 text-sm font-semibold transition-[background,border-color,color,transform] duration-200 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-bamboo focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         tone === "primary" &&
-          "border-bamboo bg-bamboo text-black hover:bg-bamboo/90",
+          "border-bamboo bg-bamboo text-background hover:bg-[oklch(0.9_0.2_141)]",
         tone === "secondary" &&
-          "border-white/15 bg-white/[0.055] text-white hover:border-bamboo/45 hover:bg-bamboo/12 hover:text-white",
+          "border-white/16 bg-surface-raised/70 text-white hover:border-bamboo/45 hover:bg-surface-strong hover:text-white",
         tone === "ghost" && "text-white hover:bg-white/10 hover:text-white",
         className
       )}

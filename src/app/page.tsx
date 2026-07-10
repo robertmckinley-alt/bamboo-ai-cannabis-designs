@@ -1,217 +1,166 @@
-import {
-  AgentTemplateCard,
-  BeforeAfterBlock,
-  FeatureCard,
-  FinalCTA,
-  HowItWorks,
-  ROIBlock,
-  SectionHeader,
-  SecuritySection,
-  TestimonialCard,
-} from "@/components/funnel/blocks";
+import { ArrowRight, CheckCircle2, CircleAlert, DatabaseZap, LockKeyhole, Route, ShieldCheck, UserRoundCheck } from "lucide-react";
+import { BuilderDemo } from "@/components/funnel/builder-demo";
+import { FinalCTA, SectionHeader } from "@/components/funnel/blocks";
 import { CTAButton } from "@/components/funnel/cta-button";
 import { FAQAccordion } from "@/components/funnel/faq-accordion";
 import { HeroSection } from "@/components/funnel/hero-section";
 import { IndustrySelector } from "@/components/funnel/industry-selector";
-import {
-  agentTemplates,
-  homepageFAQs,
-  industries,
-  integrations,
-  testimonials,
-  useCases,
-} from "@/data/funnel";
-import {
-  ArrowRight,
-  CheckCircle2,
-  ClipboardCheck,
-  PlugZap,
-  ShieldCheck,
-  Sparkles,
-  Workflow,
-} from "lucide-react";
+import { ROIEstimator } from "@/components/funnel/roi-estimator";
+import { UseCaseExplorer } from "@/components/funnel/use-case-explorer";
+import { homepageFAQs, industries } from "@/data/funnel";
 
-const builderPath = [
-  ["Intake", "Visitor chooses industry, goal, channel, and tone."],
-  ["Preview", "Bamboo turns the answers into a visible agent blueprint."],
-  ["Handoff", "The captured lead includes context, readiness, and next action."],
-];
+const connections = ["Website chat", "CRM", "Calendar", "Email", "SMS", "Forms", "Knowledge bases", "Help desks"];
 
 export default function Home() {
   return (
-    <main className="overflow-hidden">
+    <main id="main-content" className="overflow-hidden">
       <HeroSection />
 
-      <section className="mx-auto max-w-6xl px-5 py-20 md:py-24">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <div>
-            <SectionHeader
-              align="left"
-              eyebrow="Builder preview"
-              title="Let visitors shape the agent before sales gets involved."
-              description="The free builder gives each visitor a concrete artifact: what the agent says, what it captures, and how it routes the next step."
-            />
-            <div className="mt-8 grid gap-3">
-              {builderPath.map(([label, detail], index) => (
-                <div
-                  key={label}
-                  className="grid grid-cols-[2.75rem_1fr] gap-4 rounded-lg bg-white/[0.04] p-4 ring-1 ring-white/10"
-                >
-                  <div className="flex size-11 items-center justify-center rounded-md bg-bamboo/12 font-heading text-lg font-semibold text-bamboo">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <h3 className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">{label}</h3>
-                    <p className="mt-1 text-sm leading-7 text-white/64">{detail}</p>
-                  </div>
-                </div>
+      <section className="border-y border-white/10 bg-black/14">
+        <div className="page-shell flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
+          <p className="text-sm font-medium text-white/74">Designed to connect with the systems already in your funnel.</p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {connections.map((connection) => <span key={connection} className="text-xs text-white/54">{connection}</span>)}
+          </div>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="page-shell section-space scroll-mt-24">
+        <SectionHeader
+          align="left"
+          title="The lead usually disappears between interest and follow-up."
+          description="Bamboo closes that gap while intent is still warm, then gives the receiving human a useful starting point."
+        />
+        <div className="mt-12 grid gap-px overflow-hidden rounded-lg border border-white/12 bg-white/10 lg:grid-cols-[1fr_auto_1fr]">
+          <div className="bg-surface-raised p-6 sm:p-8">
+            <div className="flex items-center gap-3 text-white/72"><CircleAlert aria-hidden className="size-5 text-signal-coral" /><span className="font-semibold">Without Bamboo</span></div>
+            <ul className="mt-7 space-y-5 text-sm leading-7 text-white/64">
+              <li>Visitors wait or search for fit alone.</li>
+              <li>Static forms miss urgency and business context.</li>
+              <li>Your team repeats the same discovery later.</li>
+            </ul>
+          </div>
+          <div className="hidden w-20 items-center justify-center bg-background lg:flex"><ArrowRight aria-hidden className="size-6 text-bamboo" /></div>
+          <div className="bg-bamboo/[0.07] p-6 sm:p-8">
+            <div className="flex items-center gap-3 text-white"><UserRoundCheck aria-hidden className="size-5 text-bamboo" /><span className="font-semibold">With Bamboo</span></div>
+            <ul className="mt-7 space-y-5 text-sm leading-7 text-white/76">
+              {["Answer the question now.", "Qualify fit, timing, and need.", "Route the next step with a clean summary."].map((item) => (
+                <li key={item} className="flex gap-3"><CheckCircle2 aria-hidden className="mt-1 size-4 shrink-0 text-bamboo" />{item}</li>
               ))}
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FeatureCard
-              icon={<Sparkles aria-hidden className="size-5" />}
-              title="Smart intake"
-              description="Industry and goal choices pre-fill useful logic so the agent draft starts with context."
-            />
-            <FeatureCard
-              icon={<Workflow aria-hidden className="size-5" />}
-              title="Live workflow"
-              description="The preview updates around channel, tone, qualification, and knowledge-source decisions."
-            />
-            <FeatureCard
-              icon={<ClipboardCheck aria-hidden className="size-5" />}
-              title="Sales-ready summary"
-              description="Every saved draft becomes a cleaner lead object for follow-up, routing, and launch planning."
-            />
-            <FeatureCard
-              icon={<ArrowRight aria-hidden className="size-5" />}
-              title="Clean conversion"
-              description="Visitors can build for free, then move naturally into pricing or an optimization call."
-            />
+            </ul>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-white/[0.025]">
-        <div className="mx-auto max-w-6xl px-5 py-20 md:py-24">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <SectionHeader
-              align="left"
-              title="Pick the first workflow with real business shape."
-              description="Bamboo works best when the first agent has a job: qualify a buyer, route a patient, answer a policy question, or capture a project brief."
-            />
-            <IndustrySelector industries={industries} />
-          </div>
-        </div>
-      </section>
-
-      <HowItWorks />
-
-      <section className="mx-auto max-w-6xl px-5 py-20 md:py-24">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+      <section id="use-cases" className="border-y border-white/10 bg-black/14 scroll-mt-24">
+        <div className="page-shell section-space">
           <SectionHeader
             align="left"
-            title="Start from a pattern your team can recognize."
-            description="Templates make the first draft feel immediate while keeping the paid implementation path specific."
-            className="mx-0"
+            title="Give the first agent one job worth doing."
+            description="Choose the outcome. Bamboo turns it into a visible trigger, action path, capture plan, and human handoff."
           />
-          <CTAButton href="/free-agent-builder" event="secondary_cta_clicked" icon="sparkles">
-            Try a Template
-          </CTAButton>
-        </div>
-        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {agentTemplates.map((template) => (
-            <AgentTemplateCard key={template.title} {...template} />
-          ))}
+          <div className="mt-10"><UseCaseExplorer /></div>
         </div>
       </section>
 
-      <BeforeAfterBlock />
-      <ROIBlock />
-
-      <section className="mx-auto max-w-6xl px-5 py-20 md:py-24">
-        <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+      <section className="page-shell section-space">
+        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
           <SectionHeader
             align="left"
-            title="The funnel keeps the data useful after the click."
-            description="A Bamboo draft is more than a chat transcript. It becomes structured intent your team can route, measure, and expand."
+            title="Build the blueprint before you book the call."
+            description="Make three decisions and watch the agent take shape. Your selections carry into the full builder."
           />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {useCases.map((useCase) => (
-              <div
-                key={useCase}
-                className="flex gap-3 rounded-lg bg-white/[0.045] p-4 text-sm leading-7 text-white/68 ring-1 ring-white/10"
-              >
-                <CheckCircle2 aria-hidden className="mt-1 size-4 shrink-0 text-bamboo" />
-                {useCase}
+          <ol className="grid gap-3 text-sm text-white/66 sm:grid-cols-3">
+            {["Describe the workflow", "Review the blueprint", "Save and map the launch"].map((item, index) => (
+              <li key={item} className="flex items-center gap-3 border-t border-white/12 pt-3"><span className="font-mono text-bamboo">{index + 1}</span>{item}</li>
+            ))}
+          </ol>
+        </div>
+        <div className="mt-10"><BuilderDemo /></div>
+      </section>
+
+      <section className="border-y border-white/10 bg-black/14">
+        <div className="page-shell section-space">
+          <SectionHeader
+            align="left"
+            title="Model the value with your numbers."
+            description="Change the assumptions and see where faster response and after-hours coverage could influence demand."
+          />
+          <div className="mt-10"><ROIEstimator /></div>
+        </div>
+      </section>
+
+      <section className="page-shell section-space">
+        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+          <SectionHeader
+            align="left"
+            title="Automation your team can inspect."
+            description="Approved knowledge, explicit rules, confidence checks, and human escalation keep the system useful without giving up control."
+          />
+          <div className="relative grid gap-3">
+            {[
+              [DatabaseZap, "Approved knowledge", "Pages, FAQs, policies, and notes your team controls."],
+              [LockKeyhole, "Agent rules", "What to answer, what to capture, and what to avoid."],
+              [ShieldCheck, "Confidence check", "Sensitive or uncertain requests stop before improvisation."],
+              [Route, "Human handoff", "The right person receives context and the next requested action."],
+            ].map(([Icon, title, text], index) => (
+              <div key={title as string} className="grid grid-cols-[2.75rem_1fr_auto] items-center gap-4 border-b border-white/10 py-4 first:pt-0 last:border-0">
+                <div className="flex size-11 items-center justify-center rounded-md bg-white/[0.045] text-bamboo ring-1 ring-white/10"><Icon aria-hidden className="size-5" /></div>
+                <div><h3 className="font-heading font-semibold text-white">{title as string}</h3><p className="mt-1 text-sm leading-6 text-white/62">{text as string}</p></div>
+                <span className="font-mono text-xs text-white/32">0{index + 1}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {integrations.map((integration) => (
-            <div
-              key={integration}
-              className="flex items-center gap-3 rounded-lg bg-background/42 p-4 text-sm font-medium text-white/70 ring-1 ring-white/10"
-            >
-              <PlugZap aria-hidden className="size-4 text-cyan-soft" />
-              {integration}
-            </div>
-          ))}
+      </section>
+
+      <section id="industries" className="border-y border-white/10 bg-black/14 scroll-mt-24">
+        <div className="page-shell section-space grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+          <div className="lg:sticky lg:top-28">
+            <SectionHeader
+              align="left"
+              title="Start with the workflow your market already needs."
+              description="Each industry path opens a specific example, guardrail model, and preselected builder flow."
+            />
+          </div>
+          <IndustrySelector industries={industries} />
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-white/[0.025]">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-20 md:py-24 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+      <section className="page-shell section-space">
+        <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
           <SectionHeader
             align="left"
-            title="The product story should sound like momentum."
-            description="These placeholders keep the proof surface ready for real customers without letting the page go quiet."
+            title="The blueprint is the proof."
+            description="Before a sales conversation, you can inspect the agent’s objective, greeting, capture fields, guardrails, handoff, and launch gaps."
           />
-          <div className="grid gap-4 md:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <TestimonialCard key={testimonial.name} {...testimonial} />
+          <div className="border-y border-white/12 py-2">
+            {["Primary objective", "Opening greeting", "Qualification questions", "Approved knowledge", "Guardrails and escalation", "Destination and launch checklist"].map((item, index) => (
+              <div key={item} className="flex items-center justify-between gap-4 border-b border-white/8 py-4 last:border-0">
+                <span className="text-sm text-white/72">{item}</span>
+                <span className="flex items-center gap-2 font-mono text-xs text-bamboo"><CheckCircle2 aria-hidden className="size-3.5" /> INCLUDED {String(index + 1).padStart(2, "0")}</span>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <SecuritySection />
-
-      <section className="mx-auto max-w-6xl px-5 py-20 md:py-24">
-        <div className="grid gap-8 rounded-lg bg-bamboo/10 p-6 ring-1 ring-bamboo/25 md:grid-cols-[1fr_auto] md:items-center md:p-8">
+      <section className="border-y border-bamboo/20 bg-bamboo/[0.06]">
+        <div className="page-shell grid gap-7 py-12 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-bamboo">
-              <ShieldCheck aria-hidden className="size-4" />
-              Pricing path
-            </div>
-            <h2 className="mt-4 font-heading text-3xl font-semibold tracking-[-0.02em] text-white md:text-5xl">
-              Build free, then choose the launch plan that fits demand.
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/68">
-              Give users the agent preview now and route qualified buyers toward Growth, Scale, or a custom sales call.
-            </p>
+            <h2 className="font-heading text-3xl font-semibold tracking-[-0.02em] text-white">Prove the workflow free. Pay when it is ready to work.</h2>
+            <p className="mt-3 text-sm leading-7 text-white/66">Build the artifact first, then choose the launch depth that fits the demand.</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
-            <CTAButton href="/pricing" event="secondary_cta_clicked" icon="arrow">
-              View Pricing
-            </CTAButton>
-            <CTAButton href="/free-agent-builder" event="hero_cta_clicked" tone="secondary" icon="sparkles">
-              Try Builder
-            </CTAButton>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <CTAButton href="/pricing" event="secondary_cta_clicked" icon="arrow">View Launch Plans</CTAButton>
+            <CTAButton href="/free-agent-builder" event="hero_cta_clicked" tone="secondary" icon="sparkles">Build Free</CTAButton>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl px-5 py-20 md:py-24">
-        <SectionHeader
-          title="Questions before the first agent."
-          description="Objection handling for the free builder, implementation path, and sales handoff."
-        />
-        <div className="mt-10">
-          <FAQAccordion items={homepageFAQs} />
-        </div>
+      <section className="page-shell section-space max-w-4xl">
+        <SectionHeader title="Questions before the first agent." description="Clear answers about the blueprint, launch path, guardrails, and human handoff." />
+        <div className="mt-10"><FAQAccordion items={homepageFAQs} /></div>
       </section>
 
       <FinalCTA />

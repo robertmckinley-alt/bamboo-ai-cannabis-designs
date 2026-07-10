@@ -82,7 +82,7 @@ export const homepageFAQs: FAQ[] = [
   {
     question: "Is the pricing final?",
     answer:
-      "The plan structure here is sample front-end copy. Replace the pricing data file with your official packaging when it is finalized.",
+      "Start with the free blueprint. Growth supports one production agent, Scale expands routing and integrations, and Enterprise covers custom deployment requirements.",
   },
 ];
 

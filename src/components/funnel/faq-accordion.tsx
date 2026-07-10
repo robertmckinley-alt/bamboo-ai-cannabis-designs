@@ -9,7 +9,7 @@ export function FAQAccordion({ items }: { items: FAQ[] }) {
     <Accordion
       type="single"
       collapsible
-      className="rounded-lg border border-white/10 bg-white/[0.035] px-4"
+      className="border-y border-white/12"
       onValueChange={(value) => {
         if (value) {
           trackEvent("faq_opened", { question: value });
@@ -17,11 +17,11 @@ export function FAQAccordion({ items }: { items: FAQ[] }) {
       }}
     >
       {items.map((item) => (
-        <AccordionItem key={item.question} value={item.question} className="border-white/10">
-          <AccordionTrigger className="text-left text-base text-white hover:text-bamboo">
+        <AccordionItem key={item.question} value={item.question} className="border-white/10 px-1">
+          <AccordionTrigger className="min-h-16 text-left font-heading text-base font-semibold text-white hover:text-bamboo">
             {item.question}
           </AccordionTrigger>
-          <AccordionContent className="text-sm leading-7 text-white/60">
+          <AccordionContent className="max-w-3xl pb-5 text-sm leading-7 text-white/68">
             {item.answer}
           </AccordionContent>
         </AccordionItem>

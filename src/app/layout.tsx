@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { AnimatedGradient } from "@/components/funnel/animated-gradient";
-import { ExitIntentModal, Footer, Navbar } from "@/components/funnel/navigation";
+import { ExitIntentModal, Footer, MobileStickyCTA, Navbar } from "@/components/funnel/navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -39,6 +39,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  colorScheme: "dark",
+  themeColor: "#07110d",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,10 +62,17 @@ export default function RootLayout({
         <TooltipProvider>
           <AnimatedGradient />
           <PageViewTracker />
+          <a
+            href="#main-content"
+            className="fixed left-4 top-3 z-[70] -translate-y-20 rounded-md bg-bamboo px-4 py-3 text-sm font-semibold text-background transition focus:translate-y-0"
+          >
+            Skip to content
+          </a>
           <Navbar />
           {children}
           <Footer />
           <ExitIntentModal />
+          <MobileStickyCTA />
         </TooltipProvider>
       </body>
     </html>

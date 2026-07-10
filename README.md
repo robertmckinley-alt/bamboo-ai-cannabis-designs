@@ -1,23 +1,25 @@
-# Bamboo AI Funnel Front End
+# Bamboo AI V4
 
-Production-ready front-end funnel for Bamboo AI, built with Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui source components, Framer Motion, and Lucide icons.
+Production-grade acquisition funnel for Bamboo AI, built with Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui primitives, Framer Motion, and Lucide icons.
 
-## What Was Built
+## Experience
 
-- Premium dark-mode marketing funnel with homepage, pricing, demo booking, success pages, and 11 industry pages.
-- Free AI Agent Builder wizard with progress, step cards, smart defaults, skip/back actions, local autosave, live preview, readiness score, and final lead capture.
-- Reusable component system for navigation, CTAs, section headers, cards, FAQ, pricing, comparison table, trust/security, ROI, before/after, demo preview, forms, success states, floating CTAs, mobile sticky CTA, and exit intent.
-- Generic analytics helper for all requested event names.
-- Route metadata and OpenGraph data for SEO.
+- Living Control System visual direction with an input-to-outcome signal scene.
+- Conversion-led homepage with use-case explorer, transferable builder demo, editable ROI model, guardrails, industry matrix, pricing path, and FAQ.
+- Eight-step AI agent blueprint builder with URL preselection, local autosave, resume/start-over controls, live preview, explainable readiness categories, guardrails, validation, and lead capture.
+- Blueprint delivery with copy, JSON download, editing, readiness breakdown, strategy-call CTA, and plan selection.
+- Plan selector and feature comparison without a repeated pricing-card wall.
+- Strategy-call form, honest local confirmation state, custom not-found page, and 11 typed industry routes.
+- Responsive navigation, mobile sticky CTA, reduced-motion handling, WCAG-focused forms, and analytics events that exclude personal field values.
 
 ## Routes
 
 - `/`
 - `/free-agent-builder`
+- `/agent-created`
 - `/pricing`
 - `/book-demo`
 - `/thank-you`
-- `/agent-created`
 - `/industries/customer-service`
 - `/industries/sales`
 - `/industries/real-estate`
@@ -30,25 +32,23 @@ Production-ready front-end funnel for Bamboo AI, built with Next.js App Router, 
 - `/industries/ecommerce`
 - `/industries/construction`
 
-## Customize Copy
+## Project Context
 
-Edit `src/data/funnel.ts`. Homepage FAQs, testimonials, pricing plans, comparison rows, builder choices, templates, integrations, stats, logos, and industry page copy all live there.
+- `PRODUCT.md` captures users, purpose, brand personality, anti-references, principles, and accessibility requirements.
+- `DESIGN.md` captures the Living Control System theme, OKLCH palette, typography, layout, components, motion, responsive behavior, and prohibited patterns.
+- `BAMBOOAI_V4_MASTER_PROMPT.md` is the complete product, design, conversion, implementation, and verification brief.
+- `src/data/funnel.ts` contains pricing, FAQ, builder options, and industry content.
 
-## Connect Backend
+## Production Integrations
 
-The current build intentionally stores demo/builder submissions in `localStorage`. Replace the TODO sections in `src/components/funnel/forms.tsx` and `src/components/funnel/agent-builder-wizard.tsx` with API routes, Server Actions, or CRM/calendar integrations.
+The front end stores drafts and strategy requests in `localStorage` so the complete journey can be tested without credentials. Before a public production launch, connect the save actions in `src/components/funnel/forms.tsx` and `src/components/funnel/agent-builder-wizard.tsx` to the approved CRM, email, account, and calendar systems. Confirm official pricing, legal copy, security claims, and verified customer proof before publishing them.
 
-## Connect Analytics
-
-Use `src/lib/analytics.ts`. `trackEvent()` currently pushes to `window.dataLayer`, calls `window.analytics.track()` when present, and logs in development. Swap or extend that function for Segment, HubSpot, GA4, PostHog, or another provider.
-
-## Edit Industry Pages
-
-Add or modify entries in the `industries` array in `src/data/funnel.ts`. The dynamic route at `src/app/industries/[slug]/page.tsx` automatically generates pages and metadata from that data.
+Analytics flows through `src/lib/analytics.ts`, which supports `dataLayer` and `window.analytics.track` without sending raw form values.
 
 ## Development
 
 ```bash
+npm install
 npm run dev
 npm run lint
 npm run build

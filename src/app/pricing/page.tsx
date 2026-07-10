@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <main>
+    <main id="main-content">
       <PricingSection />
-      <section className="mx-auto max-w-4xl px-5 py-16">
+      <section className="page-shell section-space max-w-4xl">
         <FAQAccordion items={homepageFAQs.slice(0, 4)} />
       </section>
       <FinalCTA
