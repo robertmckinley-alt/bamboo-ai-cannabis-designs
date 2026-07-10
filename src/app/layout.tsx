@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
-import { AnimatedGradient } from "@/components/funnel/animated-gradient";
-import { ExitIntentModal, Footer, Navbar } from "@/components/funnel/navigation";
+import { Footer, MobileStickyCTA, Navbar } from "@/components/funnel/navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -19,20 +18,21 @@ const geistMono = Geist_Mono({
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mybamboo.ai"),
   title: {
-    default: "Bamboo AI | Build Your First AI Agent",
+    default: "Bamboo AI | Turn Every Visitor into a Qualified Next Step",
     template: "%s | Bamboo AI",
   },
   description:
-    "Create AI agents that capture leads, answer questions, book appointments, and support customers without code.",
+    "Build a no-code agent that answers questions, qualifies intent, books the right action, and hands your team the context. First blueprint in under five minutes.",
   openGraph: {
-    title: "Bamboo AI | Build AI Agents for Your Business",
+    title: "Bamboo AI | Turn Every Visitor into a Qualified Next Step",
     description:
-      "Create AI agents that capture leads, answer questions, book appointments, and support customers without code.",
+      "Build a no-code agent that answers questions, qualifies intent, books the right action, and hands your team the context.",
     url: "https://mybamboo.ai",
     siteName: "Bamboo AI",
     type: "website",
@@ -51,13 +51,18 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} dark h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-bamboo focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
+        >
+          Skip to content
+        </a>
         <TooltipProvider>
-          <AnimatedGradient />
           <PageViewTracker />
           <Navbar />
           {children}
           <Footer />
-          <ExitIntentModal />
+          <MobileStickyCTA />
         </TooltipProvider>
       </body>
     </html>

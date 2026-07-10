@@ -1,72 +1,67 @@
 import type { Metadata } from "next";
-import { CalendarDays, CheckCircle2, Clock3, Sparkles } from "lucide-react";
-import { BookingForm } from "@/components/funnel/forms";
-import { SectionHeader, TrustBadges } from "@/components/funnel/blocks";
-import { Card, CardContent } from "@/components/ui/card";
+import { StrategyCallForm } from "@/components/funnel/forms";
 
 export const metadata: Metadata = {
-  title: "Book a Demo",
+  title: "Book a Strategy Call",
   description:
-    "Book a Bamboo AI demo to map your first agent, launch workflow, integrations, and conversion plan.",
+    "A 25–30 minute working session: workflow review, launch requirements, and plan fit. No obligation.",
   openGraph: {
-    title: "Book a Demo | Bamboo AI",
-    description: "Turn a free agent preview into a paid Bamboo AI launch plan.",
+    title: "Book a Strategy Call | Bamboo AI",
+    description:
+      "A 25–30 minute working session: workflow review, launch requirements, and plan fit. No obligation.",
     url: "/book-demo",
   },
 };
 
+const outputs = [
+  {
+    title: "Workflow recommendation",
+    detail: "Which single workflow should go live first, and why it beats the alternatives.",
+  },
+  {
+    title: "Launch requirements",
+    detail: "The knowledge sources, integrations, and routing rules your deployment actually needs.",
+  },
+  {
+    title: "Plan fit",
+    detail: "An honest read on which plan matches the workflow — including “not yet.”",
+  },
+];
+
 export default function BookDemoPage() {
   return (
-    <main className="mx-auto max-w-6xl px-5 py-16">
-      <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+    <main id="main-content" className="mx-auto max-w-[1240px] px-5 py-12 md:px-8 md:py-16">
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:gap-16">
         <div>
-          <SectionHeader
-            align="left"
-            eyebrow="Book a demo"
-            title="Map your first agent with a Bamboo specialist."
-            description="We will review your workflow, identify the fastest launch path, and show where Bamboo can capture more demand."
-          />
-          <div className="mt-8 grid gap-4">
-            {[
-              {
-                icon: <Sparkles className="size-5" />,
-                title: "Review the agent opportunity",
-                text: "Clarify the first workflow that should answer, capture, book, or route.",
-              },
-              {
-                icon: <Clock3 className="size-5" />,
-                title: "Design the launch path",
-                text: "Map the knowledge source, channel, handoff, and success metric.",
-              },
-              {
-                icon: <CalendarDays className="size-5" />,
-                title: "Choose the next step",
-                text: "Leave with a clear production plan, pricing fit, or proof-of-concept path.",
-              },
-            ].map((item) => (
-              <Card key={item.title} className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
-                <CardContent className="flex gap-4 p-5">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-bamboo/10 text-bamboo">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h2 className="font-heading font-semibold tracking-[-0.01em] text-white">{item.title}</h2>
-                    <p className="mt-2 text-sm leading-7 text-white/64">{item.text}</p>
-                  </div>
-                </CardContent>
-              </Card>
+          <h1 className="font-heading text-[clamp(2.1rem,4vw,3.4rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-ink-1">
+            Map the first agent worth launching.
+          </h1>
+          <p className="mt-4 text-base leading-7 text-ink-2">
+            25–30 minutes, working session, no obligation. We review your workflow — and your
+            blueprint, if you built one — and you leave with a clear next-step plan either way.
+          </p>
+          <dl className="mt-8 grid gap-0">
+            {outputs.map((output, index) => (
+              <div key={output.title} className="relative pb-6 pl-8 last:pb-0">
+                <span
+                  className="absolute left-0 top-0.5 flex size-5 items-center justify-center rounded-full border border-bamboo-deep font-mono text-[10px] text-bamboo"
+                  aria-hidden
+                >
+                  {index + 1}
+                </span>
+                {index < outputs.length - 1 ? (
+                  <span className="absolute left-[9.5px] top-6 h-[calc(100%-20px)] w-px bg-line" aria-hidden />
+                ) : null}
+                <dt className="font-heading text-base font-semibold tracking-[-0.01em] text-ink-1">
+                  {output.title}
+                </dt>
+                <dd className="mt-1 text-sm leading-6 text-ink-2">{output.detail}</dd>
+              </div>
             ))}
-          </div>
-          <div className="mt-6">
-            <TrustBadges />
-          </div>
+          </dl>
         </div>
-        <div>
-          <BookingForm />
-          <div className="mt-5 flex gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-white/66">
-            <CheckCircle2 aria-hidden className="mt-1 size-4 shrink-0 text-bamboo" />
-            Qualified teams can bring an existing website, FAQs, CRM notes, or current intake form to the call.
-          </div>
+        <div className="rounded-lg border border-line bg-bg-1 p-5 md:p-7">
+          <StrategyCallForm />
         </div>
       </div>
     </main>

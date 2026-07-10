@@ -1,55 +1,38 @@
-# Bamboo AI Funnel Front End
+# Bamboo AI — Conversion Funnel (V4)
 
-Production-ready front-end funnel for Bamboo AI, built with Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui source components, Framer Motion, and Lucide icons.
-
-## What Was Built
-
-- Premium dark-mode marketing funnel with homepage, pricing, demo booking, success pages, and 11 industry pages.
-- Free AI Agent Builder wizard with progress, step cards, smart defaults, skip/back actions, local autosave, live preview, readiness score, and final lead capture.
-- Reusable component system for navigation, CTAs, section headers, cards, FAQ, pricing, comparison table, trust/security, ROI, before/after, demo preview, forms, success states, floating CTAs, mobile sticky CTA, and exit intent.
-- Generic analytics helper for all requested event names.
-- Route metadata and OpenGraph data for SEO.
+Next.js App Router implementation of the Bamboo AI acquisition funnel for [mybamboo.ai](https://mybamboo.ai), built to the V4 master brief: **the fastest path from an anonymous website visitor to a business-specific agent blueprint and a qualified next step.**
 
 ## Routes
 
-- `/`
-- `/free-agent-builder`
-- `/pricing`
-- `/book-demo`
-- `/thank-you`
-- `/agent-created`
-- `/industries/customer-service`
-- `/industries/sales`
-- `/industries/real-estate`
-- `/industries/medical`
-- `/industries/cannabis`
-- `/industries/automotive`
-- `/industries/law-firms`
-- `/industries/insurance`
-- `/industries/restaurants`
-- `/industries/ecommerce`
-- `/industries/construction`
+| Route | What it is |
+| --- | --- |
+| `/` | Homepage — live-system hero loop, cost-of-the-gap flow, use-case explorer, working mini-builder, ROI estimator, guardrail diagram, industry explorer, blueprint artifact, pricing teaser, FAQ |
+| `/free-agent-builder` | 8-step builder: industry → outcomes → channel → voice → context → knowledge/guardrails → blueprint preview (readiness by category) → save. Autosave, resume banner, URL preselection (`?industry=&goal=&channel=`) |
+| `/agent-created` | Blueprint delivery: full summary, readiness breakdown, copy/download/edit, optimization-call CTA. Honest empty state |
+| `/pricing` | Free Builder / Growth / Scale / Enterprise, comparison table, implementation FAQ |
+| `/book-demo` | Strategy-call request (25–30 min framing, three outputs) → `/thank-you` |
+| `/industries/[slug]` | 11 industry playbooks with example conversations, workflows, regulated-industry boundaries, and an editable value estimator |
 
-## Customize Copy
+## Design system — "Living Control System"
 
-Edit `src/data/funnel.ts`. Homepage FAQs, testimonials, pricing plans, comparison rows, builder choices, templates, integrations, stats, logos, and industry page copy all live there.
+Committed dark OKLCH palette (`src/app/globals.css`): bamboo green for active/conversion, cyan for routing, amber for attention, coral for errors. Bricolage Grotesque display / Geist body / Geist Mono for system values. Default radius 6px; connector lines and segmented nodes map real signal flow.
 
-## Connect Backend
+## Honesty rules baked in
 
-The current build intentionally stores demo/builder submissions in `localStorage`. Replace the TODO sections in `src/components/funnel/forms.tsx` and `src/components/funnel/agent-builder-wizard.tsx` with API routes, Server Actions, or CRM/calendar integrations.
+- No fake logos, testimonials, or invented benchmarks. The estimator computes only from visitor inputs and labels everything an illustrative estimate.
+- Regulated industries (medical, law, insurance, cannabis) state their boundaries on-page.
+- Persistence is local (`localStorage`); the save/submit paths are structured for a server action or CRM call to drop in. Nothing claims an email was sent.
+- Demo-fill controls render in development only.
 
-## Connect Analytics
-
-Use `src/lib/analytics.ts`. `trackEvent()` currently pushes to `window.dataLayer`, calls `window.analytics.track()` when present, and logs in development. Swap or extend that function for Segment, HubSpot, GA4, PostHog, or another provider.
-
-## Edit Industry Pages
-
-Add or modify entries in the `industries` array in `src/data/funnel.ts`. The dynamic route at `src/app/industries/[slug]/page.tsx` automatically generates pages and metadata from that data.
-
-## Development
+## Develop
 
 ```bash
-npm run dev
-npm run lint
-npm run build
+npm install
+npm run dev     # develop
+npm run lint    # eslint
+npm run build   # production build
+node scripts/check-overflow.mjs   # no horizontal overflow, 6 widths × 7 routes (needs `next start -p 3199`)
+node scripts/e2e-flow.mjs         # full funnel journey via Playwright + system Chrome
 ```
+
+Analytics events fire into `window.dataLayer` (see `src/lib/analytics.ts`); no personal field values are sent.

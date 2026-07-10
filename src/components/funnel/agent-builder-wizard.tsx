@@ -1,802 +1,1281 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Bot,
-  Building2,
-  CheckCircle2,
-  Globe2,
-  MessageSquareText,
-  Radio,
-  Sparkles,
-  UserRound,
-  WandSparkles,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, ArrowRight, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { builderChoices } from "@/data/funnel";
+import {
+  builderChannels,
+  builderGoals,
+  builderIndustries,
+  builderVoices,
+} from "@/data/funnel";
+import {
+  AGENT_STORAGE_KEY,
+  BUILDER_STORAGE_KEY,
+  buildBlueprint,
+  computeReadiness,
+  emptyBuilderState,
+  type BuilderState,
+  type SavedAgent,
+} from "@/lib/blueprint";
 import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
-import { LeadCaptureForm } from "@/components/funnel/forms";
 
-type BuilderState = {
-  industry: string;
-  goals: string[];
-  channel: string;
-  voice: string;
-  businessName: string;
-  businessInfo: string;
-  website: string;
-  knowledgeSource: string;
-};
+const AUTO_ADVANCE_MS = 220;
+const isDev = process.env.NODE_ENV === "development";
 
-const storageKey = "bamboo-agent-builder";
+const stepTitles = [
+  "Which industry is this agent for?",
+  "What should it accomplish?",
+  "Where does it meet customers first?",
+  "How should it sound?",
+  "Tell it about the business.",
+  "Knowledge and guardrails.",
+  "Review the blueprint.",
+  "Where should we send your agent blueprint?",
+] as const;
 
-const defaults: BuilderState = {
-  industry: "",
-  goals: [],
-  channel: "",
-  voice: "",
-  businessName: "",
-  businessInfo: "",
-  website: "",
-  knowledgeSource: "",
-};
+const stepShortLabels = [
+  "Industry",
+  "Outcomes",
+  "Channel",
+  "Voice",
+  "Context",
+  "Knowledge",
+  "Preview",
+  "Save",
+] as const;
 
-const demoPreset: BuilderState = {
-  industry: "Sales",
-  goals: ["Capture and qualify leads", "Book appointments"],
-  channel: "Website chat",
-  voice: "Helpful expert",
-  businessName: "Bamboo Demo Co",
-  businessInfo:
-    "We help growing teams automate inbound sales and support conversations. The agent should qualify company size, urgency, and the workflow they want to automate.",
-  website: "https://mybamboo.ai",
-  knowledgeSource:
-    "Use the homepage, pricing page, FAQ, customer support notes, and demo booking rules as approved knowledge sources.",
-};
-
-const steps = [
-  { id: "industry", title: "Choose industry", icon: Building2 },
-  { id: "goals", title: "Choose 1-2 goals", icon: WandSparkles },
-  { id: "channel", title: "Choose channel", icon: Radio },
-  { id: "voice", title: "Choose voice", icon: UserRound },
-  { id: "business", title: "Add business info", icon: Building2 },
-  { id: "knowledge", title: "Add knowledge source", icon: Globe2 },
-  { id: "preview", title: "Preview agent", icon: Bot },
-  { id: "lead", title: "Create account", icon: CheckCircle2 },
-];
-
-type StepId = (typeof steps)[number]["id"];
-
-const stepDefaults: Record<StepId, Partial<BuilderState>> = {
-  industry: { industry: demoPreset.industry },
-  goals: { goals: demoPreset.goals },
-  channel: { channel: demoPreset.channel },
-  voice: { voice: demoPreset.voice },
-  business: {
-    businessName: demoPreset.businessName,
-    businessInfo: demoPreset.businessInfo,
-  },
-  knowledge: {
-    website: demoPreset.website,
-    knowledgeSource: demoPreset.knowledgeSource,
-  },
-  preview: {},
-  lead: {},
-};
-
-function normalizeSavedState(saved: string): BuilderState {
-  const parsed = JSON.parse(saved) as Partial<BuilderState> & { goal?: string };
-
-  return {
-    ...defaults,
-    ...parsed,
-    goals: Array.isArray(parsed.goals)
-      ? parsed.goals.filter(Boolean).slice(0, 2)
-      : parsed.goal
-        ? [parsed.goal]
-        : [],
-  };
+function hasProgress(state: BuilderState) {
+  return Boolean(
+    state.industry ||
+      state.goals.length > 0 ||
+      state.channel ||
+      state.voice ||
+      state.businessName ||
+      state.offering
+  );
 }
+
+function isValidUrl(value: string) {
+  if (!value.trim()) return true;
+  try {
+    new URL(value.startsWith("http") ? value : `https://${value}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function AgentBuilderWizard() {
   const router = useRouter();
-  const [state, setState] = useState<BuilderState>(defaults);
+  const searchParams = useSearchParams();
+  const [state, setState] = useState<BuilderState>(emptyBuilderState);
   const [step, setStep] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [resumeOffered, setResumeOffered] = useState(false);
+  const [secondaryReplaced, setSecondaryReplaced] = useState("");
+  const advanceTimer = useRef<number | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
+  /* ---- load saved state + URL preselection ---- */
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    window.setTimeout(() => {
+    let next = { ...emptyBuilderState };
+    let savedProgress = false;
+    try {
+      const saved = localStorage.getItem(BUILDER_STORAGE_KEY);
       if (saved) {
-        try {
-          setState(normalizeSavedState(saved));
-        } catch {
-          setState(defaults);
-        }
+        const parsed = JSON.parse(saved) as Partial<BuilderState>;
+        next = {
+          ...next,
+          ...parsed,
+          goals: Array.isArray(parsed.goals) ? parsed.goals.filter(Boolean).slice(0, 2) : [],
+          sensitiveReviewAcknowledged: Boolean(parsed.sensitiveReviewAcknowledged),
+        };
+        savedProgress = hasProgress(next);
       }
+    } catch {
+      next = { ...emptyBuilderState };
+    }
+
+    // URL params fill only fields the visitor hasn't already set.
+    const paramIndustry = searchParams.get("industry");
+    const paramGoal = searchParams.get("goal");
+    const paramChannel = searchParams.get("channel");
+    if (paramIndustry && !next.industry && builderIndustries.includes(paramIndustry)) {
+      next.industry = paramIndustry;
+    }
+    if (paramGoal && next.goals.length === 0 && builderGoals.includes(paramGoal)) {
+      next.goals = [paramGoal];
+    }
+    if (paramChannel && !next.channel && builderChannels.some((c) => c.name === paramChannel)) {
+      next.channel = paramChannel;
+    }
+
+    // Async so the hydration-boundary load doesn't cascade renders.
+    const task = window.setTimeout(() => {
+      setState(next);
+      setResumeOffered(savedProgress);
       setLoaded(true);
     }, 0);
-    trackEvent("agent_builder_started", { source: "free_agent_builder" });
-  }, []);
+    trackEvent("agent_builder_started", {
+      source: paramIndustry || paramGoal || paramChannel ? "preselected" : "direct",
+      resumed: savedProgress,
+    });
+    return () => window.clearTimeout(task);
+  }, [searchParams]);
 
+  /* ---- autosave ---- */
   useEffect(() => {
     if (loaded) {
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      localStorage.setItem(BUILDER_STORAGE_KEY, JSON.stringify(state));
     }
   }, [loaded, state]);
 
-  const readiness = useMemo(() => {
-    const checks = [
+  useEffect(() => {
+    return () => {
+      if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
+    };
+  }, []);
+
+  const readiness = useMemo(() => computeReadiness(state), [state]);
+  const blueprint = useMemo(() => buildBlueprint(state), [state]);
+
+  /* ---- step completion + gating ---- */
+  const stepComplete = useMemo(
+    () => [
       Boolean(state.industry),
       state.goals.length > 0,
       Boolean(state.channel),
       Boolean(state.voice),
-      Boolean(state.businessName),
-      Boolean(state.businessInfo),
-      Boolean(state.website),
-      Boolean(state.knowledgeSource),
-    ];
-    const filled = checks.filter(Boolean).length;
-    return Math.min(100, 18 + filled * 10);
-  }, [state]);
+      Boolean(state.businessName.trim() && state.offering.trim() && state.nextAction.trim()),
+      true, // knowledge & guardrails is skippable
+      true, // preview has no inputs
+      false, // save completes by leaving the page
+    ],
+    [state]
+  );
 
-  const agent = useMemo(() => {
-    const industry = state.industry || "your industry";
-    const primaryGoal = state.goals[0] || "capture qualified conversations";
-    const secondaryGoal = state.goals[1];
-    const goalSummary = secondaryGoal
-      ? `${primaryGoal.toLowerCase()} and ${secondaryGoal.toLowerCase()}`
-      : primaryGoal.toLowerCase();
-    const channel = state.channel || "Website chat";
-    const voice = state.voice || "Helpful expert";
-    const business = state.businessName || "Your business";
+  // A step is reachable if every *required* step before it is complete.
+  const maxReachable = useMemo(() => {
+    for (let i = 0; i < stepComplete.length - 1; i += 1) {
+      if (!stepComplete[i]) return i;
+    }
+    return stepComplete.length - 1;
+  }, [stepComplete]);
 
-    return {
-      name: `${business} ${primaryGoal.split(" ")[0]} Agent`,
-      greeting: `Hi, I am the ${business} AI assistant. I can help you ${goalSummary} and connect you with the right next step.`,
-      summary: `A ${voice.toLowerCase()} agent for ${industry.toLowerCase()} teams, designed for ${channel.toLowerCase()}.`,
-      nextStep:
-        readiness > 78
-          ? "Ready for launch planning and integration mapping."
-          : "Add more business details to improve launch readiness.",
-    };
-  }, [readiness, state]);
+  const goTo = useCallback(
+    (target: number, direction: "forward" | "back" = "forward", force = false) => {
+      const clamped = Math.max(0, Math.min(stepTitles.length - 1, target));
+      // `force` bypasses the gate when the advancing step just satisfied its
+      // own dependency (the closure's maxReachable is one render stale).
+      if (!force && clamped > maxReachable) return;
+      setStep(clamped);
+      if (direction === "back") {
+        trackEvent("builder_step_back", { step: stepShortLabels[clamped], index: clamped + 1 });
+      }
+      window.requestAnimationFrame(() => headingRef.current?.focus());
+      if (clamped === 6) {
+        trackEvent("agent_preview_viewed", {
+          readiness_band: readiness.total >= 80 ? "high" : readiness.total >= 50 ? "mid" : "low",
+          source: "builder",
+        });
+      }
+    },
+    [maxReachable, readiness.total]
+  );
 
-  function update(field: Exclude<keyof BuilderState, "goals">, value: string) {
-    setState((current) => ({ ...current, [field]: value }));
+  function completeAndAdvance(current: number) {
+    trackEvent("builder_step_completed", {
+      step: stepShortLabels[current],
+      step_index: current + 1,
+    });
+    goTo(current + 1, "forward", true);
   }
 
-  function chooseSingle(field: "industry" | "channel" | "voice", value: string) {
-    setState((current) => ({ ...current, [field]: value }));
-    trackEvent(field === "industry" ? "industry_selected" : "builder_step_completed", {
-      step: steps[step].id,
-      value,
-      index: step + 1,
-    });
-    setStep((current) => Math.min(current + 1, steps.length - 1));
+  /* ---- selection handlers ---- */
+  function chooseSingle(field: "industry" | "channel" | "voice", value: string, currentStep: number) {
+    setState((prev) => ({ ...prev, [field]: value }));
+    if (field === "industry") {
+      trackEvent("industry_selected", { industry: value, surface: "builder" });
+    }
+    if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
+    advanceTimer.current = window.setTimeout(() => completeAndAdvance(currentStep), AUTO_ADVANCE_MS);
   }
 
   function toggleGoal(goal: string) {
-    setState((current) => {
-      const alreadySelected = current.goals.includes(goal);
-      const goals = alreadySelected
-        ? current.goals.filter((item) => item !== goal)
-        : [...current.goals, goal].slice(0, 2);
-
-      return { ...current, goals };
-    });
-  }
-
-  function fillDemoPreset(targetStep = step) {
-    setState(demoPreset);
-    setStep(targetStep);
-    trackEvent("builder_step_skipped", { step: "demo_preset", index: targetStep + 1 });
-  }
-
-  function fillCurrentStepDefaults() {
-    const currentStep = steps[step].id;
-    const currentDefaults = stepDefaults[currentStep];
-
-    setState((current) => {
-      const next = { ...current };
-      for (const [key, value] of Object.entries(currentDefaults) as [
-        keyof BuilderState,
-        BuilderState[keyof BuilderState],
-      ][]) {
-        if (key === "goals") {
-          if (next.goals.length === 0 && Array.isArray(value)) {
-            next.goals = value.slice(0, 2);
-          }
-          continue;
-        }
-
-        if (typeof value === "string" && typeof next[key] === "string" && !next[key].trim()) {
-          next[key] = value as never;
-        }
+    setSecondaryReplaced("");
+    setState((prev) => {
+      const selected = prev.goals.includes(goal);
+      if (selected) {
+        return { ...prev, goals: prev.goals.filter((g) => g !== goal) };
       }
-      return next;
+      if (prev.goals.length < 2) {
+        return { ...prev, goals: [...prev.goals, goal] };
+      }
+      // Third selection replaces the optional secondary — with visible feedback.
+      setSecondaryReplaced(prev.goals[1]);
+      return { ...prev, goals: [prev.goals[0], goal] };
     });
   }
 
-  function goNext() {
-    fillCurrentStepDefaults();
-    trackEvent("builder_step_completed", { step: steps[step].id, index: step + 1 });
-    setStep((current) => Math.min(current + 1, steps.length - 1));
+  function update<K extends keyof BuilderState>(field: K, value: BuilderState[K]) {
+    setState((prev) => ({ ...prev, [field]: value }));
   }
 
-  function goBack() {
-    trackEvent("builder_step_back", { step: steps[step].id, index: step + 1 });
-    setStep((current) => Math.max(current - 1, 0));
+  function startOver() {
+    localStorage.removeItem(BUILDER_STORAGE_KEY);
+    setState({ ...emptyBuilderState });
+    setStep(0);
+    setResumeOffered(false);
+    trackEvent("builder_step_skipped", { step: "start_over" });
   }
 
-  function skipStep() {
-    const current = steps[step].id;
-    fillCurrentStepDefaults();
-    trackEvent("builder_step_skipped", { step: current, index: step + 1 });
-    setStep((value) => Math.min(value + 1, steps.length - 1));
+  function skipKnowledge() {
+    trackEvent("builder_step_skipped", { step: "Knowledge", step_index: 6 });
+    goTo(6);
   }
 
-  const progress = Math.round(((step + 1) / steps.length) * 100);
-
-  return (
-    <div className="grid gap-6 lg:grid-cols-[0.95fr_0.75fr]">
-      <Card className="rounded-lg border-white/10 bg-white/[0.045] shadow-none">
-        <CardContent className="p-5 md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <Badge className="border-bamboo/25 bg-bamboo/10 text-bamboo hover:bg-bamboo/10">
-                Step {step + 1} of {steps.length}
-              </Badge>
-              <h1 className="mt-4 font-heading text-balance text-3xl font-semibold tracking-[-0.02em] text-white md:text-5xl">
-                {steps[step].title}
-              </h1>
-            </div>
-            <div className="min-w-40">
-              <div className="mb-2 flex items-center justify-between text-xs text-white/56">
-                <span>Progress</span>
-                <span>{progress}%</span>
-              </div>
-              <ProgressBar value={progress} />
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4 rounded-lg border border-bamboo/20 bg-bamboo/10 p-4 md:grid-cols-[1fr_auto] md:items-center">
-            <div>
-              <p className="text-sm font-semibold text-white">Demo mode</p>
-              <p className="mt-1 text-sm leading-6 text-white/64">
-                You can click through normally, or preload sample data and still visit every step.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 border-bamboo/30 bg-black/20 text-white hover:bg-bamboo/10 hover:text-white"
-                onClick={() => fillDemoPreset(step)}
-              >
-                <Sparkles aria-hidden className="size-4" />
-                Fill Demo Data
-              </Button>
-              <Button
-                type="button"
-                className="h-10 bg-bamboo text-black hover:bg-bamboo/90"
-                onClick={() => fillDemoPreset(6)}
-              >
-                Preview Demo Agent
-              </Button>
-            </div>
-          </div>
-
-          <StepRail currentStep={step} state={state} onStepChange={setStep} />
-
-          <div className="mt-8">
-            {step === 0 ? (
-              <SingleChoiceGrid
-                options={builderChoices.industries}
-                selected={state.industry}
-                onSelect={(value) => chooseSingle("industry", value)}
-                prompt="Pick an industry to move to goals."
-              />
-            ) : null}
-            {step === 1 ? (
-              <GoalChoiceGrid
-                options={builderChoices.goals}
-                selected={state.goals}
-                onToggle={toggleGoal}
-                onContinue={goNext}
-              />
-            ) : null}
-            {step === 2 ? (
-              <SingleChoiceGrid
-                options={builderChoices.channels}
-                selected={state.channel}
-                onSelect={(value) => chooseSingle("channel", value)}
-                prompt="Pick the first channel. We will move you forward."
-              />
-            ) : null}
-            {step === 3 ? (
-              <SingleChoiceGrid
-                options={builderChoices.voices}
-                selected={state.voice}
-                onSelect={(value) => chooseSingle("voice", value)}
-                prompt="Pick the agent personality. Next is business info."
-              />
-            ) : null}
-            {step === 4 ? (
-              <div className="grid gap-4">
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-9 border-white/10 bg-white/[0.035] text-white hover:bg-white/10 hover:text-white"
-                    onClick={() =>
-                      setState((current) => ({
-                        ...current,
-                        businessName: demoPreset.businessName,
-                        businessInfo: demoPreset.businessInfo,
-                      }))
-                    }
-                  >
-                    Use Demo Business Info
-                  </Button>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="business-name" className="text-white/72">
-                    Business name
-                  </Label>
-                  <Input
-                    id="business-name"
-                    value={state.businessName}
-                    onChange={(event) => update("businessName", event.target.value)}
-                    className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
-                    placeholder="Bamboo Labs"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="business-info" className="text-white/72">
-                    What should the agent know?
-                  </Label>
-                  <Textarea
-                    id="business-info"
-                    value={state.businessInfo}
-                    onChange={(event) => update("businessInfo", event.target.value)}
-                    className="min-h-32 border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
-                    placeholder="Describe your offer, customers, key qualification rules, and what should happen after a good conversation."
-                  />
-                </div>
-              </div>
-            ) : null}
-            {step === 5 ? (
-              <div className="grid gap-4">
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-9 border-white/10 bg-white/[0.035] text-white hover:bg-white/10 hover:text-white"
-                    onClick={() =>
-                      setState((current) => ({
-                        ...current,
-                        website: demoPreset.website,
-                        knowledgeSource: demoPreset.knowledgeSource,
-                      }))
-                    }
-                  >
-                    Use Demo Knowledge
-                  </Button>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="website" className="text-white/72">
-                    Website
-                  </Label>
-                  <Input
-                    id="website"
-                    value={state.website}
-                    onChange={(event) => update("website", event.target.value)}
-                    className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
-                    placeholder="https://mybamboo.ai"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="knowledge" className="text-white/72">
-                    Knowledge source
-                  </Label>
-                  <Textarea
-                    id="knowledge"
-                    value={state.knowledgeSource}
-                    onChange={(event) => update("knowledgeSource", event.target.value)}
-                    className="min-h-28 border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
-                    placeholder="Paste FAQ links, help docs, policy notes, or a short list of approved answers."
-                  />
-                </div>
-              </div>
-            ) : null}
-            {step === 6 ? (
-              <div className="grid gap-5">
-                <StepCard
-                  active
-                  icon={<Bot aria-hidden className="size-5" />}
-                  title={agent.name}
-                  description={agent.summary}
-                  meta={`Readiness ${readiness}%`}
-                />
-                <div className="rounded-lg border border-white/10 bg-black/20 p-5">
-                  <p className="text-xs font-medium text-white/54">
-                    Preview greeting
-                  </p>
-                  <p className="mt-3 text-sm leading-7 text-white/68">{agent.greeting}</p>
-                </div>
-                <div className="rounded-lg border border-bamboo/20 bg-bamboo/10 p-5">
-                  <p className="text-sm font-medium text-white">Launch note</p>
-                  <p className="mt-2 text-sm leading-7 text-white/64">{agent.nextStep}</p>
-                </div>
-              </div>
-            ) : null}
-            {step === 7 ? (
-              <div>
-                <p className="mb-5 text-sm leading-7 text-white/68">
-                  Save the draft and create a lead profile. The production app can send this to your CRM or account system.
-                </p>
-                <LeadCaptureForm
-                  initial={{
-                    company: state.businessName,
-                    website: state.website,
-                    industry: state.industry,
-                  }}
-                  demoLead={{
-                    name: "Jordan Lee",
-                    email: "jordan@bamboodemo.co",
-                    phone: "(555) 019-4432",
-                    company: state.businessName || demoPreset.businessName,
-                    website: state.website || demoPreset.website,
-                    industry: state.industry || demoPreset.industry,
-                  }}
-                  onSubmit={(lead) => {
-                    localStorage.setItem(
-                      "bamboo-agent",
-                      JSON.stringify({ agent, state, readiness, lead })
-                    );
-                    router.push("/agent-created");
-                  }}
-                />
-              </div>
-            ) : null}
-          </div>
-
-          {step < 7 ? (
-            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11 border-white/10 bg-white/[0.035] text-white hover:bg-white/10 hover:text-white"
-                  onClick={goBack}
-                  disabled={step === 0}
-                >
-                  <ArrowLeft aria-hidden className="size-4" />
-                  Back
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-11 text-white/58 hover:bg-white/10 hover:text-white"
-                  onClick={skipStep}
-                >
-                  Skip for now
-                </Button>
-              </div>
-              <Button
-                type="button"
-                className="h-11 bg-bamboo text-black hover:bg-bamboo/90"
-                onClick={goNext}
-              >
-                Continue
-                <ArrowRight aria-hidden className="size-4" />
-              </Button>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <LivePreview agent={agent} readiness={readiness} state={state} />
-    </div>
-  );
-}
-
-export function ProgressBar({ value }: { value: number }) {
-  return <Progress value={value} className="h-2 bg-white/10 [&>div]:bg-bamboo" />;
-}
-
-function StepRail({
-  currentStep,
-  state,
-  onStepChange,
-}: {
-  currentStep: number;
-  state: BuilderState;
-  onStepChange: (step: number) => void;
-}) {
-  const completed: Record<StepId, boolean> = {
-    industry: Boolean(state.industry),
-    goals: state.goals.length > 0,
-    channel: Boolean(state.channel),
-    voice: Boolean(state.voice),
-    business: Boolean(state.businessName || state.businessInfo),
-    knowledge: Boolean(state.website || state.knowledgeSource),
-    preview: currentStep > 6,
-    lead: false,
-  };
-
-  return (
-    <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-      {steps.map((item, index) => {
-        const Icon = item.icon;
-        const isActive = currentStep === index;
-        const isComplete = completed[item.id];
-
-        return (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => onStepChange(index)}
-            className={cn(
-              "flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70",
-              isActive
-                ? "border-bamboo/45 bg-bamboo/10"
-                : "border-white/10 bg-white/[0.03] hover:border-bamboo/30 hover:bg-white/[0.05]"
-            )}
-            aria-current={isActive ? "step" : undefined}
-          >
-            <span
-              className={cn(
-                "flex size-8 shrink-0 items-center justify-center rounded-md",
-                isComplete ? "bg-bamboo text-black" : "bg-white/10 text-bamboo"
-              )}
-            >
-              {isComplete ? <CheckCircle2 aria-hidden className="size-4" /> : <Icon aria-hidden className="size-4" />}
-            </span>
-            <span>
-              <span className="block text-xs text-white/54">Step {index + 1}</span>
-              <span className="block text-sm font-medium text-white">{item.title}</span>
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-export function StepCard({
-  icon,
-  title,
-  description,
-  meta,
-  active,
-  disabled,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  meta?: string;
-  active?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-}) {
-  const className = cn(
-    "w-full rounded-lg border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70",
-    active
-      ? "border-bamboo/35 bg-bamboo/10"
-      : "border-white/10 bg-white/[0.035] hover:border-bamboo/30 hover:bg-bamboo/10",
-    disabled && "cursor-not-allowed opacity-45 hover:border-white/10 hover:bg-white/[0.035]"
-  );
-  const content = (
-      <div className="flex items-start gap-3">
-        <div
-          className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-md",
-            active ? "bg-bamboo text-black" : "bg-white/10 text-bamboo"
-          )}
-        >
-          {icon}
-        </div>
-        <div>
-          <h3 className="font-semibold text-white">{title}</h3>
-          <p className="mt-2 text-sm leading-7 text-white/64">{description}</p>
-          {meta ? <p className="mt-3 text-xs font-medium text-bamboo">{meta}</p> : null}
-        </div>
-      </div>
-  );
-
-  if (onClick) {
+  if (!loaded) {
     return (
-      <button type="button" onClick={onClick} className={className} disabled={disabled}>
-        {content}
-      </button>
+      <div aria-busy="true" className="grid gap-4">
+        <div className="h-8 w-2/3 animate-pulse rounded-md bg-surface-1" />
+        <div className="h-40 animate-pulse rounded-md bg-surface-1" />
+      </div>
     );
   }
 
-  return <div className={className}>{content}</div>;
+  return (
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+      <div>
+        {/* Progress header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="font-mono text-xs uppercase tracking-wide text-ink-3">
+            Step {step + 1} of {stepTitles.length} · {stepShortLabels[step]}
+          </div>
+          <div className="font-mono text-xs text-ink-3">autosaved</div>
+        </div>
+        <div
+          role="progressbar"
+          aria-valuenow={step + 1}
+          aria-valuemin={1}
+          aria-valuemax={stepTitles.length}
+          aria-label={`Builder progress: step ${step + 1} of ${stepTitles.length}`}
+          className="mt-3 flex gap-1"
+        >
+          {stepTitles.map((_, index) => (
+            <span
+              key={index}
+              className={cn(
+                "h-1 flex-1 rounded-full transition-colors duration-300",
+                index < step ? "bg-bamboo-deep" : index === step ? "bg-bamboo" : "bg-surface-2"
+              )}
+            />
+          ))}
+        </div>
+
+        {/* Step navigation (completed steps reachable, future gated) */}
+        <nav aria-label="Builder steps" className="mt-4 flex flex-wrap gap-1.5">
+          {stepShortLabels.map((label, index) => {
+            const reachable = index <= maxReachable;
+            const active = index === step;
+            return (
+              <button
+                key={label}
+                type="button"
+                disabled={!reachable}
+                aria-current={active ? "step" : undefined}
+                onClick={() => goTo(index, index < step ? "back" : "forward")}
+                className={cn(
+                  "h-8 rounded-md px-2.5 font-mono text-[11px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  active
+                    ? "bg-bamboo/15 text-bamboo"
+                    : reachable
+                      ? "text-ink-3 hover:bg-surface-1 hover:text-ink-1"
+                      : "cursor-not-allowed text-ink-3/40"
+                )}
+              >
+                {index + 1} {label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Resume banner */}
+        {resumeOffered ? (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-bamboo-deep/40 bg-bamboo/8 px-4 py-3">
+            <p className="text-sm text-ink-1">
+              Resume your blueprint — your earlier answers are still here.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                className="h-9 bg-bamboo font-semibold text-primary-foreground hover:bg-bamboo/90"
+                onClick={() => {
+                  setResumeOffered(false);
+                  goTo(maxReachable);
+                }}
+              >
+                Continue
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-9 border-line-strong text-ink-2 hover:text-ink-1"
+                onClick={startOver}
+              >
+                Start over
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {isDev ? <DevPresetBar onFill={(preset) => setState(preset)} /> : null}
+
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="mt-8 font-heading text-[clamp(1.75rem,3.5vw,2.6rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-ink-1 outline-none"
+        >
+          {stepTitles[step]}
+        </h1>
+
+        <div className="mt-6">
+          {step === 0 ? (
+            <ChoiceGrid
+              options={builderIndustries.map((name) => ({ name }))}
+              selected={state.industry ? [state.industry] : []}
+              onSelect={(value) => chooseSingle("industry", value, 0)}
+              columns={3}
+            />
+          ) : null}
+
+          {step === 1 ? (
+            <div>
+              <p className="text-sm leading-6 text-ink-2">
+                Choose one primary outcome — it decides the agent&apos;s qualification logic and
+                greeting. Add one optional secondary if the workflow truly has two jobs.
+              </p>
+              <div className="mt-5">
+                <ChoiceGrid
+                  options={builderGoals.map((name) => ({ name }))}
+                  selected={state.goals}
+                  onSelect={toggleGoal}
+                  columns={2}
+                  badges={(name) =>
+                    state.goals[0] === name ? "Primary" : state.goals[1] === name ? "Secondary" : undefined
+                  }
+                />
+              </div>
+              <div aria-live="polite" className="mt-3 min-h-5 text-sm text-signal-amber">
+                {secondaryReplaced
+                  ? `Replaced "${secondaryReplaced}" as your optional secondary outcome.`
+                  : null}
+              </div>
+              <StepFooter
+                onBack={() => goTo(0, "back")}
+                onContinue={() => completeAndAdvance(1)}
+                continueDisabled={state.goals.length === 0}
+                continueLabel="Continue"
+              />
+            </div>
+          ) : null}
+
+          {step === 2 ? (
+            <ChoiceGrid
+              options={builderChannels.map((channel) => ({ name: channel.name, note: channel.note }))}
+              selected={state.channel ? [state.channel] : []}
+              onSelect={(value) => chooseSingle("channel", value, 2)}
+              columns={2}
+              backSlot={<BackLink onClick={() => goTo(1, "back")} />}
+            />
+          ) : null}
+
+          {step === 3 ? (
+            <ChoiceGrid
+              options={builderVoices.map((voice) => ({ name: voice.name, note: `“${voice.sample}”` }))}
+              selected={state.voice ? [state.voice] : []}
+              onSelect={(value) => chooseSingle("voice", value, 3)}
+              columns={1}
+              backSlot={<BackLink onClick={() => goTo(2, "back")} />}
+            />
+          ) : null}
+
+          {step === 4 ? (
+            <ContextStep
+              state={state}
+              update={update}
+              onBack={() => goTo(3, "back")}
+              onContinue={() => completeAndAdvance(4)}
+            />
+          ) : null}
+
+          {step === 5 ? (
+            <KnowledgeStep
+              state={state}
+              update={update}
+              onBack={() => goTo(4, "back")}
+              onContinue={() => completeAndAdvance(5)}
+              onSkip={skipKnowledge}
+            />
+          ) : null}
+
+          {step === 6 ? (
+            <PreviewStep
+              blueprint={blueprint}
+              readiness={readiness}
+              onJump={(target) => goTo(target - 1, "back")}
+              onBack={() => goTo(5, "back")}
+              onContinue={() => completeAndAdvance(6)}
+            />
+          ) : null}
+
+          {step === 7 ? (
+            <SaveStep
+              state={state}
+              onBack={() => goTo(6, "back")}
+              onSaved={(lead) => {
+                const saved: SavedAgent = {
+                  blueprint,
+                  state,
+                  readiness,
+                  lead,
+                  savedAt: new Date().toISOString(),
+                };
+                localStorage.setItem(AGENT_STORAGE_KEY, JSON.stringify(saved));
+                trackEvent("agent_blueprint_saved", {
+                  readiness_band: readiness.total >= 80 ? "high" : readiness.total >= 50 ? "mid" : "low",
+                  workflow: state.goals[0] ?? "",
+                  industry: state.industry,
+                });
+                router.push("/agent-created");
+              }}
+            />
+          ) : null}
+        </div>
+      </div>
+
+      {/* Live blueprint rail */}
+      <BlueprintRail state={state} readinessTotal={readiness.total} />
+    </div>
+  );
 }
 
-function SingleChoiceGrid({
+/* ------------------------------------------------------------------ */
+
+function DevPresetBar({ onFill }: { onFill: (state: BuilderState) => void }) {
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-3 rounded-md border border-signal-amber/40 bg-signal-amber/8 px-4 py-2.5">
+      <span className="font-mono text-xs text-signal-amber">dev only</span>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        className="h-8 border-line-strong text-xs text-ink-2"
+        onClick={() =>
+          onFill({
+            industry: "Sales",
+            goals: ["Capture and qualify leads", "Book appointments"],
+            channel: "Website chat",
+            voice: "Helpful expert",
+            businessName: "Bamboo Demo Co",
+            offering: "Inbound sales automation for growing service teams.",
+            idealCustomer: "10–50 person teams with inbound volume",
+            qualificationRules: "Qualify on team size, urgency, and CRM in use.",
+            nextAction: "Book a demo on the sales calendar",
+            website: "https://mybamboo.ai",
+            knowledgeNotes: "Homepage, pricing page, FAQ, demo booking rules.",
+            excludedTopics: "Legal advice, competitor pricing claims",
+            handoffCondition: "Frustrated tone, enterprise security questions, or low confidence",
+            sensitiveReviewAcknowledged: true,
+          })
+        }
+      >
+        Fill demo data
+      </Button>
+    </div>
+  );
+}
+
+function BackLink({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-11 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-ink-3 transition-colors hover:text-ink-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <ArrowLeft aria-hidden className="size-4" />
+      Back
+    </button>
+  );
+}
+
+function StepFooter({
+  onBack,
+  onContinue,
+  continueDisabled,
+  continueLabel,
+  skipSlot,
+}: {
+  onBack: () => void;
+  onContinue: () => void;
+  continueDisabled?: boolean;
+  continueLabel: string;
+  skipSlot?: React.ReactNode;
+}) {
+  return (
+    <div className="mt-8 flex flex-wrap items-center gap-3">
+      <BackLink onClick={onBack} />
+      <Button
+        type="button"
+        disabled={continueDisabled}
+        onClick={onContinue}
+        className="h-12 rounded-md bg-bamboo px-6 font-semibold text-primary-foreground hover:bg-bamboo/90 disabled:opacity-40"
+      >
+        {continueLabel}
+        <ArrowRight aria-hidden className="size-4" />
+      </Button>
+      {skipSlot}
+    </div>
+  );
+}
+
+function ChoiceGrid({
   options,
   selected,
   onSelect,
-  prompt,
+  columns,
+  badges,
+  backSlot,
 }: {
-  options: string[];
-  selected: string;
-  onSelect: (value: string) => void;
-  prompt: string;
-}) {
-  return (
-    <div className="grid gap-4">
-      <div className="rounded-lg border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/68">
-        {selected ? `Selected: ${selected}. Choosing another option will move you forward.` : prompt}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {options.map((option) => (
-          <StepCard
-            key={option}
-            active={selected === option}
-            onClick={() => onSelect(option)}
-            icon={<Sparkles aria-hidden className="size-5" />}
-            title={option}
-            description="Select this and Bamboo will guide you to the next step."
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function GoalChoiceGrid({
-  options,
-  selected,
-  onToggle,
-  onContinue,
-}: {
-  options: string[];
+  options: { name: string; note?: string }[];
   selected: string[];
-  onToggle: (value: string) => void;
-  onContinue: () => void;
+  onSelect: (value: string) => void;
+  columns: 1 | 2 | 3;
+  badges?: (name: string) => string | undefined;
+  backSlot?: React.ReactNode;
 }) {
-  const maxSelected = selected.length >= 2;
-
   return (
-    <div className="grid gap-4">
-      <div className="rounded-lg border border-bamboo/20 bg-bamboo/10 p-4">
-        <p className="text-sm font-semibold text-white">Select 1 or 2 goals.</p>
-        <p className="mt-1 text-sm leading-6 text-white/68">
-          {selected.length === 0
-            ? "Pick your primary goal. You can add one more before continuing."
-            : selected.length === 1
-              ? "Good. Add one more goal or continue to channel."
-              : "Two goals selected. Continue to channel when ready."}
-        </p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+    <div>
+      <div
+        role="radiogroup"
+        className={cn(
+          "grid gap-2.5",
+          columns === 3 && "sm:grid-cols-2 lg:grid-cols-3",
+          columns === 2 && "sm:grid-cols-2"
+        )}
+      >
         {options.map((option) => {
-          const active = selected.includes(option);
-          const disabled = maxSelected && !active;
-
+          const active = selected.includes(option.name);
+          const badge = badges?.(option.name);
           return (
-            <StepCard
-              key={option}
-              active={active}
-              disabled={disabled}
-              onClick={() => onToggle(option)}
-              icon={<Sparkles aria-hidden className="size-5" />}
-              title={option}
-              description={
-                disabled
-                  ? "Remove a selected goal before choosing this one."
-                  : active
-                    ? "Selected. Click again to remove it."
-                    : "Add this as a goal for your agent."
-              }
-            />
+            <button
+              key={option.name}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onSelect(option.name)}
+              className={cn(
+                "min-h-12 rounded-md border px-4 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                active
+                  ? "border-bamboo bg-bamboo/10"
+                  : "border-line-strong hover:border-bamboo-deep"
+              )}
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span className={cn("text-sm font-medium", active ? "text-bamboo" : "text-ink-1")}>
+                  {option.name}
+                </span>
+                {badge ? (
+                  <span className="rounded-full bg-bamboo px-2 py-0.5 font-mono text-[10px] font-semibold text-primary-foreground">
+                    {badge}
+                  </span>
+                ) : active ? (
+                  <Check aria-hidden className="size-4 shrink-0 text-bamboo" />
+                ) : null}
+              </span>
+              {option.note ? (
+                <span className="mt-1.5 block text-xs leading-5 text-ink-3">{option.note}</span>
+              ) : null}
+            </button>
           );
         })}
       </div>
-      <div className="flex flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-white/68">
-          {selected.length > 0
-            ? `Selected: ${selected.join(" + ")}`
-            : "Choose at least one goal to keep going."}
-        </div>
+      {backSlot ? <div className="mt-6">{backSlot}</div> : null}
+    </div>
+  );
+}
+
+/* ---- Step 5: business context ---- */
+
+function ContextStep({
+  state,
+  update,
+  onBack,
+  onContinue,
+}: {
+  state: BuilderState;
+  update: <K extends keyof BuilderState>(field: K, value: BuilderState[K]) => void;
+  onBack: () => void;
+  onContinue: () => void;
+}) {
+  const [attempted, setAttempted] = useState(false);
+  const nameInvalid = attempted && !state.businessName.trim();
+  const offeringInvalid = attempted && !state.offering.trim();
+  const nextActionInvalid = attempted && !state.nextAction.trim();
+  const valid = Boolean(state.businessName.trim() && state.offering.trim() && state.nextAction.trim());
+
+  return (
+    <form
+      className="grid gap-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setAttempted(true);
+        if (!valid) {
+          const firstInvalid = document.querySelector<HTMLElement>("[aria-invalid='true']");
+          firstInvalid?.focus();
+          return;
+        }
+        onContinue();
+      }}
+      noValidate
+    >
+      <FormField
+        id="business-name"
+        label="Business name"
+        required
+        error={nameInvalid ? "Add the business name — it appears in the greeting." : undefined}
+      >
+        <Input
+          id="business-name"
+          value={state.businessName}
+          autoComplete="organization"
+          aria-invalid={nameInvalid || undefined}
+          aria-describedby={nameInvalid ? "business-name-error" : undefined}
+          onChange={(event) => update("businessName", event.target.value)}
+          className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="Ridgeline Roofing"
+        />
+      </FormField>
+      <FormField
+        id="offering"
+        label="What does the business sell or provide?"
+        required
+        hint="One or two sentences, e.g. “Commercial roofing installation and repair across the Portland metro.”"
+        error={offeringInvalid ? "Describe the offer — the agent can't answer questions without it." : undefined}
+      >
+        <Textarea
+          id="offering"
+          value={state.offering}
+          aria-invalid={offeringInvalid || undefined}
+          aria-describedby={offeringInvalid ? "offering-error" : "offering-hint"}
+          onChange={(event) => update("offering", event.target.value)}
+          className="min-h-24 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="What you do, for whom, and where."
+        />
+      </FormField>
+      <FormField
+        id="ideal-customer"
+        label="Ideal customer"
+        hint="Optional — sharpens qualification, e.g. “building owners and property managers, not homeowners.”"
+      >
+        <Input
+          id="ideal-customer"
+          value={state.idealCustomer}
+          aria-describedby="ideal-customer-hint"
+          onChange={(event) => update("idealCustomer", event.target.value)}
+          className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="Who the best conversations come from"
+        />
+      </FormField>
+      <FormField
+        id="qualification-rules"
+        label="Qualification rules"
+        hint="Optional — what makes a lead worth a human's time? Budget floor, service area, timeline…"
+      >
+        <Textarea
+          id="qualification-rules"
+          value={state.qualificationRules}
+          aria-describedby="qualification-rules-hint"
+          onChange={(event) => update("qualificationRules", event.target.value)}
+          className="min-h-20 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="e.g. Jobs under $5k route to the standard queue; commercial projects go straight to Sam."
+        />
+      </FormField>
+      <FormField
+        id="next-action"
+        label="Desired next action"
+        required
+        hint="Where should a qualified conversation land? A calendar, an inbox, a phone call…"
+        error={nextActionInvalid ? "Set the next action — it's the destination the agent routes to." : undefined}
+      >
+        <Input
+          id="next-action"
+          value={state.nextAction}
+          aria-invalid={nextActionInvalid || undefined}
+          aria-describedby={nextActionInvalid ? "next-action-error" : "next-action-hint"}
+          onChange={(event) => update("nextAction", event.target.value)}
+          className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="Book an estimate call on our calendar"
+        />
+      </FormField>
+      <div className="flex flex-wrap items-center gap-3">
+        <BackLink onClick={onBack} />
         <Button
-          type="button"
-          className="h-10 bg-bamboo text-black hover:bg-bamboo/90"
-          onClick={onContinue}
-          disabled={selected.length === 0}
+          type="submit"
+          className="h-12 rounded-md bg-bamboo px-6 font-semibold text-primary-foreground hover:bg-bamboo/90"
         >
-          Continue to Channel
+          Continue
           <ArrowRight aria-hidden className="size-4" />
         </Button>
       </div>
+    </form>
+  );
+}
+
+/* ---- Step 6: knowledge & guardrails ---- */
+
+function KnowledgeStep({
+  state,
+  update,
+  onBack,
+  onContinue,
+  onSkip,
+}: {
+  state: BuilderState;
+  update: <K extends keyof BuilderState>(field: K, value: BuilderState[K]) => void;
+  onBack: () => void;
+  onContinue: () => void;
+  onSkip: () => void;
+}) {
+  const [attempted, setAttempted] = useState(false);
+  const urlInvalid = !isValidUrl(state.website);
+
+  return (
+    <form
+      className="grid gap-5"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        setAttempted(true);
+        if (urlInvalid) {
+          document.getElementById("website")?.focus();
+          return;
+        }
+        onContinue();
+      }}
+    >
+      <FormField
+        id="website"
+        label="Website URL"
+        hint="Optional — the fastest way to give the agent approved source material."
+        error={attempted && urlInvalid ? "That doesn't look like a URL. Try something like ridgelineroofing.com." : undefined}
+      >
+        <Input
+          id="website"
+          type="url"
+          inputMode="url"
+          autoComplete="url"
+          value={state.website}
+          aria-invalid={(attempted && urlInvalid) || undefined}
+          aria-describedby={attempted && urlInvalid ? "website-error" : "website-hint"}
+          onChange={(event) => update("website", event.target.value)}
+          className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="https://yourbusiness.com"
+        />
+      </FormField>
+      <FormField
+        id="knowledge-notes"
+        label="Knowledge sources or approved answers"
+        hint="Links, FAQ notes, policies — whatever the agent may answer from."
+      >
+        <Textarea
+          id="knowledge-notes"
+          value={state.knowledgeNotes}
+          aria-describedby="knowledge-notes-hint"
+          onChange={(event) => update("knowledgeNotes", event.target.value)}
+          className="min-h-24 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="Paste FAQ links, help docs, or a short list of approved answers."
+        />
+      </FormField>
+      <FormField
+        id="excluded-topics"
+        label="Topics the agent must not answer"
+        hint="e.g. pricing negotiations, legal questions, medical advice."
+      >
+        <Input
+          id="excluded-topics"
+          value={state.excludedTopics}
+          aria-describedby="excluded-topics-hint"
+          onChange={(event) => update("excludedTopics", event.target.value)}
+          className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="Topics that always go to a human"
+        />
+      </FormField>
+      <FormField
+        id="handoff-condition"
+        label="Human handoff condition"
+        hint="When should a person take over? Topic, urgency, tone, or low confidence."
+      >
+        <Input
+          id="handoff-condition"
+          value={state.handoffCondition}
+          aria-describedby="handoff-condition-hint"
+          onChange={(event) => update("handoffCondition", event.target.value)}
+          className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+          placeholder="e.g. Any frustrated customer or anything about refunds"
+        />
+      </FormField>
+      <label className="flex cursor-pointer items-start gap-3 rounded-md border border-line-strong px-4 py-3.5 transition-colors has-[:checked]:border-bamboo">
+        <input
+          type="checkbox"
+          checked={state.sensitiveReviewAcknowledged}
+          onChange={(event) => update("sensitiveReviewAcknowledged", event.target.checked)}
+          className="mt-0.5 size-4 accent-[var(--bamboo)]"
+        />
+        <span className="text-sm leading-6 text-ink-2">
+          I understand that sensitive workflows (medical, legal, financial, urgent) need human
+          review before this agent goes live.
+        </span>
+      </label>
+      <div className="flex flex-wrap items-center gap-3">
+        <BackLink onClick={onBack} />
+        <Button
+          type="submit"
+          className="h-12 rounded-md bg-bamboo px-6 font-semibold text-primary-foreground hover:bg-bamboo/90"
+        >
+          Continue
+          <ArrowRight aria-hidden className="size-4" />
+        </Button>
+        <button
+          type="button"
+          onClick={onSkip}
+          className="h-11 rounded-md px-2 text-sm text-ink-3 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Skip for now — lowers readiness
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/* ---- Step 7: blueprint preview ---- */
+
+function PreviewStep({
+  blueprint,
+  readiness,
+  onJump,
+  onBack,
+  onContinue,
+}: {
+  blueprint: ReturnType<typeof buildBlueprint>;
+  readiness: ReturnType<typeof computeReadiness>;
+  onJump: (step: number) => void;
+  onBack: () => void;
+  onContinue: () => void;
+}) {
+  const [copied, setCopied] = useState<"greeting" | "summary" | null>(null);
+
+  async function copy(kind: "greeting" | "summary") {
+    const text =
+      kind === "greeting"
+        ? blueprint.greeting
+        : [
+            `${blueprint.agentName} — ${blueprint.role}`,
+            `Objective: ${blueprint.objective}`,
+            `Greeting: ${blueprint.greeting}`,
+            `Knowledge: ${blueprint.knowledgeSummary}`,
+            `Escalation: ${blueprint.escalation}`,
+            `Destination: ${blueprint.destination}`,
+          ].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      window.setTimeout(() => setCopied(null), 2000);
+    } catch {
+      // Clipboard unavailable — no toast needed, the button state simply doesn't change.
+    }
+  }
+
+  return (
+    <div className="grid gap-7">
+      <div className="grid gap-5 rounded-lg border border-line bg-bg-1 p-5 md:p-6">
+        <div>
+          <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Agent</div>
+          <h2 className="mt-1 font-heading text-2xl font-semibold tracking-[-0.02em] text-ink-1">
+            {blueprint.agentName}
+          </h2>
+          <p className="mt-1 text-sm text-ink-2">{blueprint.role}</p>
+        </div>
+        <BlueprintField label="Primary objective" value={blueprint.objective} />
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Greeting</div>
+            <CopyButton copied={copied === "greeting"} onClick={() => copy("greeting")} label="Copy greeting" />
+          </div>
+          <p className="mt-1.5 border-l-2 border-bamboo-deep pl-3 text-sm leading-6 text-ink-1">
+            {blueprint.greeting}
+          </p>
+        </div>
+        <BlueprintField label="Approved knowledge" value={blueprint.knowledgeSummary} />
+        <div>
+          <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Qualification questions</div>
+          <ul className="mt-1.5 grid gap-1">
+            {blueprint.qualificationQuestions.map((question) => (
+              <li key={question} className="text-sm leading-6 text-ink-2">
+                — {question}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <BlueprintField label="Information captured" value={blueprint.captured.join(" · ")} />
+        <div>
+          <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Guardrails</div>
+          <ul className="mt-1.5 grid gap-1">
+            {blueprint.guardrails.map((guardrail) => (
+              <li key={guardrail} className="text-sm leading-6 text-ink-2">
+                — {guardrail}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <BlueprintField label="Escalation rule" value={blueprint.escalation} />
+        <BlueprintField label="Destination" value={blueprint.destination} />
+        <div className="flex justify-end">
+          <CopyButton copied={copied === "summary"} onClick={() => copy("summary")} label="Copy full summary" />
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-baseline justify-between gap-4">
+          <h3 className="font-heading text-lg font-semibold tracking-[-0.015em] text-ink-1">
+            Readiness — {readiness.total}%
+          </h3>
+          <span className="font-mono text-xs text-ink-3">select a category to close its gap</span>
+        </div>
+        <div className="mt-4 grid gap-2">
+          {readiness.categories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => onJump(category.step)}
+              className="grid grid-cols-[110px_1fr_44px] items-center gap-4 rounded-md border border-line px-4 py-3 text-left transition-colors hover:border-bamboo-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`${category.label}: ${category.score}%. ${category.missing[0] ?? "Complete."} Opens step ${category.step}.`}
+            >
+              <span className="text-sm font-medium text-ink-1">{category.label}</span>
+              <span className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                <span
+                  className={cn(
+                    "block h-full rounded-full transition-[width] duration-500",
+                    category.score >= 100 ? "bg-bamboo" : category.score >= 50 ? "bg-bamboo-deep" : "bg-signal-amber"
+                  )}
+                  style={{ width: `${Math.max(4, category.score)}%` }}
+                />
+              </span>
+              <span className="text-right font-mono text-xs text-ink-2">{category.score}%</span>
+              {category.missing.length > 0 ? (
+                <span className="col-span-3 text-xs leading-5 text-ink-3">{category.missing[0]}</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {blueprint.launchChecklist.length > 0 ? (
+        <div className="rounded-md border border-signal-amber/35 bg-signal-amber/6 px-4 py-3.5">
+          <div className="font-mono text-xs uppercase tracking-wide text-signal-amber">Launch checklist</div>
+          <ul className="mt-2 grid gap-1">
+            {blueprint.launchChecklist.map((item) => (
+              <li key={item} className="text-sm leading-6 text-ink-2">
+                — {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <StepFooter onBack={onBack} onContinue={onContinue} continueLabel="Save this blueprint" />
     </div>
   );
 }
 
-function LivePreview({
-  agent,
-  readiness,
-  state,
+function BlueprintField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="font-mono text-xs uppercase tracking-wide text-ink-3">{label}</div>
+      <p className="mt-1.5 text-sm leading-6 text-ink-1">{value}</p>
+    </div>
+  );
+}
+
+function CopyButton({
+  copied,
+  onClick,
+  label,
 }: {
-  agent: { name: string; greeting: string; summary: string; nextStep: string };
-  readiness: number;
-  state: BuilderState;
+  copied: boolean;
+  onClick: () => void;
+  label: string;
 }) {
   return (
-    <aside className="lg:sticky lg:top-24 lg:self-start">
-      <Card className="rounded-lg border-white/10 bg-[oklch(0.13_0.026_156/0.94)] py-0 shadow-none">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-bamboo text-black">
-                <Bot aria-hidden className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-white">Live Preview</p>
-                <p className="text-xs text-white/54">Autosaved locally</p>
-              </div>
-            </div>
-            <Badge className="border-bamboo/25 bg-bamboo/10 text-bamboo hover:bg-bamboo/10">
-              {readiness}%
-            </Badge>
-          </div>
-          <div className="mt-6">
-            <div className="mb-2 flex items-center justify-between text-xs text-white/56">
-              <span>Readiness score</span>
-              <span>{readiness}%</span>
-            </div>
-            <ProgressBar value={readiness} />
-          </div>
-          <div className="mt-6 space-y-4">
-            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-white">
-                <MessageSquareText aria-hidden className="size-4 text-bamboo" />
-                {agent.name}
-              </div>
-              <p className="mt-3 text-sm leading-7 text-white/68">{agent.greeting}</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-              <p className="text-xs font-medium text-white/54">
-                Configuration
-              </p>
-              <dl className="mt-4 grid gap-3 text-sm">
-                <PreviewRow label="Industry" value={state.industry || "Choose industry"} />
-                <PreviewRow
-                  label="Goals"
-                  value={state.goals.length > 0 ? state.goals.join(" + ") : "Choose 1-2 goals"}
-                />
-                <PreviewRow label="Channel" value={state.channel || "Choose channel"} />
-                <PreviewRow label="Voice" value={state.voice || "Choose voice"} />
-              </dl>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </aside>
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong px-3 text-xs font-medium text-ink-2 transition-colors hover:border-bamboo-deep hover:text-ink-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {copied ? <Check aria-hidden className="size-3.5 text-bamboo" /> : <Copy aria-hidden className="size-3.5" />}
+      {copied ? "Copied" : label}
+    </button>
   );
 }
 
-function PreviewRow({ label, value }: { label: string; value: string }) {
+/* ---- Step 8: save blueprint ---- */
+
+type LeadFields = {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  website: string;
+  industry: string;
+};
+
+function SaveStep({
+  state,
+  onBack,
+  onSaved,
+}: {
+  state: BuilderState;
+  onBack: () => void;
+  onSaved: (lead: LeadFields) => void;
+}) {
+  const [lead, setLead] = useState<LeadFields>({
+    name: "",
+    email: "",
+    phone: "",
+    company: state.businessName,
+    website: state.website,
+    industry: state.industry,
+  });
+  const [attempted, setAttempted] = useState(false);
+  const [pending, setPending] = useState(false);
+  const started = useRef(false);
+
+  function update(field: keyof LeadFields, value: string) {
+    if (!started.current) {
+      started.current = true;
+      trackEvent("lead_form_started", { source: "builder_save_step" });
+    }
+    setLead((prev) => ({ ...prev, [field]: value }));
+  }
+
+  const nameInvalid = attempted && !lead.name.trim();
+  const emailInvalid = attempted && !emailPattern.test(lead.email.trim());
+
   return (
-    <div className="flex items-center justify-between gap-4">
-      <dt className="text-white/56">{label}</dt>
-      <dd className="text-right font-medium text-white/72">{value}</dd>
+    <form
+      className="grid gap-5"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (pending) return;
+        setAttempted(true);
+        if (!lead.name.trim() || !emailPattern.test(lead.email.trim())) {
+          const firstInvalid = document.querySelector<HTMLElement>("[aria-invalid='true']");
+          firstInvalid?.focus();
+          return;
+        }
+        setPending(true);
+        trackEvent("lead_form_submitted", {
+          source: "builder_save_step",
+          industry: lead.industry,
+          workflow: state.goals[0] ?? "",
+        });
+        // Persistence is local in this build; the save path is structured so a
+        // server action or CRM call can replace it without UI changes.
+        onSaved(lead);
+      }}
+    >
+      <p className="text-sm leading-6 text-ink-2">
+        Your blueprint stays exactly as you built it. Saving attaches it to your contact details
+        so the strategy call starts from the real thing.
+      </p>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <FormField id="lead-name" label="Name" required error={nameInvalid ? "Your name is required." : undefined}>
+          <Input
+            id="lead-name"
+            value={lead.name}
+            autoComplete="name"
+            aria-invalid={nameInvalid || undefined}
+            aria-describedby={nameInvalid ? "lead-name-error" : undefined}
+            onChange={(event) => update("name", event.target.value)}
+            className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+            placeholder="Jordan Lee"
+          />
+        </FormField>
+        <FormField
+          id="lead-email"
+          label="Work email"
+          required
+          error={emailInvalid ? "Enter a valid email — it's where the blueprint lives." : undefined}
+        >
+          <Input
+            id="lead-email"
+            type="email"
+            autoComplete="email"
+            value={lead.email}
+            aria-invalid={emailInvalid || undefined}
+            aria-describedby={emailInvalid ? "lead-email-error" : undefined}
+            onChange={(event) => update("email", event.target.value)}
+            className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+            placeholder="jordan@company.com"
+          />
+        </FormField>
+        <FormField id="lead-phone" label="Phone">
+          <Input
+            id="lead-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={lead.phone}
+            onChange={(event) => update("phone", event.target.value)}
+            className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+            placeholder="(555) 019-4432"
+          />
+        </FormField>
+        <FormField id="lead-company" label="Company">
+          <Input
+            id="lead-company"
+            autoComplete="organization"
+            value={lead.company}
+            onChange={(event) => update("company", event.target.value)}
+            className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+            placeholder="Company"
+          />
+        </FormField>
+        <FormField id="lead-website" label="Website">
+          <Input
+            id="lead-website"
+            type="url"
+            inputMode="url"
+            value={lead.website}
+            onChange={(event) => update("website", event.target.value)}
+            className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+            placeholder="https://company.com"
+          />
+        </FormField>
+        <FormField id="lead-industry" label="Industry">
+          <Input
+            id="lead-industry"
+            value={lead.industry}
+            onChange={(event) => update("industry", event.target.value)}
+            className="h-12 border-line-strong bg-surface-1 text-ink-1 placeholder:text-ink-3"
+            placeholder="Industry"
+          />
+        </FormField>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <BackLink onClick={onBack} />
+        <Button
+          type="submit"
+          disabled={pending}
+          className="h-12 min-w-56 rounded-md bg-bamboo px-6 font-semibold text-primary-foreground hover:bg-bamboo/90"
+        >
+          {pending ? "Saving…" : "Save My Agent Blueprint"}
+        </Button>
+      </div>
+      <p aria-live="polite" className="sr-only">
+        {pending ? "Saving your blueprint" : ""}
+      </p>
+    </form>
+  );
+}
+
+function FormField({
+  id,
+  label,
+  required,
+  hint,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  required?: boolean;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <Label htmlFor={id} className="text-sm font-medium text-ink-2">
+        {label}
+        {required ? <span className="text-bamboo"> *</span> : null}
+      </Label>
+      {children}
+      {error ? (
+        <p id={`${id}-error`} role="alert" className="text-xs leading-5 text-signal-coral">
+          {error}
+        </p>
+      ) : hint ? (
+        <p id={`${id}-hint`} className="text-xs leading-5 text-ink-3">
+          {hint}
+        </p>
+      ) : null}
     </div>
+  );
+}
+
+/* ---- Live blueprint rail ---- */
+
+function BlueprintRail({ state, readinessTotal }: { state: BuilderState; readinessTotal: number }) {
+  const rows: [string, string][] = [
+    ["Industry", state.industry || "—"],
+    ["Primary outcome", state.goals[0] || "—"],
+    ["Secondary", state.goals[1] || "—"],
+    ["Channel", state.channel || "—"],
+    ["Voice", state.voice || "—"],
+    ["Business", state.businessName || "—"],
+    ["Next action", state.nextAction || "—"],
+  ];
+
+  return (
+    <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Live blueprint">
+      <div className="rounded-lg border border-line bg-bg-1 p-5">
+        <div className="flex items-baseline justify-between gap-4">
+          <span className="font-mono text-xs uppercase tracking-wide text-ink-3">Live blueprint</span>
+          <span className="font-mono text-sm text-bamboo">{readinessTotal}%</span>
+        </div>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
+          <div
+            className="h-full rounded-full bg-bamboo transition-[width] duration-500"
+            style={{ width: `${Math.max(3, readinessTotal)}%` }}
+          />
+        </div>
+        <dl className="mt-5 grid gap-2.5">
+          {rows.map(([label, value]) => (
+            <div key={label} className="flex items-baseline justify-between gap-4 border-b border-line pb-2 last:border-b-0 last:pb-0">
+              <dt className="text-xs text-ink-3">{label}</dt>
+              <dd
+                className={cn(
+                  "max-w-[60%] truncate text-right text-xs font-medium",
+                  value === "—" ? "text-ink-3" : "text-ink-1"
+                )}
+              >
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </aside>
   );
 }

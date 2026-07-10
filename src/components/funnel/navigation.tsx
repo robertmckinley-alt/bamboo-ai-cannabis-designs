@@ -2,17 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bot, Menu, Sparkles, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetClose,
@@ -22,72 +14,111 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { navLinks } from "@/data/funnel";
+import { industries, navLinks } from "@/data/funnel";
 import { trackEvent } from "@/lib/analytics";
 import { CTAButton } from "@/components/funnel/cta-button";
 
+export function BambooMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 22"
+      width="20"
+      height="22"
+      aria-hidden
+      className={className}
+      fill="currentColor"
+    >
+      <rect x="1.5" y="6" width="3.4" height="7" rx="1.7" />
+      <rect x="1.5" y="14.5" width="3.4" height="6" rx="1.7" />
+      <rect x="8.3" y="1.5" width="3.4" height="9" rx="1.7" />
+      <rect x="8.3" y="12" width="3.4" height="8.5" rx="1.7" />
+      <rect x="15.1" y="4" width="3.4" height="5.5" rx="1.7" />
+      <rect x="15.1" y="11" width="3.4" height="7" rx="1.7" />
+    </svg>
+  );
+}
+
+function Wordmark() {
+  return (
+    <span className="flex items-center gap-2.5">
+      <BambooMark className="text-bamboo" />
+      <span className="font-heading text-lg font-semibold tracking-[-0.02em] text-ink-1">
+        Bamboo AI
+      </span>
+    </span>
+  );
+}
+
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/94">
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+    <header className="sticky top-0 z-40 border-b border-line bg-bg-0/95 backdrop-blur-sm">
+      <nav
+        aria-label="Main"
+        className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 md:px-8"
+      >
         <Link
           href="/"
-          className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70"
+          className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <span className="flex size-9 items-center justify-center rounded-lg bg-bamboo text-black">
-            <Bot aria-hidden className="size-5" />
-          </span>
-          <span className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">Bamboo AI</span>
+          <Wordmark />
         </Link>
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-white/66 transition hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bamboo/70"
+              className="rounded-md px-3 py-2 text-sm font-medium text-ink-2 transition-colors duration-150 hover:bg-surface-1 hover:text-ink-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {link.label}
             </Link>
           ))}
         </div>
-        <div className="hidden items-center gap-3 md:flex">
-          <CTAButton href="/book-demo" event="book_demo_clicked" tone="secondary" icon="calendar">
-            Book Demo
+        <div className="hidden items-center gap-3 lg:flex">
+          <CTAButton href="/book-demo" event="book_demo_clicked" tone="secondary" icon="none" payload={{ source: "header" }}>
+            Book a Strategy Call
           </CTAButton>
-          <CTAButton href="/free-agent-builder" event="hero_cta_clicked" icon="sparkles">
-            Build Free
+          <CTAButton href="/free-agent-builder" event="hero_cta_clicked" icon="none" payload={{ source: "header" }}>
+            Build My Free Agent
           </CTAButton>
         </div>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon-lg" className="text-white md:hidden" aria-label="Open menu">
+            <Button variant="ghost" size="icon-lg" className="text-ink-1 lg:hidden" aria-label="Open menu">
               <Menu aria-hidden className="size-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent className="border-white/10 bg-background text-white">
+          <SheetContent className="flex h-full flex-col border-line bg-bg-1 text-ink-1">
             <SheetHeader>
-              <SheetTitle className="font-heading">Bamboo AI</SheetTitle>
-              <SheetDescription className="text-white/62">Build your AI agent funnel.</SheetDescription>
+              <SheetTitle className="font-heading">
+                <Wordmark />
+              </SheetTitle>
+              <SheetDescription className="text-ink-3">
+                The fastest path from a website visitor to a qualified next step.
+              </SheetDescription>
             </SheetHeader>
-            <div className="grid gap-2 px-4">
+            <div className="grid gap-1 px-4">
               {navLinks.map((link) => (
                 <SheetClose asChild key={link.href}>
                   <Link
                     href={link.href}
-                    className="rounded-md px-3 py-3 text-sm font-medium text-white/72 hover:bg-white/8 hover:text-white"
+                    className="rounded-md px-3 py-3 text-sm font-medium text-ink-2 hover:bg-surface-1 hover:text-ink-1"
                   >
                     {link.label}
                   </Link>
                 </SheetClose>
               ))}
             </div>
-            <div className="mt-auto grid gap-3 p-4">
-              <CTAButton href="/free-agent-builder" event="hero_cta_clicked" icon="sparkles">
-                Build Your Free AI Agent
-              </CTAButton>
-              <CTAButton href="/book-demo" event="book_demo_clicked" tone="secondary" icon="calendar">
-                Book a Demo
-              </CTAButton>
+            <div className="mt-auto grid gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <SheetClose asChild>
+                <CTAButton href="/free-agent-builder" event="hero_cta_clicked" icon="none" payload={{ source: "mobile_menu" }}>
+                  Build My Free Agent
+                </CTAButton>
+              </SheetClose>
+              <SheetClose asChild>
+                <CTAButton href="/book-demo" event="book_demo_clicked" tone="secondary" icon="none" payload={{ source: "mobile_menu" }}>
+                  Book a Strategy Call
+                </CTAButton>
+              </SheetClose>
             </div>
           </SheetContent>
         </Sheet>
@@ -98,41 +129,37 @@ export function Navbar() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/10 px-5 py-10">
-      <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
+    <footer className="border-t border-line px-5 py-12 md:px-8">
+      <div className="mx-auto grid max-w-[1240px] gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
         <div>
-          <Link href="/" className="inline-flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-bamboo text-black">
-              <Bot aria-hidden className="size-5" />
-            </span>
-            <span className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">Bamboo AI</span>
+          <Link href="/" className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Wordmark />
           </Link>
-          <p className="mt-4 max-w-sm text-sm leading-7 text-white/62">
-            Build agents that answer questions, capture leads, book appointments, and support customers without code.
+          <p className="mt-4 max-w-sm text-sm leading-6 text-ink-3">
+            The fastest path from an anonymous website visitor to a business-specific agent
+            blueprint and a qualified next step.
           </p>
         </div>
         <FooterColumn
           title="Product"
           links={[
-            ["Free Builder", "/free-agent-builder"],
+            ["Free Agent Builder", "/free-agent-builder"],
             ["Pricing", "/pricing"],
-            ["Book Demo", "/book-demo"],
-            ["Agent Created", "/agent-created"],
+            ["Book a Strategy Call", "/book-demo"],
+            ["How It Works", "/#how-it-works"],
           ]}
         />
         <FooterColumn
           title="Industries"
-          links={[
-            ["Customer Service", "/industries/customer-service"],
-            ["Sales", "/industries/sales"],
-            ["Real Estate", "/industries/real-estate"],
-            ["Medical", "/industries/medical"],
-          ]}
+          links={industries.slice(0, 6).map((industry): [string, string] => [industry.name, `/industries/${industry.slug}`])}
+        />
+        <FooterColumn
+          title="More Industries"
+          links={industries.slice(6).map((industry): [string, string] => [industry.name, `/industries/${industry.slug}`])}
         />
       </div>
-      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/54 sm:flex-row sm:items-center sm:justify-between">
-        <span>© 2026 Bamboo AI. Front-end funnel prototype.</span>
-        <span>No code required. Launch fast. Upgrade when ready.</span>
+      <div className="mx-auto mt-10 max-w-[1240px] border-t border-line pt-6 text-xs text-ink-3">
+        © 2026 Bamboo AI.
       </div>
     </footer>
   );
@@ -147,10 +174,14 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="font-heading text-sm font-semibold tracking-[-0.01em] text-white">{title}</h3>
-      <div className="mt-4 grid gap-3">
+      <h3 className="font-heading text-sm font-semibold tracking-[-0.01em] text-ink-1">{title}</h3>
+      <div className="mt-4 grid gap-2.5">
         {links.map(([label, href]) => (
-          <Link key={href} href={href} className="text-sm text-white/58 transition hover:text-bamboo">
+          <Link
+            key={href}
+            href={href}
+            className="rounded-sm text-sm text-ink-3 transition-colors duration-150 hover:text-bamboo focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             {label}
           </Link>
         ))}
@@ -159,130 +190,42 @@ function FooterColumn({
   );
 }
 
-export function FloatingCTA() {
-  return (
-    <div className="fixed bottom-5 right-5 z-30 hidden flex-col gap-2 md:flex">
-      <CTAButton
-        href="/free-agent-builder"
-        event="hero_cta_clicked"
-        icon="sparkles"
-      >
-        Build Free
-      </CTAButton>
-      <CTAButton
-        href="/book-demo"
-        event="book_demo_clicked"
-        tone="secondary"
-        icon="calendar"
-        className="bg-background/85"
-      >
-        Demo
-      </CTAButton>
-    </div>
-  );
-}
-
+/**
+ * Sticky mobile CTA: homepage and industry pages only, appears after the
+ * hero CTA has scrolled out of view, respects the safe-area inset.
+ */
 export function MobileStickyCTA() {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/96 p-3 md:hidden">
-      <Button
-        asChild
-        className="h-12 w-full rounded-lg bg-bamboo text-black hover:bg-bamboo/90"
-        onClick={() => trackEvent("mobile_sticky_cta_clicked", { cta: "build_free_agent" })}
-      >
-        <Link href="/free-agent-builder">
-          <Sparkles aria-hidden className="size-4" />
-          Build Your Free AI Agent
-        </Link>
-      </Button>
-    </div>
-  );
-}
+  const pathname = usePathname();
+  const [visible, setVisible] = useState(false);
 
-export function ExitIntentModal() {
-  const [open, setOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState("");
+  const eligible = pathname === "/" || pathname.startsWith("/industries/");
 
   useEffect(() => {
-    let armed = false;
-    const timer = window.setTimeout(() => {
-      armed = true;
-    }, 8000);
-
-    function handleMouseLeave(event: MouseEvent) {
-      if (!armed || event.clientY > 0 || sessionStorage.getItem("bamboo-exit-intent")) {
-        return;
-      }
-      sessionStorage.setItem("bamboo-exit-intent", "shown");
-      setOpen(true);
-      trackEvent("exit_intent_shown", { offer: "free_agent_builder" });
+    if (!eligible) return;
+    function onScroll() {
+      setVisible(window.scrollY > 640);
     }
-
-    document.addEventListener("mouseleave", handleMouseLeave);
+    const initial = window.requestAnimationFrame(onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      window.cancelAnimationFrame(initial);
+      window.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [eligible]);
+
+  if (!eligible || !visible) {
+    return null;
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        showCloseButton={false}
-        className="border-white/10 bg-background text-white sm:max-w-md"
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg-0/97 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
+      <Button
+        asChild
+        className="h-12 w-full rounded-md bg-bamboo font-semibold text-primary-foreground hover:bg-bamboo/90"
+        onClick={() => trackEvent("mobile_sticky_cta_clicked", { cta: "build_my_free_agent", route: pathname })}
       >
-        <DialogHeader>
-          <DialogTitle className="font-heading text-2xl tracking-[-0.01em]">Take the agent draft with you.</DialogTitle>
-          <DialogDescription className="text-white/64">
-            Save the free builder link and get the launch checklist for your first Bamboo agent.
-          </DialogDescription>
-        </DialogHeader>
-        {submitted ? (
-          <div className="rounded-lg border border-bamboo/25 bg-bamboo/10 p-4 text-sm text-white/76">
-            Saved. Your next step is waiting in the free builder.
-          </div>
-        ) : (
-          <form
-            className="grid gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!email.includes("@")) {
-                return;
-              }
-              localStorage.setItem("bamboo-exit-intent-email", email);
-              trackEvent("exit_intent_submitted", { email_domain: email.split("@")[1] ?? "" });
-              setSubmitted(true);
-            }}
-          >
-            <div className="grid gap-2">
-              <Label htmlFor="exit-email" className="text-white/70">
-                Work email
-              </Label>
-              <Input
-                id="exit-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="border-white/10 bg-white/[0.06] text-white placeholder:text-white/58"
-                placeholder="you@company.com"
-              />
-            </div>
-            <Button className="h-12 rounded-lg bg-bamboo text-black hover:bg-bamboo/90">
-              <Sparkles aria-hidden className="size-4" />
-              Save Builder Link
-            </Button>
-          </form>
-        )}
-        <Button
-          variant="ghost"
-          className="absolute right-3 top-3 size-8 p-0 text-white/50 hover:bg-white/10 hover:text-white"
-          aria-label="Close exit intent modal"
-          onClick={() => setOpen(false)}
-        >
-          <X aria-hidden className="size-4" />
-        </Button>
-      </DialogContent>
-    </Dialog>
+        <Link href="/free-agent-builder">Build My Free Agent</Link>
+      </Button>
+    </div>
   );
 }

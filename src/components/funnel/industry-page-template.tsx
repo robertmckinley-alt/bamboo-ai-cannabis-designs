@@ -1,165 +1,198 @@
-import { AlertTriangle, Bot, CheckCircle2, ClipboardList, Workflow } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { CornerDownRight, ShieldCheck } from "lucide-react";
 import { CTAButton } from "@/components/funnel/cta-button";
 import { FAQAccordion } from "@/components/funnel/faq-accordion";
-import { FinalCTA, SectionHeader } from "@/components/funnel/blocks";
-import type { Industry } from "@/data/funnel";
+import { ROIEstimator } from "@/components/funnel/roi-estimator";
+import { SectionHeader } from "@/components/funnel/sections";
+import { builderIndustries, type Industry } from "@/data/funnel";
 
-export function IndustryPageTemplate({ industry }: { industry: Industry }) {
-  return (
-    <main>
-      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-20 lg:grid-cols-[1fr_0.82fr] lg:items-center">
-        <div>
-          <Badge className="border-bamboo/25 bg-bamboo/12 text-bamboo hover:bg-bamboo/12">
-            {industry.eyebrow}
-          </Badge>
-          <h1 className="mt-5 font-heading text-balance text-4xl font-semibold tracking-[-0.03em] text-white md:text-6xl">
-            {industry.headline}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-white/70 md:text-lg">
-            {industry.description}
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <CTAButton href="/free-agent-builder" event="hero_cta_clicked" icon="sparkles">
-              Build Your Free AI Agent
-            </CTAButton>
-            <CTAButton href="/book-demo" event="book_demo_clicked" tone="secondary" icon="calendar">
-              Book a Demo
-            </CTAButton>
-          </div>
-        </div>
-        <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-lg bg-bamboo text-black">
-                <Bot aria-hidden className="size-6" />
-              </div>
-              <div>
-                <p className="text-sm text-white/56">Example agent</p>
-                <h2 className="font-heading text-xl font-semibold tracking-[-0.01em] text-white">{industry.agentExamples[0]}</h2>
-              </div>
-            </div>
-            <div className="mt-6 rounded-lg border border-bamboo/20 bg-bamboo/10 p-5">
-              <div className="font-heading text-4xl font-semibold tracking-[-0.02em] text-bamboo">{industry.roi.metric}</div>
-              <p className="mt-2 font-medium text-white">{industry.roi.label}</p>
-              <p className="mt-3 text-sm leading-7 text-white/68">{industry.roi.description}</p>
-            </div>
-            <div className="mt-5 grid gap-3">
-              {industry.workflow.map((step, index) => (
-                <div
-                  key={step}
-                  className="flex items-center gap-3 rounded-md border border-white/10 bg-black/20 p-3 text-sm text-white/70"
-                >
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-white/10 font-mono text-xs text-bamboo">
-                    {index + 1}
-                  </span>
-                  {step}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+const container = "mx-auto max-w-[1240px] px-5 md:px-8";
 
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="grid gap-5 md:grid-cols-3">
-          <InfoList
-            icon={<AlertTriangle aria-hidden className="size-5" />}
-            title="Pain points"
-            items={industry.pains}
-          />
-          <InfoList
-            icon={<CheckCircle2 aria-hidden className="size-5" />}
-            title="Use cases"
-            items={industry.useCases}
-          />
-          <InfoList
-            icon={<ClipboardList aria-hidden className="size-5" />}
-            title="Agent examples"
-            items={industry.agentExamples}
-          />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <SectionHeader
-            align="left"
-            eyebrow="Workflow"
-            title={`How Bamboo works for ${industry.name.toLowerCase()}.`}
-            description="Use the same template across industries while swapping the conversation logic, routing, and proof points."
-          />
-          <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3">
-                <Workflow aria-hidden className="size-5 text-bamboo" />
-                <h2 className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">Workflow example</h2>
-              </div>
-              <div className="mt-6 grid gap-4">
-                {industry.workflow.map((item) => (
-                  <div key={item} className="rounded-md border border-white/10 bg-black/20 p-4">
-                    <p className="text-sm leading-7 text-white/68">{item}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 rounded-lg border border-cyan-soft/20 bg-cyan-soft/10 p-5">
-                <p className="text-sm font-medium text-white">Testimonial placeholder</p>
-                <p className="mt-3 text-sm leading-7 text-white/64">
-                  &quot;{industry.testimonial}&quot;
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-4xl px-5 py-16">
-        <SectionHeader
-          eyebrow="FAQ"
-          title={`${industry.name} questions`}
-          description="The production site can keep expanding these from sales calls, support tickets, and customer objections."
-        />
-        <div className="mt-8">
-          <FAQAccordion items={industry.faqs} />
-        </div>
-      </section>
-
-      <FinalCTA
-        title={`Build a ${industry.name.toLowerCase()} AI agent today.`}
-        description="Start with the free builder, then book an optimization call to map integrations and launch rules."
-      />
-    </main>
+function builderHref(industry: Industry) {
+  const match = builderIndustries.find(
+    (name) => name.toLowerCase() === industry.name.toLowerCase()
   );
+  return match
+    ? `/free-agent-builder?industry=${encodeURIComponent(match)}`
+    : "/free-agent-builder";
 }
 
-function InfoList({
-  icon,
-  title,
-  items,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  items: string[];
-}) {
+export function IndustryPageTemplate({ industry }: { industry: Industry }) {
+  const href = builderHref(industry);
+
   return (
-    <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-md bg-bamboo/10 text-bamboo">
-            {icon}
-          </div>
-          <h2 className="font-heading text-lg font-semibold tracking-[-0.01em] text-white">{title}</h2>
+    <main id="main-content">
+      {/* Hero */}
+      <section className={`${container} pb-16 pt-14 md:pt-20`}>
+        <p className="font-mono text-xs uppercase tracking-wide text-signal-cyan">{industry.eyebrow}</p>
+        <h1 className="mt-3 max-w-3xl font-heading text-[clamp(2.4rem,5vw,4.2rem)] font-semibold leading-[1.02] tracking-[-0.028em] text-ink-1">
+          {industry.headline}
+        </h1>
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-ink-2">{industry.description}</p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <CTAButton href={href} event="hero_cta_clicked" icon="none" payload={{ source: "industry_hero", industry: industry.slug }}>
+            Build My Free Agent
+          </CTAButton>
+          <CTAButton href="/book-demo" event="book_demo_clicked" tone="secondary" icon="none" payload={{ source: "industry_hero", industry: industry.slug }}>
+            Book a Strategy Call
+          </CTAButton>
         </div>
-        <ul className="mt-5 space-y-3">
-          {items.map((item) => (
-            <li key={item} className="flex gap-3 text-sm leading-7 text-white/68">
-              <CheckCircle2 aria-hidden className="mt-1 size-4 shrink-0 text-bamboo" />
-              {item}
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+      </section>
+
+      {/* Pains */}
+      <section className="border-y border-line bg-bg-1">
+        <div className={`${container} py-14 md:py-20`}>
+          <h2 className="font-mono text-xs uppercase tracking-wide text-ink-3">
+            What this actually costs today
+          </h2>
+          <ul className="mt-6 grid gap-6 md:grid-cols-3">
+            {industry.pains.map((pain) => (
+              <li key={pain} className="border-l-2 border-signal-amber pl-4 text-base leading-7 text-ink-1">
+                {pain}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Live conversation + routed outcome */}
+      <section className={`${container} py-16 md:py-24`}>
+        <SectionHeader
+          title="One conversation, start to routed finish."
+          description={`How a ${industry.name.toLowerCase()} agent handles the inquiry your team sees every week.`}
+        />
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+          <div className="grid gap-5 rounded-lg border border-line bg-bg-1 p-5 md:p-6">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Visitor</div>
+              <p className="mt-1.5 rounded-md rounded-tl-sm bg-surface-2 px-3.5 py-2.5 text-sm leading-6 text-ink-1">
+                {industry.conversation.visitor}
+              </p>
+            </div>
+            <div>
+              <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Agent</div>
+              <p className="mt-1.5 border-l-2 border-bamboo-deep pl-3.5 text-sm leading-6 text-ink-1">
+                {industry.conversation.agent}
+              </p>
+            </div>
+            <div>
+              <div className="font-mono text-xs uppercase tracking-wide text-ink-3">Qualified</div>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {industry.conversation.qualified.map((item) => (
+                  <li key={item} className="rounded-full border border-line-strong px-3 py-1 font-mono text-xs text-ink-2">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex items-center gap-2 border-t border-line pt-4 font-mono text-xs text-signal-cyan">
+              <CornerDownRight aria-hidden className="size-3.5 shrink-0" />
+              {industry.conversation.route}
+            </div>
+            <p className="font-heading text-lg font-semibold tracking-[-0.015em] text-bamboo">
+              {industry.conversation.outcome}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-mono text-xs uppercase tracking-wide text-ink-3">The three-stage workflow</h3>
+            <ol className="mt-4 grid gap-0">
+              {industry.workflow.map((stage, index) => (
+                <li key={stage} className="relative pb-6 pl-8 last:pb-0">
+                  <span className="absolute left-0 top-0.5 flex size-5 items-center justify-center rounded-full border border-bamboo-deep font-mono text-[10px] text-bamboo" aria-hidden>
+                    {index + 1}
+                  </span>
+                  {index < industry.workflow.length - 1 ? (
+                    <span className="absolute left-[9.5px] top-6 h-[calc(100%-20px)] w-px bg-line" aria-hidden />
+                  ) : null}
+                  <span className="text-sm leading-6 text-ink-2">{stage}</span>
+                </li>
+              ))}
+            </ol>
+
+            <h3 className="mt-8 font-mono text-xs uppercase tracking-wide text-ink-3">Agents teams start with</h3>
+            <ul className="mt-3 grid gap-1.5">
+              {industry.agentExamples.map((example) => (
+                <li key={example} className="text-sm leading-6 text-ink-2">
+                  — {example}
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="mt-8 font-mono text-xs uppercase tracking-wide text-ink-3">Common use cases</h3>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {industry.useCases.map((useCase) => (
+                <li key={useCase} className="rounded-full border border-line-strong px-3 py-1 text-xs text-ink-2">
+                  {useCase}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Guardrails / compliance */}
+      {industry.compliance ? (
+        <section className="border-y border-line bg-bg-1">
+          <div className={`${container} py-14 md:py-20`}>
+            <div className="flex items-start gap-3">
+              <ShieldCheck aria-hidden className="mt-1 size-5 shrink-0 text-bamboo" />
+              <div>
+                <h2 className="font-heading text-2xl font-semibold tracking-[-0.02em] text-ink-1">
+                  The boundaries are part of the deployment.
+                </h2>
+                <ul className="mt-5 grid max-w-2xl gap-3">
+                  {industry.compliance.map((rule) => (
+                    <li key={rule} className="border-l-2 border-bamboo-deep pl-4 text-sm leading-6 text-ink-2">
+                      {rule}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Editable estimate */}
+      <section className={`${container} py-16 md:py-24`}>
+        <SectionHeader
+          title="Model the value with your numbers."
+          description={`Defaults below are editable starting points for a ${industry.name.toLowerCase()} workflow — not benchmarks. Every output is an illustrative estimate.`}
+        />
+        <div className="mt-10">
+          <ROIEstimator defaults={industry.estimatorDefaults} />
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-line bg-bg-1">
+        <div className="mx-auto max-w-3xl px-5 py-16 md:px-8 md:py-24">
+          <h2 className="font-heading text-[clamp(1.8rem,3.5vw,2.6rem)] font-semibold tracking-[-0.025em] text-ink-1">
+            {industry.name} questions.
+          </h2>
+          <div className="mt-8">
+            <FAQAccordion items={industry.faqs} />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA with preselected industry */}
+      <section className={`${container} py-16 md:py-24`}>
+        <div className="max-w-2xl">
+          <h2 className="font-heading text-[clamp(2rem,4vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-ink-1">
+            Build the {industry.name.toLowerCase()} blueprint now.
+          </h2>
+          <p className="mt-4 text-base leading-7 text-ink-2">
+            The builder opens with {industry.name.toLowerCase()} preselected — five minutes to a
+            blueprint you can put in front of your team.
+          </p>
+          <div className="mt-7">
+            <CTAButton href={href} event="hero_cta_clicked" icon="none" payload={{ source: "industry_footer", industry: industry.slug }}>
+              Build My Free Agent
+            </CTAButton>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

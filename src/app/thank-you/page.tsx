@@ -1,88 +1,66 @@
 import type { Metadata } from "next";
-import { CalendarCheck, Share2, Sparkles, UsersRound } from "lucide-react";
-import { SuccessState } from "@/components/funnel/blocks";
+import { Check } from "lucide-react";
 import { CTAButton } from "@/components/funnel/cta-button";
-import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Thank You",
-  description: "Thanks for contacting Bamboo AI. Review the next steps and continue building your AI agent.",
+  title: "Request Received",
+  description: "Your strategy call request was received. Here's what to prepare.",
   openGraph: {
-    title: "Thank You | Bamboo AI",
-    description: "Your Bamboo AI demo request was received.",
+    title: "Request Received | Bamboo AI",
+    description: "Your strategy call request was received.",
     url: "/thank-you",
   },
 };
 
+const prepare = [
+  "One workflow — the single conversation type you most want handled.",
+  "Your current FAQ, intake form, or support material, in whatever shape it exists.",
+  "The business outcome you'd use to judge success after 30 days.",
+];
+
 export default function ThankYouPage() {
   return (
-    <main className="mx-auto max-w-6xl px-5 py-16">
-      <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <SuccessState
-          title="You are on the list."
-          description="Thanks for requesting a Bamboo AI demo. Your next step is to bring one workflow, one customer pain point, and any current intake or FAQ material."
-          ctaHref="/free-agent-builder"
-          ctaLabel="Build Free Agent"
-        />
-        <Card className="rounded-lg border-white/10 bg-white/[0.05] py-0 shadow-none">
-          <CardContent className="p-5">
-            <h2 className="font-heading text-xl font-semibold tracking-[-0.01em] text-white">What happens next</h2>
-            <div className="mt-6 grid gap-4">
-              <NextStep
-                icon={<CalendarCheck className="size-5" />}
-                title="Confirmation"
-                text="Your request is saved locally in this front-end build. Connect a backend to send it to your calendar or CRM."
-              />
-              <NextStep
-                icon={<Sparkles className="size-5" />}
-                title="Agent preview"
-                text="Create or revisit the free builder to give the call a concrete agent draft."
-              />
-              <NextStep
-                icon={<UsersRound className="size-5" />}
-                title="Optimization call"
-                text="Map launch fit, buyer journey, approved knowledge, integrations, and upgrade timing."
-              />
-            </div>
-            <div className="mt-6 rounded-lg border border-cyan-soft/20 bg-cyan-soft/10 p-5">
-              <div className="flex items-center gap-3">
-                <Share2 aria-hidden className="size-5 text-cyan-soft" />
-                <h3 className="font-heading font-semibold tracking-[-0.01em] text-white">Share Bamboo</h3>
-              </div>
-              <p className="mt-3 text-sm leading-7 text-white/68">
-                Send the free builder to a teammate who owns sales, support, operations, or customer success.
-              </p>
-              <div className="mt-5">
-                <CTAButton href="/free-agent-builder" event="secondary_cta_clicked" tone="secondary" icon="sparkles">
-                  Open Builder
-                </CTAButton>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <main id="main-content" className="mx-auto max-w-2xl px-5 py-16 md:py-24">
+      <p className="inline-flex items-center gap-2 rounded-full border border-bamboo-deep/50 bg-bamboo/8 px-3.5 py-1.5 font-mono text-xs text-bamboo">
+        <Check aria-hidden className="size-3.5" />
+        Request submitted
+      </p>
+      <h1 className="mt-5 font-heading text-[clamp(2.1rem,4vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-ink-1">
+        Your strategy call request is in.
+      </h1>
+      <p className="mt-4 text-base leading-7 text-ink-2">
+        The Bamboo team will reply by email to set the exact time — nothing is on the calendar
+        until you confirm it. The call runs 25–30 minutes and covers your workflow, launch
+        requirements, and plan fit.
+      </p>
+
+      <div className="mt-10 border-t border-line pt-8">
+        <h2 className="font-heading text-lg font-semibold tracking-[-0.015em] text-ink-1">
+          Three things worth preparing
+        </h2>
+        <ul className="mt-4 grid gap-3">
+          {prepare.map((item, index) => (
+            <li key={item} className="flex gap-3 text-sm leading-6 text-ink-2">
+              <span
+                className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-bamboo-deep font-mono text-[10px] text-bamboo"
+                aria-hidden
+              >
+                {index + 1}
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+        <CTAButton href="/agent-created" event="secondary_cta_clicked" tone="secondary" icon="none" payload={{ source: "thank_you" }}>
+          Review My Blueprint
+        </CTAButton>
+        <CTAButton href="/free-agent-builder" event="hero_cta_clicked" tone="secondary" icon="none" payload={{ source: "thank_you" }}>
+          Open the Free Builder
+        </CTAButton>
       </div>
     </main>
-  );
-}
-
-function NextStep({
-  icon,
-  title,
-  text,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="flex gap-4 rounded-md border border-white/10 bg-black/20 p-4">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-bamboo/10 text-bamboo">
-        {icon}
-      </div>
-      <div>
-        <h3 className="font-heading font-semibold tracking-[-0.01em] text-white">{title}</h3>
-        <p className="mt-2 text-sm leading-7 text-white/64">{text}</p>
-      </div>
-    </div>
   );
 }

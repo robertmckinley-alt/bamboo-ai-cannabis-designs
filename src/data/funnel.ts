@@ -16,6 +16,14 @@ export type FAQ = {
   answer: string;
 };
 
+export type IndustryConversation = {
+  visitor: string;
+  agent: string;
+  qualified: string[];
+  route: string;
+  outcome: string;
+};
+
 export type Industry = {
   slug: IndustrySlug;
   name: string;
@@ -25,97 +33,21 @@ export type Industry = {
   pains: string[];
   useCases: string[];
   agentExamples: string[];
-  roi: {
-    metric: string;
-    label: string;
-    description: string;
-  };
-  workflow: string[];
-  testimonial: string;
+  workflow: [string, string, string];
+  conversation: IndustryConversation;
+  /** Regulated-industry boundaries shown verbatim on the page. */
+  compliance?: string[];
+  /** Outcome tags used by the homepage industry explorer. */
+  outcomes: OutcomeId[];
+  estimatorDefaults: EstimatorInputs;
   faqs: FAQ[];
 };
 
 export const navLinks = [
-  { href: "/free-agent-builder", label: "Free Builder" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#use-cases", label: "Use Cases" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/industries/customer-service", label: "Industries" },
-  { href: "/book-demo", label: "Book Demo" },
-];
-
-export const logos = [
-  "ServiceOps",
-  "Northline",
-  "Foundry CRM",
-  "Atlas Dental",
-  "Fleetly",
-  "Urban Table",
-];
-
-export const stats = [
-  { value: "5 min", label: "to first agent draft" },
-  { value: "24/7", label: "lead and support coverage" },
-  { value: "0 code", label: "required to launch" },
-  { value: "11", label: "industry playbooks" },
-];
-
-export const homepageFAQs: FAQ[] = [
-  {
-    question: "Can I really build an agent without code?",
-    answer:
-      "Yes. The free builder asks a few business questions, creates an agent profile, and gives you a launch-ready preview that your team can refine.",
-  },
-  {
-    question: "What happens after I create the free agent?",
-    answer:
-      "You can review the preview, book an optimization call, and connect the agent to your site, CRM, booking flow, or support workflow when you are ready.",
-  },
-  {
-    question: "Does Bamboo replace my team?",
-    answer:
-      "No. Bamboo handles repetitive conversations, qualification, routing, and follow-up so your team spends more time on high-value work.",
-  },
-  {
-    question: "Can Bamboo work for regulated or complex industries?",
-    answer:
-      "Yes. Bamboo can be configured with clear guardrails, escalation rules, approved knowledge, and handoff steps for industries that need more control.",
-  },
-  {
-    question: "Is the pricing final?",
-    answer:
-      "The plan structure here is sample front-end copy. Replace the pricing data file with your official packaging when it is finalized.",
-  },
-];
-
-export const agentTemplates = [
-  {
-    title: "Lead Concierge",
-    description: "Qualifies visitors, answers buying questions, and books the next best step.",
-    outcome: "More qualified calls",
-  },
-  {
-    title: "Support Triage",
-    description: "Resolves common questions, gathers context, and escalates cleanly.",
-    outcome: "Faster response times",
-  },
-  {
-    title: "Appointment Setter",
-    description: "Handles availability, reminders, intake, and handoff to your calendar.",
-    outcome: "Fewer missed bookings",
-  },
-  {
-    title: "Knowledge Guide",
-    description: "Turns your site, docs, and FAQs into a searchable customer answer layer.",
-    outcome: "Less repetitive work",
-  },
-];
-
-export const useCases = [
-  "Answer product and service questions instantly",
-  "Capture and qualify inbound leads",
-  "Book appointments and demos",
-  "Route urgent conversations to the right team",
-  "Follow up after form fills or missed calls",
-  "Turn FAQs and website content into guided answers",
+  { href: "/#industries", label: "Industries" },
 ];
 
 export const integrations = [
@@ -129,52 +61,331 @@ export const integrations = [
   "Help desk",
 ];
 
-export const testimonials = [
+/* ------------------------------------------------------------------ */
+/* Use-case explorer (homepage section 4)                              */
+/* ------------------------------------------------------------------ */
+
+export type OutcomeId =
+  | "qualify-leads"
+  | "answer-questions"
+  | "book-appointments"
+  | "recommend"
+  | "route-sensitive"
+  | "follow-up";
+
+export type Outcome = {
+  id: OutcomeId;
+  label: string;
+  trigger: string;
+  actions: [string, string, string];
+  captured: string[];
+  handoff: string;
+  result: string;
+  industries: string[];
+};
+
+export const outcomes: Outcome[] = [
   {
-    quote:
-      "Bamboo gave us a polished first-line agent before we had time to write a single automation spec.",
-    name: "Maya Chen",
-    role: "VP Growth, Northline",
+    id: "qualify-leads",
+    label: "Qualify leads",
+    trigger: "A visitor asks about pricing, fit, or availability.",
+    actions: [
+      "Answers the question from approved knowledge",
+      "Asks for use case, team size, and urgency",
+      "Scores intent against your qualification rules",
+    ],
+    captured: ["Use case", "Team size", "Urgency", "Contact"],
+    handoff: "High intent routes to your calendar with a summary. Everything else lands in your inbox as structured context.",
+    result: "Qualified conversation, booked next step",
+    industries: ["Sales", "Real estate", "Automotive", "Construction", "Insurance"],
   },
   {
-    quote:
-      "The builder made the conversation concrete. We could see the exact agent we needed in minutes.",
-    name: "Andre Collins",
-    role: "Operations Lead, ServiceOps",
+    id: "answer-questions",
+    label: "Answer support questions",
+    trigger: "A customer asks about hours, policies, orders, or how something works.",
+    actions: [
+      "Resolves the question from your approved content",
+      "Collects account or order context when needed",
+      "Flags low-confidence answers instead of guessing",
+    ],
+    captured: ["Question topic", "Account context", "Resolution status"],
+    handoff: "Unresolved or urgent cases escalate to your team with the full exchange attached.",
+    result: "Fewer repetitive tickets, cleaner escalations",
+    industries: ["Customer service", "Ecommerce", "Restaurants", "Medical"],
   },
   {
-    quote:
-      "It feels like a sales engineer, support lead, and onboarding specialist sitting in one workflow.",
-    name: "Priya Kapoor",
-    role: "Founder, Atlas Studio",
+    id: "book-appointments",
+    label: "Book appointments",
+    trigger: "A visitor wants a demo, consultation, showing, or service slot.",
+    actions: [
+      "Explains what the appointment covers",
+      "Collects the details your team needs beforehand",
+      "Offers the right booking path by request type",
+    ],
+    captured: ["Appointment type", "Preferred timing", "Prep details"],
+    handoff: "The booking lands on your calendar with intake context so nobody starts the meeting cold.",
+    result: "Fewer missed bookings, prepared meetings",
+    industries: ["Medical", "Real estate", "Automotive", "Restaurants", "Law firms"],
+  },
+  {
+    id: "recommend",
+    label: "Recommend products or services",
+    trigger: "A shopper describes a need but doesn't know which option fits.",
+    actions: [
+      "Asks two or three narrowing questions",
+      "Recommends from your approved catalog rules",
+      "Explains the why behind the recommendation",
+    ],
+    captured: ["Need described", "Options shown", "Choice made"],
+    handoff: "High-value carts or complex requests route to a human with the conversation attached.",
+    result: "Guided choice instead of bounce",
+    industries: ["Ecommerce", "Cannabis", "Restaurants", "Insurance"],
+  },
+  {
+    id: "route-sensitive",
+    label: "Route sensitive requests",
+    trigger: "A conversation touches an urgent, regulated, or high-stakes topic.",
+    actions: [
+      "Recognizes the topic against your escalation rules",
+      "Stops answering and explains the handoff",
+      "Collects only what your team approved for intake",
+    ],
+    captured: ["Topic category", "Urgency", "Callback details"],
+    handoff: "The request reaches the right person immediately, marked urgent, with nothing improvised.",
+    result: "Sensitive cases reach humans fast",
+    industries: ["Medical", "Law firms", "Insurance", "Customer service"],
+  },
+  {
+    id: "follow-up",
+    label: "Follow up after inquiries",
+    trigger: "A form fill, missed call, or stalled conversation needs a next touch.",
+    actions: [
+      "Re-opens the thread with the prior context",
+      "Answers the open question or offers times",
+      "Marks the outcome so nothing gets re-worked",
+    ],
+    captured: ["Original inquiry", "Response status", "Next step"],
+    handoff: "Warm replies route to your team; no-responses close with a clean record instead of a mystery.",
+    result: "No inquiry ages out silently",
+    industries: ["Sales", "Construction", "Real estate", "Automotive"],
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* Builder choices                                                     */
+/* ------------------------------------------------------------------ */
+
+export const builderIndustries = [
+  "Customer service",
+  "Sales",
+  "Real estate",
+  "Medical",
+  "Cannabis",
+  "Automotive",
+  "Law firms",
+  "Insurance",
+  "Restaurants",
+  "Ecommerce",
+  "Construction",
+  "Other",
+];
+
+export const builderGoals = [
+  "Capture and qualify leads",
+  "Answer customer questions",
+  "Book appointments",
+  "Triage support requests",
+  "Recommend products or services",
+  "Follow up after inquiries",
+];
+
+export type Channel = {
+  name: string;
+  note: string;
+};
+
+export const builderChannels: Channel[] = [
+  { name: "Website chat", note: "Included with every launch plan" },
+  { name: "SMS", note: "Integration-dependent — mapped at launch" },
+  { name: "Email", note: "Integration-dependent — mapped at launch" },
+  { name: "Facebook/Instagram", note: "Planned — join the waitlist at launch review" },
+  { name: "CRM inbox", note: "Integration-dependent — mapped at launch" },
+];
+
+export type Voice = {
+  name: string;
+  sample: string;
+};
+
+export const builderVoices: Voice[] = [
+  {
+    name: "Helpful expert",
+    sample: "Good question — here's how that works, and what I'd check first for a team your size.",
+  },
+  {
+    name: "Warm concierge",
+    sample: "Happy to help with that. Let me find the right option for you — it'll take two quick questions.",
+  },
+  {
+    name: "Direct sales assistant",
+    sample: "Yes, we handle that. If timing matters, I can hold a slot on the calendar right now.",
+  },
+  {
+    name: "Calm support guide",
+    sample: "I can sort this out with you. First, let me confirm what happened so nothing gets repeated later.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* ROI estimator                                                       */
+/* ------------------------------------------------------------------ */
+
+export type EstimatorInputs = {
+  monthlyConversations: number;
+  qualifiedRatePct: number;
+  opportunityValue: number;
+  afterHoursPct: number;
+};
+
+export const estimatorDefaults: EstimatorInputs = {
+  monthlyConversations: 300,
+  qualifiedRatePct: 20,
+  opportunityValue: 1200,
+  afterHoursPct: 35,
+};
+
+export const estimatorAssumptions = [
+  "Assumes the agent responds to every inbound conversation, including after hours.",
+  "Captured after-hours conversations are counted as newly answered, not newly created.",
+  "Hours returned assumes roughly 6 minutes of human handling saved per answered conversation.",
+  "Opportunity value influenced multiplies newly captured conversations by your qualified rate and value.",
+];
+
+/* ------------------------------------------------------------------ */
+/* Guardrail flow (homepage section 7)                                 */
+/* ------------------------------------------------------------------ */
+
+export const guardrailFlow = [
+  {
+    stage: "Approved knowledge",
+    detail: "Your site, docs, FAQs, and notes — nothing outside what you provide.",
+  },
+  {
+    stage: "Agent rules",
+    detail: "Topics it may answer, questions it asks, and the qualification logic it follows.",
+  },
+  {
+    stage: "Confidence check",
+    detail: "Low-confidence answers stop; the agent says so instead of guessing.",
+  },
+  {
+    stage: "Human handoff",
+    detail: "Sensitive or escalated conversations route to your team with full context.",
+  },
+  {
+    stage: "Logged outcome",
+    detail: "Every conversation ends as a readable record: what was asked, answered, and routed.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Blueprint artifact (proof-replacement section)                      */
+/* ------------------------------------------------------------------ */
+
+export const blueprintIncludes = [
+  { label: "Objective", example: "Qualify inbound demo requests for a B2B services team" },
+  { label: "Greeting", example: "Written in your chosen voice, referencing your actual offer" },
+  { label: "Qualification fields", example: "Use case · team size · urgency · destination" },
+  { label: "Approved knowledge", example: "Your website, FAQ, and the notes you provide" },
+  { label: "Guardrails", example: "Topics excluded, escalation triggers, confidence rules" },
+  { label: "Handoff", example: "Who receives the conversation and what summary they see" },
+  { label: "Readiness breakdown", example: "Outcome · context · knowledge · guardrails · destination" },
+  { label: "Launch checklist", example: "The exact gaps to close before the agent goes live" },
+];
+
+/* ------------------------------------------------------------------ */
+/* Homepage FAQ                                                        */
+/* ------------------------------------------------------------------ */
+
+export const homepageFAQs: FAQ[] = [
+  {
+    question: "Can I build an agent without code?",
+    answer:
+      "Yes. The free builder asks plain business questions — industry, outcome, channel, voice, context — and turns the answers into a structured agent blueprint. No automation platform to learn.",
+  },
+  {
+    question: "What do I receive from the free builder?",
+    answer:
+      "A complete agent blueprint: objective, greeting, qualification questions, approved-knowledge summary, guardrails, handoff rule, and a readiness breakdown showing exactly what's left before launch. You can copy or download it.",
+  },
+  {
+    question: "Does Bamboo replace my team?",
+    answer:
+      "No. Bamboo handles the repetitive first mile — answering, qualifying, routing, following up — and hands your team a summary so they start every conversation with context instead of discovery.",
+  },
+  {
+    question: "How does the agent know what it can say?",
+    answer:
+      "It answers only from knowledge you approve: your website, docs, FAQs, and notes. You also set excluded topics and a confidence rule, so when the agent isn't sure, it says so and escalates rather than guessing.",
+  },
+  {
+    question: "Can it hand off to a human?",
+    answer:
+      "Yes — that's a core design rule. You define the handoff condition (topic, urgency, or low confidence) and the agent transfers with a readable summary so the customer never repeats themselves.",
+  },
+  {
+    question: "Which systems can it connect to?",
+    answer:
+      "Website chat is included. CRM, calendar, email, SMS, forms, knowledge bases, and help desks are mapped during launch depending on your stack — the strategy call covers exactly which connections your workflow needs.",
+  },
+  {
+    question: "How long does a launch take?",
+    answer:
+      "The blueprint takes about five minutes. A production launch depends on your integrations — most single-workflow launches are measured in days, and the launch checklist in your blueprint shows the exact remaining steps.",
+  },
+  {
+    question: "How does pricing work?",
+    answer:
+      "Building and saving a blueprint is free. Paid plans start when you launch a production agent, and scale by the number of agents and integration depth. There are no usage surprises — the pricing page lists what each plan includes.",
+  },
+  {
+    question: "Can regulated industries use it?",
+    answer:
+      "Yes, with explicit boundaries. Medical, legal, insurance, and cannabis deployments are configured for administrative workflows only — the agent never gives professional advice, and sensitive topics escalate to licensed humans by rule.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Pricing                                                             */
+/* ------------------------------------------------------------------ */
 
 export const pricingPlans = [
   {
     name: "Free Builder",
     price: "$0",
-    cadence: "one-time demo",
-    description: "Create a preview agent and map the best workflow for your business.",
+    cadence: "no credit card",
+    bestFor: "Best for proving the workflow before anything is deployed.",
+    description: "Create the agent blueprint and map the best first workflow for your business.",
     features: [
-      "AI agent draft",
-      "Live preview",
-      "Readiness score",
-      "Builder autosave",
-      "Optimization call CTA",
+      "Full agent blueprint",
+      "Live preview while you build",
+      "Readiness breakdown",
+      "Autosave and resume",
+      "Copy or download the blueprint",
     ],
-    cta: "Build Free Agent",
+    cta: "Build My Free Agent",
     href: "/free-agent-builder",
   },
   {
     name: "Growth",
     price: "$99",
     cadence: "per month",
-    description: "Launch one customer-facing agent for leads, support, or scheduling.",
+    bestFor: "Best for launching one customer-facing workflow.",
+    description: "Launch one production agent for leads, support, or scheduling.",
     features: [
       "1 production agent",
-      "Website embed",
-      "Lead capture",
+      "Website chat embed",
+      "Lead capture and routing",
       "Knowledge source setup",
       "Email support",
     ],
@@ -186,22 +397,24 @@ export const pricingPlans = [
     name: "Scale",
     price: "$299",
     cadence: "per month",
-    description: "Run multiple agents across channels with sharper routing and reporting.",
+    bestFor: "Best for teams running agents across several channels.",
+    description: "Run multiple agents with deeper routing, integrations, and reporting.",
     features: [
       "Up to 5 agents",
       "CRM and calendar handoff",
-      "Advanced qualification",
+      "Advanced qualification rules",
       "Team workflow design",
       "Priority support",
     ],
-    cta: "Talk to Sales",
+    cta: "Talk Through Scale",
     href: "/book-demo",
   },
   {
     name: "Enterprise",
     price: "Custom",
     cadence: "annual",
-    description: "Custom deployment for complex teams, security needs, and high volume.",
+    bestFor: "Best for complex teams with security and volume requirements.",
+    description: "Custom deployment for security review, high volume, and bespoke integrations.",
     features: [
       "Unlimited agent workflows",
       "Security review",
@@ -209,74 +422,46 @@ export const pricingPlans = [
       "Dedicated launch plan",
       "Executive reporting",
     ],
-    cta: "Book Demo",
+    cta: "Book a Strategy Call",
     href: "/book-demo",
   },
 ];
 
 export const comparisonRows = [
+  { feature: "Agent blueprint and preview", free: "Included", growth: "Included", scale: "Included", enterprise: "Included" },
+  { feature: "Production website agent", free: "—", growth: "1", scale: "5", enterprise: "Custom" },
+  { feature: "Lead capture and routing", free: "Blueprint only", growth: "Included", scale: "Advanced", enterprise: "Custom" },
+  { feature: "CRM and calendar integrations", free: "—", growth: "Starter", scale: "Included", enterprise: "Custom" },
+  { feature: "Qualification rules", free: "Draft", growth: "Standard", scale: "Advanced", enterprise: "Custom" },
+  { feature: "Launch support", free: "Self guided", growth: "Email", scale: "Priority", enterprise: "Dedicated" },
+];
+
+export const pricingFAQs: FAQ[] = [
   {
-    feature: "Free agent preview",
-    free: "Included",
-    growth: "Included",
-    scale: "Included",
-    enterprise: "Included",
+    question: "What happens between the free blueprint and a paid plan?",
+    answer:
+      "A strategy call maps your blueprint to launch requirements: knowledge sources, integrations, routing, and measurement. You choose a plan only when the workflow is worth deploying.",
   },
   {
-    feature: "Production website agent",
-    free: "Preview only",
-    growth: "1",
-    scale: "5",
-    enterprise: "Custom",
+    question: "Do plans require a contract?",
+    answer:
+      "Growth and Scale are monthly. Enterprise deployments are scoped annually because they include security review and custom integration work.",
   },
   {
-    feature: "Lead capture and routing",
-    free: "Basic",
-    growth: "Included",
-    scale: "Advanced",
-    enterprise: "Custom",
+    question: "How is my data handled?",
+    answer:
+      "Your blueprint content stays yours. Production data handling, retention, and access controls are reviewed during launch — and in writing for Enterprise deployments.",
   },
   {
-    feature: "CRM and calendar integrations",
-    free: "Not included",
-    growth: "Starter",
-    scale: "Included",
-    enterprise: "Custom",
-  },
-  {
-    feature: "Launch support",
-    free: "Self guided",
-    growth: "Email",
-    scale: "Priority",
-    enterprise: "Dedicated",
+    question: "Can I change plans later?",
+    answer:
+      "Yes. Plans map to the number of live agents and integration depth, so upgrading is a scope change, not a rebuild.",
   },
 ];
 
-export const builderChoices = {
-  industries: [
-    "Customer service",
-    "Sales",
-    "Real estate",
-    "Medical",
-    "Cannabis",
-    "Automotive",
-    "Law firms",
-    "Insurance",
-    "Restaurants",
-    "Ecommerce",
-    "Construction",
-  ],
-  goals: [
-    "Capture and qualify leads",
-    "Answer customer questions",
-    "Book appointments",
-    "Triage support requests",
-    "Recommend products or services",
-    "Follow up after inquiries",
-  ],
-  channels: ["Website chat", "SMS", "Email", "Facebook/Instagram", "CRM inbox"],
-  voices: ["Helpful expert", "Warm concierge", "Direct sales assistant", "Calm support guide"],
-};
+/* ------------------------------------------------------------------ */
+/* Industries                                                          */
+/* ------------------------------------------------------------------ */
 
 export const industries: Industry[] = [
   {
@@ -286,19 +471,37 @@ export const industries: Industry[] = [
     headline: "Resolve repetitive customer questions before they hit the queue.",
     description:
       "Bamboo creates support agents that answer FAQs, collect context, route urgent issues, and keep customers moving without burying your team in tickets.",
-    pains: ["Slow first response times", "Repeated FAQ tickets", "Inconsistent escalation notes"],
+    pains: [
+      "First response times stretch while easy questions clog the queue",
+      "The same ten FAQs consume hours that complex cases need",
+      "Escalations arrive with no context, so customers repeat themselves",
+    ],
     useCases: ["FAQ resolution", "Order and account triage", "Escalation summaries"],
     agentExamples: ["Support Triage Agent", "Policy Answer Agent", "Escalation Intake Agent"],
-    roi: {
-      metric: "42%",
-      label: "fewer repetitive tickets",
-      description: "A well-trained first-line support agent can absorb common questions and prep clean handoffs.",
+    workflow: [
+      "Customer asks a question in chat",
+      "Agent answers from approved content or collects context",
+      "Urgent cases route to your team with a summary",
+    ],
+    conversation: {
+      visitor: "My order says delivered but nothing arrived. Can someone help?",
+      agent: "I can help with that. Let me pull the details — what's the order number or the email on the order?",
+      qualified: ["Order reference", "Delivery status", "Urgency: high"],
+      route: "Escalated to support with full context",
+      outcome: "Human picks up mid-thread — no repetition",
     },
-    workflow: ["Visitor asks a question", "Agent answers from approved content", "Urgent cases route to support"],
-    testimonial: "Bamboo made our support desk feel staffed before the first ticket was created.",
+    outcomes: ["answer-questions", "route-sensitive"],
+    estimatorDefaults: { monthlyConversations: 600, qualifiedRatePct: 10, opportunityValue: 180, afterHoursPct: 30 },
     faqs: [
-      { question: "Can it escalate to a human?", answer: "Yes. Bamboo can capture context and route conversations to your team when confidence is low or urgency is high." },
-      { question: "Can it use our help center?", answer: "Yes. Add your site, FAQs, docs, and approved knowledge sources during setup." },
+      {
+        question: "Can it escalate to a human?",
+        answer:
+          "Yes. You define the escalation rule — topic, urgency, or low confidence — and the agent transfers with context and a summary.",
+      },
+      {
+        question: "Can it use our help center?",
+        answer: "Yes. Add your site, FAQs, docs, and approved knowledge sources during setup; the agent answers only from those.",
+      },
     ],
   },
   {
@@ -308,19 +511,37 @@ export const industries: Industry[] = [
     headline: "Turn anonymous visitors into qualified sales conversations.",
     description:
       "Bamboo agents ask the right questions, explain your offer, qualify urgency, and push high-intent buyers toward demos or checkout.",
-    pains: ["Lead leakage after hours", "Unqualified demo requests", "Slow follow-up"],
+    pains: [
+      "Leads arrive after hours and go cold before anyone responds",
+      "Demo calendars fill with unqualified conversations",
+      "Follow-up depends on whoever remembers to do it",
+    ],
     useCases: ["Lead qualification", "Demo routing", "Offer explanation"],
     agentExamples: ["Inbound SDR Agent", "Demo Qualifier", "Proposal Follow-up Agent"],
-    roi: {
-      metric: "3x",
-      label: "more after-hours capture",
-      description: "Always-on qualification keeps demand warm until your sales team can respond.",
+    workflow: [
+      "Visitor asks about fit or pricing",
+      "Agent qualifies use case, team size, and timing",
+      "High intent books a demo; the rest lands as structured context",
+    ],
+    conversation: {
+      visitor: "We need an AI assistant for inbound demos. Does this work with our CRM?",
+      agent: "That's exactly the workflow Bamboo starts with. Which CRM do you run, and roughly how many inbound conversations land per month?",
+      qualified: ["Use case: inbound demos", "CRM named", "Volume estimated", "Urgency: this quarter"],
+      route: "High intent → demo calendar + CRM summary",
+      outcome: "Qualified. Demo ready.",
     },
-    workflow: ["Visitor asks about fit", "Agent qualifies budget and timing", "Qualified lead books a demo"],
-    testimonial: "It gave our sales page the confidence of a live rep without adding another seat.",
+    outcomes: ["qualify-leads", "follow-up"],
+    estimatorDefaults: { monthlyConversations: 300, qualifiedRatePct: 20, opportunityValue: 2500, afterHoursPct: 35 },
     faqs: [
-      { question: "Can Bamboo score leads?", answer: "Yes. The builder creates a readiness score and the production flow can map responses to lead quality." },
-      { question: "Can it book meetings?", answer: "Yes. Add calendar routing when you connect your scheduling stack." },
+      {
+        question: "Can Bamboo score leads?",
+        answer:
+          "Yes. Your qualification rules map answers to intent, and the blueprint defines exactly which responses count as high intent.",
+      },
+      {
+        question: "Can it book meetings?",
+        answer: "Yes. Calendar routing is mapped when you connect your scheduling stack at launch.",
+      },
     ],
   },
   {
@@ -329,20 +550,37 @@ export const industries: Industry[] = [
     eyebrow: "Property lead capture",
     headline: "Qualify buyers, sellers, renters, and investors around the clock.",
     description:
-      "Bamboo can answer listing questions, collect preferences, explain process steps, and route hot prospects to the right agent.",
-    pains: ["Missed property inquiries", "Manual qualification", "Slow showing coordination"],
+      "Bamboo answers listing questions, collects preferences, explains process steps, and routes hot prospects to the right agent.",
+    pains: [
+      "Listing inquiries arrive at 9pm and get answered at 10am",
+      "Qualification happens manually, one text thread at a time",
+      "Showing coordination eats hours that should go to closings",
+    ],
     useCases: ["Buyer intake", "Seller valuation interest", "Showing request routing"],
     agentExamples: ["Buyer Concierge", "Listing Q&A Agent", "Seller Intake Agent"],
-    roi: {
-      metric: "24/7",
-      label: "property inquiry coverage",
-      description: "Real estate intent often happens after hours. Bamboo keeps the conversation moving.",
+    workflow: [
+      "Lead asks about a listing or shares criteria",
+      "Agent captures budget, timeline, and financing status",
+      "Hot prospects route to the right agent with a summary",
+    ],
+    conversation: {
+      visitor: "Is the Maple Street listing still available? We'd want to see it this weekend.",
+      agent: "It is. I can help set that up — are you already pre-approved, and is Saturday or Sunday better for you?",
+      qualified: ["Listing interest", "Pre-approval status", "Timing: this weekend"],
+      route: "Showing request → listing agent's calendar",
+      outcome: "Showing scheduled with context attached",
     },
-    workflow: ["Lead shares criteria", "Agent captures timeline and budget", "Agent routes to the right specialist"],
-    testimonial: "Our listings stopped feeling like static pages and started acting like assistants.",
+    outcomes: ["qualify-leads", "book-appointments"],
+    estimatorDefaults: { monthlyConversations: 200, qualifiedRatePct: 15, opportunityValue: 9000, afterHoursPct: 45 },
     faqs: [
-      { question: "Can it discuss listings?", answer: "Yes. Give Bamboo listing content and guardrails for what it should and should not answer." },
-      { question: "Can it capture seller leads?", answer: "Yes. The agent can ask location, timeline, property type, and preferred follow-up method." },
+      {
+        question: "Can it discuss listings?",
+        answer: "Yes. Give Bamboo listing content and guardrails for what it should and should not answer.",
+      },
+      {
+        question: "Can it capture seller leads?",
+        answer: "Yes. The agent can ask location, timeline, property type, and preferred follow-up method.",
+      },
     ],
   },
   {
@@ -352,19 +590,42 @@ export const industries: Industry[] = [
     headline: "Help patients find answers, appointments, and next steps faster.",
     description:
       "Bamboo supports non-emergency intake, appointment routing, service FAQs, and front-desk workflows with clear guardrails and escalation.",
-    pains: ["Phone volume", "Appointment friction", "Repeated insurance questions"],
+    pains: [
+      "Phone volume buries the front desk in routine questions",
+      "Appointment requests stack up in voicemail",
+      "Insurance questions get answered forty times a day",
+    ],
     useCases: ["Appointment intake", "Service FAQs", "Insurance pre-screening"],
     agentExamples: ["Patient Intake Agent", "Procedure FAQ Agent", "Front Desk Assistant"],
-    roi: {
-      metric: "30%",
-      label: "front-desk time returned",
-      description: "Automating routine intake and FAQs gives staff more space for patients who need direct help.",
+    workflow: [
+      "Patient asks a service or scheduling question",
+      "Agent provides approved administrative guidance",
+      "Appointment requests and clinical questions route to staff",
+    ],
+    conversation: {
+      visitor: "Do you take Delta Dental, and can I get a cleaning next week?",
+      agent: "We do accept Delta Dental. For scheduling, I'll take a few details and the front desk will confirm your slot — what days work best?",
+      qualified: ["Insurance named", "Service: cleaning", "Timing: next week"],
+      route: "Appointment request → front-desk queue",
+      outcome: "Intake complete before staff pick up",
     },
-    workflow: ["Patient asks service question", "Agent provides approved guidance", "Appointment request routes to staff"],
-    testimonial: "The agent gave our front desk breathing room without pretending to be a clinician.",
+    compliance: [
+      "Administrative assistance only — the agent never gives diagnosis or medical advice.",
+      "Clinical and urgent-symptom topics escalate to staff immediately, by rule.",
+      "Intake collects only the fields your practice approves.",
+    ],
+    outcomes: ["book-appointments", "answer-questions", "route-sensitive"],
+    estimatorDefaults: { monthlyConversations: 400, qualifiedRatePct: 25, opportunityValue: 250, afterHoursPct: 40 },
     faqs: [
-      { question: "Does it give medical advice?", answer: "No. Bamboo should be configured for administrative and approved informational workflows, with escalation for clinical questions." },
-      { question: "Can it collect intake details?", answer: "Yes. You can collect basic appointment and service-fit information before human review." },
+      {
+        question: "Does it give medical advice?",
+        answer:
+          "No. Bamboo is configured for administrative and approved informational workflows only, with escalation for anything clinical.",
+      },
+      {
+        question: "Can it collect intake details?",
+        answer: "Yes. You approve exactly which appointment and service-fit fields are collected before human review.",
+      },
     ],
   },
   {
@@ -373,20 +634,42 @@ export const industries: Industry[] = [
     eyebrow: "Retail guidance",
     headline: "Guide compliant product discovery and reduce repetitive store questions.",
     description:
-      "Bamboo helps cannabis retailers answer store, menu, pickup, policy, and education questions while keeping guardrails clear.",
-    pains: ["Menu confusion", "Policy questions", "High phone volume"],
+      "Bamboo helps cannabis retailers answer store, menu, pickup, policy, and education questions while keeping guardrails explicit.",
+    pains: [
+      "Menu and availability questions dominate the phone line",
+      "Policy questions repeat across every channel",
+      "Education requests take staff time the sales floor needs",
+    ],
     useCases: ["Product discovery", "Pickup guidance", "Store policy FAQs"],
     agentExamples: ["Dispensary Guide", "Menu Assistant", "Pickup FAQ Agent"],
-    roi: {
-      metric: "18%",
-      label: "more guided inquiries",
-      description: "Clear answers help shoppers understand options before contacting staff or visiting.",
+    workflow: [
+      "Shopper asks about a category or policy",
+      "Agent shares approved, jurisdiction-aware guidance",
+      "Shopper moves to store, pickup, or staff follow-up",
+    ],
+    conversation: {
+      visitor: "Do you have anything low-dose for sleep, and can I order for pickup?",
+      agent: "We can talk through the low-dose options our menu lists for evening use. Pickup ordering is available — want me to walk you through it?",
+      qualified: ["Category: low-dose", "Intent: pickup order", "Jurisdiction confirmed"],
+      route: "Pickup guidance → store workflow",
+      outcome: "Guided visit instead of a missed call",
     },
-    workflow: ["Shopper asks about category", "Agent shares approved guidance", "Shopper moves to store or pickup next step"],
-    testimonial: "Bamboo made our education flow feel polished while keeping compliance at the center.",
+    compliance: [
+      "Age, jurisdiction, product, and compliance rules are configurable and enforced in the agent's guardrails.",
+      "The agent shares approved product education only — no medical claims.",
+      "Regulated topics route to staff rather than being improvised.",
+    ],
+    outcomes: ["recommend", "answer-questions"],
+    estimatorDefaults: { monthlyConversations: 500, qualifiedRatePct: 30, opportunityValue: 80, afterHoursPct: 25 },
     faqs: [
-      { question: "Can we control what it says?", answer: "Yes. Use approved content, age-gate messaging, and escalation rules appropriate for your market." },
-      { question: "Can it connect to menus?", answer: "The front end includes placeholders; production integration can connect menu or ecommerce systems." },
+      {
+        question: "Can we control what it says?",
+        answer: "Yes. Use approved content, age-gate messaging, and escalation rules appropriate for your market.",
+      },
+      {
+        question: "Can it connect to menus?",
+        answer: "Menu and ecommerce connections are mapped at launch depending on your platform.",
+      },
     ],
   },
   {
@@ -395,20 +678,37 @@ export const industries: Industry[] = [
     eyebrow: "Dealer and service workflows",
     headline: "Capture shoppers and service requests before competitors respond.",
     description:
-      "Bamboo agents can answer inventory questions, gather trade-in details, qualify finance interest, and route service appointments.",
-    pains: ["Slow shopper response", "Manual trade-in intake", "Service scheduling bottlenecks"],
+      "Bamboo agents answer inventory questions, gather trade-in details, qualify finance interest, and route service appointments.",
+    pains: [
+      "Shoppers message three dealerships and buy from the fastest reply",
+      "Trade-in intake happens by phone tag",
+      "Service scheduling bottlenecks at the front desk",
+    ],
     useCases: ["Vehicle inquiry", "Trade-in capture", "Service booking"],
     agentExamples: ["Inventory Agent", "Trade-in Intake Agent", "Service Scheduler"],
-    roi: {
-      metric: "2.4x",
-      label: "faster shopper handoff",
-      description: "Structured qualification gives sales and service teams cleaner context on every lead.",
+    workflow: [
+      "Shopper asks about a vehicle or service",
+      "Agent captures intent, trade-in, and timeline details",
+      "Sales or service receives a clean, structured handoff",
+    ],
+    conversation: {
+      visitor: "Is the 2022 Tacoma still on the lot? I'd trade in my 2018 Civic.",
+      agent: "Let me check that for you. For the trade-in, can you tell me the Civic's mileage and condition? That way the desk has real numbers ready when you come in.",
+      qualified: ["Vehicle interest", "Trade-in details", "Visit intent"],
+      route: "Qualified shopper → sales desk with trade-in context",
+      outcome: "Appointment set, numbers prepped",
     },
-    workflow: ["Shopper asks about vehicle", "Agent captures intent and timeline", "Team receives clean handoff"],
-    testimonial: "It turned our inventory pages into working lead capture surfaces.",
+    outcomes: ["qualify-leads", "book-appointments", "follow-up"],
+    estimatorDefaults: { monthlyConversations: 350, qualifiedRatePct: 18, opportunityValue: 2800, afterHoursPct: 40 },
     faqs: [
-      { question: "Can it ask about trade-ins?", answer: "Yes. It can collect year, make, model, condition, payoff status, and contact info." },
-      { question: "Can it route to service?", answer: "Yes. Use the booking flow or connect your service calendar in production." },
+      {
+        question: "Can it ask about trade-ins?",
+        answer: "Yes. It can collect year, make, model, condition, payoff status, and contact info.",
+      },
+      {
+        question: "Can it route to service?",
+        answer: "Yes. Service requests follow their own routing rule, and calendar connection is mapped at launch.",
+      },
     ],
   },
   {
@@ -417,20 +717,42 @@ export const industries: Industry[] = [
     eyebrow: "Intake and qualification",
     headline: "Screen potential matters without slowing down your intake team.",
     description:
-      "Bamboo can collect case details, practice-area fit, urgency, location, and contact information while using clear legal disclaimers.",
-    pains: ["Unqualified inquiries", "Incomplete intake forms", "Slow urgent follow-up"],
+      "Bamboo collects case details, practice-area fit, urgency, location, and contact information while using clear legal disclaimers.",
+    pains: [
+      "Unqualified inquiries consume paralegal hours",
+      "Intake forms arrive half-complete",
+      "Urgent matters wait in the same queue as everything else",
+    ],
     useCases: ["Matter pre-screening", "Practice-area routing", "Consultation booking"],
     agentExamples: ["Legal Intake Agent", "Consultation Qualifier", "Case Routing Agent"],
-    roi: {
-      metric: "55%",
-      label: "cleaner intake notes",
-      description: "Structured prompts help teams decide what deserves immediate attorney review.",
+    workflow: [
+      "Prospect describes their situation",
+      "Agent collects core facts and practice-area fit",
+      "Matter routes to the right attorney's intake queue",
+    ],
+    conversation: {
+      visitor: "I was rear-ended last month and the insurance offer seems low. Do you handle this?",
+      agent: "We do handle personal injury matters. I can't give legal advice here, but I can take the details so an attorney reviews your situation — when did the accident happen, and have you signed anything with the insurer?",
+      qualified: ["Practice area: personal injury", "Timeline", "No agreement signed"],
+      route: "Matter → personal injury intake, marked time-sensitive",
+      outcome: "Attorney reviews a complete brief",
     },
-    workflow: ["Prospect explains need", "Agent collects core facts", "Matter routes by practice area"],
-    testimonial: "It made intake feel premium and organized before our team touched the lead.",
+    compliance: [
+      "Intake and routing only — the agent never gives legal advice.",
+      "No attorney-client relationship is created or implied by the conversation.",
+      "Conflict-sensitive details are collected only per your firm's intake rules.",
+    ],
+    outcomes: ["route-sensitive", "book-appointments"],
+    estimatorDefaults: { monthlyConversations: 150, qualifiedRatePct: 20, opportunityValue: 5000, afterHoursPct: 45 },
     faqs: [
-      { question: "Does it provide legal advice?", answer: "No. Bamboo should collect intake information and route next steps with appropriate disclaimers." },
-      { question: "Can it handle multiple practice areas?", answer: "Yes. Create routing rules for personal injury, family law, business, estate, and other areas." },
+      {
+        question: "Does it provide legal advice?",
+        answer: "No. Bamboo collects intake information and routes next steps with appropriate disclaimers.",
+      },
+      {
+        question: "Can it handle multiple practice areas?",
+        answer: "Yes. Create routing rules for personal injury, family law, business, estate, and other areas.",
+      },
     ],
   },
   {
@@ -439,20 +761,43 @@ export const industries: Industry[] = [
     eyebrow: "Policy and quote support",
     headline: "Guide prospects and policyholders to the right next action.",
     description:
-      "Bamboo agents help explain policy options, capture quote intent, collect claim basics, and route complex questions to licensed staff.",
-    pains: ["Quote form abandonment", "Policy confusion", "Claims triage delays"],
+      "Bamboo agents explain policy options, capture quote intent, collect claim basics, and route complex questions to licensed staff.",
+    pains: [
+      "Quote forms get abandoned halfway",
+      "Policyholders can't tell which product page answers their question",
+      "Claims triage starts with a voicemail backlog",
+    ],
     useCases: ["Quote intake", "Policy FAQs", "Claims pre-triage"],
     agentExamples: ["Quote Concierge", "Policy Guide", "Claims Intake Agent"],
-    roi: {
-      metric: "21%",
-      label: "higher quote completion",
-      description: "Conversational intake reduces friction compared with long static forms.",
+    workflow: [
+      "Prospect shares a coverage need or question",
+      "Agent collects risk and situation details",
+      "Licensed staff receive the reviewed next step",
+    ],
+    conversation: {
+      visitor: "We just bought a house — do we need to update our policy before closing?",
+      agent: "Congratulations. That's a licensed-agent question, so I'll route you directly — first, can I get the closing date and your current policy type so they call you prepared?",
+      qualified: ["Life event: home purchase", "Closing date", "Policy type"],
+      route: "Escalated to licensed agent, marked time-sensitive",
+      outcome: "Licensed call scheduled before closing",
     },
-    workflow: ["Prospect shares coverage need", "Agent collects risk details", "Licensed team reviews next step"],
-    testimonial: "Bamboo helped us make insurance questions feel simple instead of intimidating.",
+    compliance: [
+      "Licensed staff handle all advice and binding decisions.",
+      "The agent collects situation details and routes — it never quotes or binds coverage.",
+      "Claims conversations follow your approved intake script only.",
+    ],
+    outcomes: ["qualify-leads", "route-sensitive", "answer-questions"],
+    estimatorDefaults: { monthlyConversations: 250, qualifiedRatePct: 22, opportunityValue: 900, afterHoursPct: 35 },
     faqs: [
-      { question: "Can it quote policies?", answer: "The front end can capture quote intent; production quoting depends on your rating and compliance systems." },
-      { question: "Can it route to licensed agents?", answer: "Yes. Bamboo can escalate by product, location, urgency, or lead quality." },
+      {
+        question: "Can it quote policies?",
+        answer:
+          "No — it captures quote intent and routes to licensed staff. Production quoting depends on your rating and compliance systems.",
+      },
+      {
+        question: "Can it route to licensed agents?",
+        answer: "Yes. Bamboo escalates by product, location, urgency, or lead quality.",
+      },
     ],
   },
   {
@@ -462,19 +807,36 @@ export const industries: Industry[] = [
     headline: "Answer menu, booking, catering, and event questions instantly.",
     description:
       "Bamboo helps restaurants reduce phone interruptions, capture catering leads, explain menus, and guide guests to reservations.",
-    pains: ["Phone interruptions", "Missed catering leads", "Repeated menu questions"],
+    pains: [
+      "The phone rings through dinner service with bookable questions",
+      "Catering inquiries land in voicemail and die there",
+      "Menu and allergy questions repeat every single day",
+    ],
     useCases: ["Reservation guidance", "Catering intake", "Menu FAQs"],
     agentExamples: ["Guest Concierge", "Catering Intake Agent", "Menu Guide"],
-    roi: {
-      metric: "12 hrs",
-      label: "weekly staff time saved",
-      description: "Common guest questions can be handled without pulling staff from service.",
+    workflow: [
+      "Guest asks about availability, menu, or events",
+      "Agent answers or collects the booking details",
+      "Catering and event leads route to the manager with specifics",
+    ],
+    conversation: {
+      visitor: "Can you do a party of 25 for a rehearsal dinner next month?",
+      agent: "We'd love to. Let me grab the details for our events manager — what date are you looking at, and do you want the private room or the patio?",
+      qualified: ["Event: rehearsal dinner", "Headcount: 25", "Date + space preference"],
+      route: "Catering lead → events manager",
+      outcome: "Complete event brief, same night",
     },
-    workflow: ["Guest asks about availability", "Agent answers or routes booking", "Team receives catering or event details"],
-    testimonial: "Bamboo made our website feel as attentive as our front-of-house team.",
+    outcomes: ["book-appointments", "answer-questions", "recommend"],
+    estimatorDefaults: { monthlyConversations: 450, qualifiedRatePct: 15, opportunityValue: 400, afterHoursPct: 30 },
     faqs: [
-      { question: "Can it handle catering leads?", answer: "Yes. It can collect headcount, date, budget, dietary needs, and follow-up details." },
-      { question: "Can it answer menu questions?", answer: "Yes. Add your menu, allergy notes, hours, and policy content as approved knowledge." },
+      {
+        question: "Can it handle catering leads?",
+        answer: "Yes. It can collect headcount, date, budget, dietary needs, and follow-up details.",
+      },
+      {
+        question: "Can it answer menu questions?",
+        answer: "Yes. Add your menu, allergy notes, hours, and policy content as approved knowledge.",
+      },
     ],
   },
   {
@@ -484,19 +846,36 @@ export const industries: Industry[] = [
     headline: "Help shoppers choose, compare, and buy with less friction.",
     description:
       "Bamboo agents recommend products, answer shipping and return questions, recover hesitation, and capture high-value purchase intent.",
-    pains: ["Product indecision", "Cart abandonment", "Shipping and return questions"],
+    pains: [
+      "Shoppers bounce when the right product isn't obvious",
+      "Shipping and return questions interrupt checkout momentum",
+      "High-intent carts abandon with no follow-up path",
+    ],
     useCases: ["Product recommendation", "Policy Q&A", "Order intent capture"],
     agentExamples: ["Shopping Advisor", "Returns Guide", "VIP Lead Capture Agent"],
-    roi: {
-      metric: "16%",
-      label: "more guided product clicks",
-      description: "Conversational guidance helps shoppers find the right product faster.",
+    workflow: [
+      "Shopper describes a need or asks a policy question",
+      "Agent recommends from approved catalog rules",
+      "High-value or complex requests route to your team",
+    ],
+    conversation: {
+      visitor: "Which of these two jackets is warmer? It's for Chicago winters.",
+      agent: "For Chicago, the Ridge Parka is the warmer build — it's rated for well below freezing, while the Trail Shell is a layering piece. Want the sizing notes for the Parka?",
+      qualified: ["Use case: cold climate", "Products compared", "Purchase intent"],
+      route: "Guided to product page with sizing context",
+      outcome: "Confident choice instead of a bounce",
     },
-    workflow: ["Shopper shares need", "Agent recommends path", "Shopper moves to product or checkout"],
-    testimonial: "It felt like adding a best-in-store associate to every product page.",
+    outcomes: ["recommend", "answer-questions", "follow-up"],
+    estimatorDefaults: { monthlyConversations: 800, qualifiedRatePct: 12, opportunityValue: 120, afterHoursPct: 40 },
     faqs: [
-      { question: "Can it recommend products?", answer: "Yes. Use approved product data and recommendation rules for your catalog." },
-      { question: "Can it help with order questions?", answer: "Yes. Production integrations can connect order status and support tools." },
+      {
+        question: "Can it recommend products?",
+        answer: "Yes. Use approved product data and recommendation rules for your catalog.",
+      },
+      {
+        question: "Can it help with order questions?",
+        answer: "Yes. Order status and support tools are connected at launch depending on your platform.",
+      },
     ],
   },
   {
@@ -505,20 +884,37 @@ export const industries: Industry[] = [
     eyebrow: "Project intake",
     headline: "Turn project inquiries into scoped, qualified opportunities.",
     description:
-      "Bamboo can ask the right project questions, capture timelines, budget bands, location, and job type before routing to estimators or sales.",
-    pains: ["Incomplete quote requests", "Low-fit inquiries", "Manual follow-up"],
+      "Bamboo asks the right project questions, captures timelines, budget bands, location, and job type before routing to estimators or sales.",
+    pains: [
+      "Quote requests arrive as one-line emails with no scope",
+      "Low-fit inquiries eat estimator hours",
+      "Follow-up depends on a whiteboard and memory",
+    ],
     useCases: ["Project qualification", "Estimate intake", "Service-area routing"],
     agentExamples: ["Estimate Intake Agent", "Project Qualifier", "Service Dispatch Agent"],
-    roi: {
-      metric: "35%",
-      label: "faster estimate prep",
-      description: "Better intake data shortens the path from inquiry to qualified estimate.",
+    workflow: [
+      "Prospect describes the project",
+      "Agent captures scope, location, timeline, and budget band",
+      "Estimator receives a structured project brief",
+    ],
+    conversation: {
+      visitor: "We need our warehouse roof replaced — maybe 20,000 sq ft. Can you quote it?",
+      agent: "That's in our wheelhouse. To get you a real estimate, I'll take a few specifics — where's the building, what's the current roof material, and what's your timeline?",
+      qualified: ["Scope: 20k sq ft roof", "Location in service area", "Timeline"],
+      route: "Project brief → estimating queue",
+      outcome: "Estimator starts with a complete brief",
     },
-    workflow: ["Prospect describes project", "Agent captures scope and constraints", "Estimator receives structured summary"],
-    testimonial: "Bamboo turned messy quote requests into usable project briefs.",
+    outcomes: ["qualify-leads", "follow-up"],
+    estimatorDefaults: { monthlyConversations: 120, qualifiedRatePct: 25, opportunityValue: 15000, afterHoursPct: 30 },
     faqs: [
-      { question: "Can it pre-qualify by location?", answer: "Yes. Add service areas and routing rules so out-of-area requests are handled clearly." },
-      { question: "Can it collect project photos?", answer: "The current front end has a knowledge-source placeholder; file upload can be added with a backend or storage integration." },
+      {
+        question: "Can it pre-qualify by location?",
+        answer: "Yes. Add service areas and routing rules so out-of-area requests are handled clearly.",
+      },
+      {
+        question: "Can it collect project photos?",
+        answer: "File upload is mapped at launch with your storage or intake system.",
+      },
     ],
   },
 ];
