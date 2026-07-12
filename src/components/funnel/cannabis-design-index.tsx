@@ -4,11 +4,9 @@ import { ArrowRight } from "lucide-react";
 import styles from "./cannabis-design-index.module.css";
 
 const options = [
-  { slug: "live", name: "The Live Dispensary", note: "Product-first · Best overall conversion", image: "/design-thumbnails/cannabis-live.png" },
-  { slug: "shifts", name: "The Two Shifts", note: "Before and after · Most emotional", image: "/design-thumbnails/cannabis-shifts.png" },
-  { slug: "journey", name: "The Call-to-Sale Journey", note: "Outcome-led · Best for operators", image: "/design-thumbnails/cannabis-journey.png" },
-  { slug: "counter", name: "The Digital Counter", note: "Human and warm · Best for trust", image: "/design-thumbnails/cannabis-counter.png" },
-  { slug: "console", name: "The Operations Console", note: "Control-led · Best for multi-location", image: "/design-thumbnails/cannabis-console.png" },
+  { slug: "after-hours", name: "After Hours", note: "Cinematic retail · Dark, urgent, sales-led", image: "/design-thumbnails/after-hours.png" },
+  { slug: "sale-in-call", name: "The Sale in the Call", note: "Bold commerce · Every call gets a next step", image: "/design-thumbnails/sale-in-call.png" },
+  { slug: "calm-control", name: "Calm Control", note: "Premium operations · Trust, control, compliance", image: "/design-thumbnails/calm-control.png" },
 ];
 
 export function CannabisDesignIndex() {

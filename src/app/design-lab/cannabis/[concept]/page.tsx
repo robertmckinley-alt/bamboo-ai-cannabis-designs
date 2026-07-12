@@ -2,13 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CannabisDesignLab, type ConceptId } from "@/components/funnel/cannabis-design-lab";
 
-const conceptIds: ConceptId[] = ["live", "shifts", "journey", "counter", "console"];
+const conceptIds: ConceptId[] = ["after-hours", "sale-in-call", "calm-control"];
 const conceptNames: Record<ConceptId, string> = {
-  live: "The Live Dispensary",
-  shifts: "The Two Shifts",
-  journey: "The Call-to-Sale Journey",
-  counter: "The Digital Counter",
-  console: "The Operations Console",
+  "after-hours": "After Hours",
+  "sale-in-call": "The Sale in the Call",
+  "calm-control": "Calm Control",
 };
 
 export const dynamicParams = false;
@@ -26,5 +24,5 @@ export async function generateMetadata({ params }: { params: Promise<{ concept: 
 export default async function CannabisConceptPage({ params }: { params: Promise<{ concept: string }> }) {
   const { concept } = await params;
   if (!conceptIds.includes(concept as ConceptId)) notFound();
-  return <CannabisDesignLab initialConcept={concept as ConceptId} compactHeader />;
+  return <CannabisDesignLab initialConcept={concept as ConceptId} />;
 }

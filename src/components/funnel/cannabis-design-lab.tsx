@@ -1,143 +1,71 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  CircleDot,
-  Clock3,
-  Headphones,
-  PhoneCall,
-  ShieldCheck,
-  ShoppingBag,
-  Store,
-  UserRoundCheck,
-} from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Check, ChevronDown, CircleCheck, Headphones, LockKeyhole, MapPin, Menu, PhoneCall, ShieldCheck, ShoppingBag, Store, UserRoundCheck } from "lucide-react";
 import styles from "./cannabis-design-lab.module.css";
 
-const concepts = [
-  { id: "live", short: "Live dispensary", number: "01", summary: "Product-first · Best overall" },
-  { id: "shifts", short: "Two shifts", number: "02", summary: "Before / after · Most emotional" },
-  { id: "journey", short: "Call to sale", number: "03", summary: "Outcome-led · Best for owners" },
-  { id: "counter", short: "Digital counter", number: "04", summary: "Human and warm · Best for trust" },
-  { id: "console", short: "Operations console", number: "05", summary: "Control-led · Best for multi-location" },
-] as const;
-
-export type ConceptId = (typeof concepts)[number]["id"];
-export const conceptNames: Record<ConceptId, string> = {
-  live: "The Live Dispensary",
-  shifts: "The Two Shifts",
-  journey: "The Call-to-Sale Journey",
-  counter: "The Digital Counter",
-  console: "The Operations Console",
-};
+export type ConceptId = "after-hours" | "sale-in-call" | "calm-control";
+export const conceptNames: Record<ConceptId, string> = { "after-hours": "After Hours", "sale-in-call": "The Sale in the Call", "calm-control": "Calm Control" };
 
 const scenarios = [
-  { label: "Live menu", question: "Do you still have the sour gummies?", answer: "I can check the Downtown menu now. Are you shopping there today?", detail: "Location confirmed · menu checked" },
-  { label: "Today’s deal", question: "Are edibles part of today’s special?", answer: "The Downtown store has an approved edible promotion today. I can explain the offer and purchase rules.", detail: "Promotion verified · approved language" },
-  { label: "Pickup", question: "Is my pickup ready yet?", answer: "I found your pickup and can text the current status to the number on the order.", detail: "Order found · status sent" },
-  { label: "First visit", question: "I’ve never been in. What do I need?", answer: "Bring a valid government-issued ID. I can also share parking and entry details for your store.", detail: "Policy answered · directions offered" },
+  { tab: "Menu", q: "Do you still have Blue Dream?", a: "The Downtown menu shows three options in stock. Want the current sizes and prices?", outcome: "Menu checked · visit intent captured" },
+  { tab: "Deals", q: "What’s on special today?", a: "Downtown has an approved flower offer today. I can explain it and text the details.", outcome: "Promotion verified · details sent" },
+  { tab: "Pickup", q: "Is my pickup ready?", a: "I found your order. It’s ready at the Downtown counter until 9 PM.", outcome: "Order found · status confirmed" },
+  { tab: "First visit", q: "I’ve never been in. What do I need?", a: "Bring a valid government-issued ID. I can also text parking and entry directions.", outcome: "Policy answered · directions offered" },
 ];
 
-export function CannabisDesignLab({ initialConcept = "live", compactHeader = false }: { initialConcept?: ConceptId; compactHeader?: boolean }) {
-  const [concept, setConcept] = useState<ConceptId>(initialConcept);
+export function CannabisDesignLab({ initialConcept = "after-hours" }: { initialConcept?: ConceptId }) {
   const [scenario, setScenario] = useState(0);
-
-  return (
-    <main id="main-content" className={styles.lab}>
-      <header className={styles.labHeader}>
-        <div>
-          <span className={styles.labKicker}>Bamboo AI · Design lab</span>
-          <h1>{compactHeader ? conceptNames[concept] : "Five ways to sell Sage."}</h1>
-        </div>
-        <p>{compactHeader ? "A complete responsive direction for Sage, Bamboo AI’s dispensary phone agent." : "Same product. Five different conversion arguments. Switch directions to compare the hierarchy, tone, and signature interaction."}</p>
-      </header>
-
-      <nav className={styles.switcher} aria-label="Landing page concepts">
-        {concepts.map((item) => (
-          <button key={item.id} onClick={() => setConcept(item.id)} className={concept === item.id ? styles.activeConcept : ""} aria-pressed={concept === item.id}>
-            <span>{item.number}</span><strong>{item.short}</strong><small>{item.summary}</small>
-          </button>
-        ))}
-      </nav>
-
-      <div className={styles.viewport} data-concept={concept}>
-        <ConceptNav />
-        {concept === "live" && <LiveConcept scenario={scenario} setScenario={setScenario} />}
-        {concept === "shifts" && <ShiftsConcept />}
-        {concept === "journey" && <JourneyConcept />}
-        {concept === "counter" && <CounterConcept scenario={scenario} setScenario={setScenario} />}
-        {concept === "console" && <ConsoleConcept />}
-        <SharedStory concept={concept} />
-      </div>
-    </main>
-  );
+  const concept = initialConcept;
+  return <main id="main-content" className={`${styles.page} ${styles[camel(concept)]}`}>
+    <LocalNav concept={concept} />
+    <Hero concept={concept} />
+    <Pain concept={concept} />
+    <Outcomes concept={concept} />
+    <Scenarios active={scenario} setActive={setScenario} concept={concept} />
+    <Integrations concept={concept} />
+    <Personalization />
+    <Compliance concept={concept} />
+    <Setup concept={concept} />
+    <FAQ />
+    <Close concept={concept} />
+  </main>;
 }
 
-function ConceptNav() {
-  return <div className={styles.conceptNav}><div className={styles.wordmark}><i /><b>Bamboo</b><span>for dispensaries</span></div><div className={styles.navLinks}><a href="#handles">What Sage handles</a><a href="#control">Control</a><a href="#questions">Questions</a></div><a className={styles.navCta} href="/free-agent-builder?industry=Cannabis">Build Sage <ArrowRight /></a></div>;
+function LocalNav({ concept }: { concept: ConceptId }) {
+  return <nav className={styles.nav}><Link href="/" className={styles.logo}><i />BAMBOO AI</Link><div className={styles.navLinks}><a href="#calls">How Sage works</a><a href="#integrations">Integrations</a><a href="#control">Compliance</a><a href="#faq">FAQ</a></div><a href="/free-agent-builder?industry=Cannabis" className={styles.navButton}>Build Sage <ArrowRight /></a><button className={styles.menuButton} aria-label="Open menu"><Menu /></button><span className={styles.conceptName}>{conceptNames[concept]}</span></nav>;
 }
 
-function LiveConcept({ scenario, setScenario }: { scenario: number; setScenario: (value: number) => void }) {
-  return <>
-    <section className={`${styles.hero} ${styles.liveHero}`}>
-      <div className={styles.heroCopy}><span className={styles.signalLabel}><i /> Sage is answering</span><h2>The line is out the door. <em>The phone still gets answered.</em></h2><p>Sage handles hours, directions, menu availability, pickup, loyalty, and today’s specials—so your budtenders can stay with the customers in front of them.</p><HeroActions /><div className={styles.trustLine}><ShieldCheck /> Built around your approved information, policies, and handoff rules.</div></div>
-      <CallStage scenario={scenario} setScenario={setScenario} />
-    </section>
-    <div className={styles.capabilityRail}><span><Clock3 /> Answers during rush</span><span><ShoppingBag /> Checks current store info</span><span><ShieldCheck /> Follows approved rules</span><span><Headphones /> Hands off with context</span></div>
-  </>;
+function Hero({ concept }: { concept: ConceptId }) {
+  if (concept === "sale-in-call") return <section className={styles.heroSale}><div className={styles.saleCopy}><span>Sage · AI phone agent for dispensaries</span><h1>Turn “Do you have this?” into “I’m on my way.”</h1><p>Sage answers every call, checks the right store information, and gives every caller a useful next step.</p><Actions /></div><CallPath /></section>;
+  if (concept === "calm-control") return <section className={styles.heroCalm}><div className={styles.calmCopy}><span>Sage</span><h1>The phone agent your store can actually control.</h1><p>Sage answers menu questions, explains promotions and loyalty, handles pickup and directions, and takes care of routine calls—so your staff can stay with the customers in front of them.</p><Actions /></div><div className={styles.heroPhoto}><CallTranscript /></div></section>;
+  return <section className={styles.heroAfter}><div className={styles.afterShade} /><div className={styles.afterCopy}><span>Sage · AI phone agent for dispensaries</span><h1>After hours,<br />sales <em>don’t</em> sleep.</h1><p>Sage answers every call, books the visit, and keeps your in-store experience exactly how it should be.</p><Actions /></div><CallTranscript /></section>;
 }
 
-function ShiftsConcept() {
-  const rows = [
-    ["4:20", "The phone rings", "Sage answers"],
-    ["4:21", "A budtender leaves the counter", "Downtown is confirmed"],
-    ["4:22", "The in-store customer waits", "The menu is checked"],
-    ["4:23", "The caller goes on hold", "The promotion is explained"],
-    ["4:24", "The caller gives up", "Pickup intent is captured"],
-  ];
-  return <section className={styles.shiftsHero}><div className={styles.shiftsIntro}><span>One store. Two Friday nights.</span><h2>Your rush hour doesn’t have to sound like one.</h2><p>Compare five minutes at the counter—with the same customers, the same staff, and one operational difference.</p><HeroActions /></div><div className={styles.timeline}><div className={styles.timelineHead}><span>Time</span><b>Without Sage</b><b>With Sage</b></div>{rows.map(([time, before, after]) => <div className={styles.timelineRow} key={time}><time>{time}</time><span>{before}</span><strong><Check />{after}</strong></div>)}</div></section>;
-}
+function Actions() { return <div className={styles.actions}><a href="/free-agent-builder?industry=Cannabis">Build and test Sage <ArrowRight /></a><button><PhoneCall /> Hear Sage answer</button></div>; }
 
-function JourneyConcept() {
-  const stages = ["Question", "Store found", "Menu checked", "Intent captured", "Outcome logged"];
-  return <section className={styles.journeyHero}><div className={styles.journeyHeadline}><span>From question to customer</span><h2>Turn “Do you have this?” into <strong>“I’m on my way.”</strong></h2><p>Every call becomes a clear next step—for the customer, the budtender, or the manager who needs to take over.</p><HeroActions /></div><div className={styles.journeyPath}>{stages.map((stage, index) => <div key={stage} className={styles.pathStage}><i>{index + 1}</i><span>{stage}</span>{index < stages.length - 1 && <ArrowRight />}</div>)}</div><OutcomeReceipt /></section>;
-}
+function CallTranscript() { return <div className={styles.transcript}><header><span><i /> Live call</span><time>00:37</time></header><p><b>Caller</b> Do you have Blue Dream in stock?</p><p><b>Sage</b> Downtown has three options available. Want the current sizes and today’s offer?</p><p><b>Caller</b> Yes. I’ll stop by after work.</p><footer><CircleCheck /> Visit intent captured · directions sent</footer></div>; }
 
-function CounterConcept({ scenario, setScenario }: { scenario: number; setScenario: (value: number) => void }) {
-  const active = scenarios[scenario];
-  return <section className={styles.counterHero}><div className={styles.counterCopy}><span>A better first conversation</span><h2>Patient on the phone. Present at the counter.</h2><p>Sage gives every routine question the time it deserves—without taking your team away from the store.</p><HeroActions /></div><div className={styles.tray}><div className={styles.trayTabs}>{scenarios.map((item, index) => <button key={item.label} onClick={() => setScenario(index)} className={index === scenario ? styles.activeTray : ""}>{item.label}</button>)}</div><div className={styles.trayConversation}><div><small>Caller</small><p>“{active.question}”</p></div><div><small>Sage · Bamboo agent</small><p>“{active.answer}”</p></div></div><div className={styles.boundary}><span><Check /> What Sage did</span><b>{active.detail}</b><span><ShieldCheck /> Boundary</span><b>No medical claims · approved store language</b></div></div></section>;
-}
+function CallPath() { return <div className={styles.callPath}>{["Caller question", "Location confirmed", "Menu checked", "Deal verified", "Directions sent", "Visit intent captured"].map((x,i)=><div key={x}><b>{String(i+1).padStart(2,"0")}</b><span>{x}</span>{i===5?<Check />:<i />}</div>)}</div>; }
 
-function ConsoleConcept() {
-  return <section className={styles.consoleHero}><div className={styles.consoleCopy}><span>Configured, not improvised</span><h2>Control every answer. Protect every conversation.</h2><p>Sage works inside your approved store knowledge, location policies, customer permissions, and escalation rules.</p><HeroActions /></div><div className={styles.console}><div className={styles.consoleTop}><b>Store operations</b><span><i /> 3 locations active</span></div><div className={styles.consoleBody}><aside><button className={styles.consoleActive}>Overview</button><button>Knowledge</button><button>Boundaries</button><button>Escalations</button></aside><div className={styles.consoleMain}><div className={styles.statusLine}><span>Downtown</span><b>Menu connected</b><i>Active</i></div><div className={styles.statusLine}><span>Northside</span><b>Policies approved</b><i>Active</i></div><div className={styles.statusLine}><span>Airport</span><b>Human handoff</b><i>Active</i></div><div className={styles.policyBox}><span>Conversation boundary</span><strong>No diagnosis, treatment advice, or medical claims.</strong><small>Uncertain questions route to a manager with the transcript attached.</small></div></div></div></div></section>;
-}
+function Pain({ concept }: { concept: ConceptId }) { return <section className={styles.pain}><div><span>The response problem</span><h2>{concept === "calm-control" ? "Your team in front. Sage in the background." : "Missed calls are missed visits."}</h2><p>When no one answers, shoppers do not wait. They call the next store. Sage handles the routine questions while your team protects the experience inside.</p></div><div className={styles.compare}><article><b>Without Sage</b><p>Calls pull staff off the floor</p><p>Questions wait or go unanswered</p><p>Promotions go unnoticed</p></article><article><b>With Sage</b><p><Check /> Routine calls handled end to end</p><p><Check /> Accurate answers from store data</p><p><Check /> Every caller gets a next step</p></article></div></section>; }
 
-function HeroActions() {
-  return <div className={styles.heroActions}><a className={styles.primaryButton} href="/free-agent-builder?industry=Cannabis">Build your dispensary agent <ArrowRight /></a><button className={styles.secondaryButton}><PhoneCall /> Hear Sage answer</button></div>;
-}
+function Outcomes({ concept }: { concept: ConceptId }) { return <section className={styles.outcomes}><div className={styles.sectionLead}><span>What changes</span><h2>{concept === "after-hours" ? "Sage is your after-hours advantage." : "Four outcomes. One phone call."}</h2></div><div className={styles.outcomeRow}>{[["Answer","Pick up instantly, even during the rush."],["Know","Use the right menu, location and policy."],["Sell","Turn questions into visits and pickup intent."],["Hand off","Bring in staff only when a person is needed."]].map(([h,p],i)=><article key={h}><b>{String(i+1).padStart(2,"0")}</b><h3>{h}</h3><p>{p}</p></article>)}</div></section>; }
 
-function CallStage({ scenario, setScenario }: { scenario: number; setScenario: (value: number) => void }) {
-  const active = scenarios[scenario];
-  return <div className={styles.callStage}><div className={styles.callTop}><span><i /> Live call · Downtown</span><time>04:20</time></div><div className={styles.waveform}>{Array.from({ length: 24 }, (_, index) => <i key={index} style={{ height: `${18 + ((index * 17) % 42)}%` }} />)}</div><div className={styles.transcript}><div><small>Caller</small><p>“{active.question}”</p></div><div><small>Sage</small><p>“{active.answer}”</p></div></div><div className={styles.callResult}><Check /><span>{active.detail}</span><b>No staff action needed</b></div><div className={styles.scenarioDots}>{scenarios.map((item, index) => <button key={item.label} onClick={() => setScenario(index)} className={index === scenario ? styles.activeDot : ""} aria-label={`Show ${item.label} scenario`} />)}</div></div>;
-}
+function Scenarios({ active, setActive, concept }: { active:number; setActive:(n:number)=>void; concept:ConceptId }) { const s=scenarios[active]; return <section id="calls" className={styles.scenarios}><div className={styles.sectionLead}><span>Real calls. Useful outcomes.</span><h2>{concept === "calm-control" ? "Pre-built. Store-specific. Always on brand." : "Hear what Sage does with the calls you already get."}</h2></div><div className={styles.scenarioTabs}>{scenarios.map((x,i)=><button onClick={()=>setActive(i)} className={i===active?styles.active:""} key={x.tab}>{x.tab}</button>)}</div><div className={styles.conversation}><div><small>Caller</small><p>“{s.q}”</p></div><div><small>Sage</small><p>“{s.a}”</p></div><footer><Check /> {s.outcome}</footer></div></section>; }
 
-function OutcomeReceipt() {
-  return <div className={styles.receipt}><div><span>Call outcome</span><b>Resolved by Sage</b></div><dl><dt>Location</dt><dd>Downtown</dd><dt>Question</dt><dd>Edible availability</dd><dt>Promotion</dt><dd>Approved weekend offer</dd><dt>Intent</dt><dd>Visiting within 30 minutes</dd><dt>Follow-up</dt><dd>Directions sent by text</dd></dl><footer><Check /> Staff action required: none</footer></div>;
-}
+function Integrations({ concept }: { concept: ConceptId }) { return <section id="integrations" className={styles.integrations}><div className={styles.sectionLead}><span>Connected to your store</span><h2>{concept === "calm-control" ? "One trusted source. Every system." : "Works where you work."}</h2><p>Sage connects to the tools you already use, so store information stays current and every call leaves a usable record.</p></div><div className={styles.integrationLine}>{[[Store,"POS & menu"],[ShoppingBag,"Promotions"],[UserRoundCheck,"Loyalty"],[PhoneCall,"Sage"],[Headphones,"SMS & reports"]].map(([Icon,label],i)=>{const I=Icon as typeof Store;return <div key={label as string}><I /><b>{label as string}</b>{i<4&&<ArrowRight />}</div>})}</div></section>; }
 
-function SharedStory({ concept }: { concept: ConceptId }) {
-  return <>
-    <section id="handles" className={styles.problemSection}><div><span className={styles.sectionIndex}>The operational gap</span><h2>Your budtenders should serve the customer in front of them.</h2></div><div className={styles.problemCopy}><p>The phone rings during a rush. A budtender leaves the counter to answer the same question they answered ten minutes ago. The line grows. The caller waits. Neither customer gets your team’s full attention.</p><p>With Sage, the routine call gets a useful answer and the unusual call reaches the right person—with the context already attached.</p></div></section>
-    <section className={styles.handlesSection}><div className={styles.handlesTitle}><Store /><h2>One phone agent.<br />The store knowledge callers need.</h2></div><div className={styles.handlesList}>{[
-      ["Menu and availability", "Check supported menu and inventory information for the correct store."],
-      ["Deals and loyalty", "Explain active promotions and loyalty details using approved language."],
-      ["Pickup and directions", "Answer order-status questions, hours, parking, and location details."],
-      ["Known customers", "Personalize permitted interactions using connected data and customer permissions."],
-    ].map(([title, text], index) => <article key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowRight /></article>)}</div></section>
-    <section id="control" className={styles.controlSection}><div className={styles.controlCopy}><span>Useful answers. Explicit limits.</span><h2>You decide what Sage may say—and when a human takes over.</h2><p>Configure approved information, prohibited topics, location rules, and escalation conditions before the agent goes live.</p><a href="/free-agent-builder?industry=Cannabis">Set Sage’s boundaries <ArrowRight /></a></div><div className={styles.controlRules}><div><ShieldCheck /><span><b>Approved knowledge</b><small>Hours, menu, promotions, pickup, loyalty, and store policies</small></span><Check /></div><div><UserRoundCheck /><span><b>Age-gated flow</b><small>Configured around store policy and jurisdiction requirements</small></span><Check /></div><div><Headphones /><span><b>Human escalation</b><small>Sensitive or uncertain calls arrive with a clear summary</small></span><Check /></div></div></section>
-    <section className={styles.finalCta}><CircleDot /><span>{concepts.find((item) => item.id === concept)?.short} direction</span><h2>Let your budtenders work the counter. Sage will work the phone.</h2><p>Build with your hours, policies, menu, promotions, and handoff rules. Then call Sage yourself before you decide to go live.</p><a href="/free-agent-builder?industry=Cannabis">Start building Sage <ArrowRight /></a><small>Capabilities vary by jurisdiction, retailer policy, connected systems, and implementation.</small></section>
-    <section id="questions" className={styles.faqPreview}><h2>Questions operators ask before launch.</h2>{["Can Sage access our live menu?", "How does age gating work?", "What happens when Sage doesn’t know?"].map((question) => <button key={question}><span>{question}</span><ChevronDown /></button>)}</section>
-  </>;
-}
+function Personalization() { return <section className={styles.personal}><div className={styles.personalImage} /><div><span>Personal, with permission</span><h2>Greet returning customers. Respect their privacy.</h2><p>When connected data, customer permission, and store policy allow it, Sage can recognize a preferred location, explain loyalty information, and make the next conversation more useful.</p><ul><li><Check /> Use only approved customer context</li><li><Check /> Keep recommendations inside store rules</li><li><Check /> Let customers opt out at any time</li></ul></div></section>; }
+
+function Compliance({ concept }: { concept: ConceptId }) { return <section id="control" className={styles.compliance}><div className={styles.sectionLead}><span>Compliance, built in</span><h2>{concept === "calm-control" ? "Control every answer. Stay audit ready." : "Enterprise-grade. Dispensary-controlled."}</h2><p>You choose what Sage may say, what it must never say, and when a manager takes over.</p></div><div className={styles.rules}>{[[ShieldCheck,"Approved knowledge","Only content your team approves and maintains."],[LockKeyhole,"Age-gated flow","Configured around location policy and jurisdiction."],[MapPin,"Location rules","Local hours, offers, inventory and handoffs."],[Headphones,"Human escalation","Sensitive calls reach your team with context."]].map(([Icon,h,p])=>{const I=Icon as typeof ShieldCheck;return <article key={h as string}><I/><div><h3>{h as string}</h3><p>{p as string}</p></div></article>})}</div><div className={styles.noClaims}><b>No medical claims</b><span>No diagnosis · no treatment advice · no guessing</span></div></section>; }
+
+function Setup({ concept }: { concept: ConceptId }) { return <section className={styles.setup}><div className={styles.sectionLead}><span>Build, test, then launch</span><h2>{concept === "after-hours" ? "From setup to sales—fast." : "Go live in four controlled stages."}</h2></div><div>{[["Discover","Add stores, hours, policies and common calls."],["Build","Connect supported systems and approve answers."],["Test","Call Sage yourself and tune every response."],["Launch","Go live when your team is satisfied."]].map(([h,p],i)=><article key={h}><b>0{i+1}</b><h3>{h}</h3><p>{p}</p></article>)}</div></section>; }
+
+function FAQ() { const [open,setOpen]=useState(0); const qs=["Can Sage access our live menu?","How does age gating work?","What happens when Sage does not know?","Can Sage recognize returning customers?","Does Sage replace our budtenders?"]; return <section id="faq" className={styles.faq}><h2>Questions operators ask before launch.</h2><div>{qs.map((q,i)=><article key={q}><button onClick={()=>setOpen(open===i?-1:i)} aria-expanded={open===i}><span>{q}</span><ChevronDown /></button>{open===i&&<p>{answer(i)}</p>}</article>)}</div></section>; }
+
+function Close({ concept }: { concept: ConceptId }) { return <section className={styles.close}><div><span>{conceptNames[concept]}</span><h2>{concept === "sale-in-call" ? "Every call gets a next step." : concept === "calm-control" ? "Your staff takes care of the store. Sage takes care of the phone." : "You handle the experience. Sage handles the phone."}</h2><p>Build Sage with your store information, approved language, and handoff rules. Then call it yourself before going live.</p><Actions /></div></section>; }
+
+function answer(i:number){return ["Sage can read supported menu and inventory sources for the correct store. Integration availability depends on your current platform.","Age-gated flows are configured around retailer policy and jurisdiction requirements before product discussion.","Sage acknowledges uncertainty and routes the call to the right person with a conversation summary.","When permission, connected data and policy allow it, Sage can use approved customer context without exposing private information.","No. Sage handles repetitive phone work so budtenders can spend more time with in-store customers."][i]}
+function camel(id:ConceptId){return id.replace(/-([a-z])/g,(_,c)=>c.toUpperCase())}
