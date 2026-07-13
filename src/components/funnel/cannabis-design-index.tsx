@@ -11,7 +11,7 @@ const options = [
 
 export function CannabisDesignIndex() {
   return <main id="main-content" className={styles.index}>
-    <header><span>Bamboo AI · Cannabis design study</span><h1>Choose how<br />Sage enters the room.</h1><p>Five complete landing-page directions for the same dispensary phone agent. Open any option to review the responsive page and its conversion story.</p></header>
+    <header><span>Bamboo AI · Cannabis design study</span><h1>Three complete<br />sales-page systems.</h1><p>Each direction is rebuilt from its approved visual concept as a responsive, long-form conversion page. Open any option to review the full desktop and mobile experience.</p></header>
     <section className={styles.gallery} aria-label="Cannabis landing page designs">
       {options.map((option, index) => <Link href={`/design-lab/cannabis/${option.slug}`} className={styles.card} key={option.slug}>
         <div className={styles.imageWrap}><Image src={option.image} alt={`Preview of ${option.name} landing page`} fill sizes="(max-width: 800px) 100vw, 50vw" /></div>
