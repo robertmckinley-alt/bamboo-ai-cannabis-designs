@@ -21,6 +21,7 @@ export function CannabisDesignLab({ initialConcept = "after-hours" }: { initialC
   return <main id="main-content" data-cannabis-design className={`${styles.page} ${styles[camel(concept)]}`}>
     <LocalNav concept={concept} />
     <Hero concept={concept} />
+    {concept === "sale-in-call" ? <Pricing /> : null}
     <TrustRail concept={concept} />
     <Pain concept={concept} />
     <Outcomes concept={concept} />
@@ -51,6 +52,15 @@ function Hero({ concept }: { concept: ConceptId }) {
 
 function Actions() { return <div className={styles.actions}><a href="/free-agent-builder?industry=Cannabis">Build and test Sage <ArrowRight /></a><button><PhoneCall /> Hear Sage answer</button></div>; }
 
+function Pricing() {
+  const plans = [
+    ["Good","$119","One store, phones handled",["One location","Hours, directions, policies, specials","Age-gated approved scripts","Call log, summaries, human handoff"]],
+    ["Better","$199","For stores that run on their systems",["Everything in Good","Live menu via supported POS connections","Loyalty balances and pickup workflows","SMS follow-up and directions by text"]],
+    ["Best","$279","For multi-location retailers",["Everything in Better","Multi-location routing and store rules","Centralized conversation review","VIP and manager escalation routing"]],
+  ] as const;
+  return <section className={styles.pricing}><div className={styles.pricingLead}><span>Pricing</span><h2>Build and test first.<br/>Pay when it goes live.</h2><p>Set up Sage, call it yourself, and challenge it with your most common questions. Nothing goes on your phone line until you publish.</p></div><div className={styles.planGrid}>{plans.map(([name,price,note,features],i)=><article className={i===1?styles.featuredPlan:""} key={name}><span>{name}</span><h3>{price}<small>/mo</small></h3><p>{note}</p><ul>{features.map(f=><li key={f}><Check/> {f}</li>)}</ul><a href="/free-agent-builder?industry=Cannabis">Start with {name}</a></article>)}</div><small className={styles.pricingNote}>Build and test before going live · per location · no pressure to publish</small></section>;
+}
+
 function TrustRail({ concept }: { concept: ConceptId }) { const items = concept === "after-hours" ? ["Always on during the rush", "Trained on your store", "Every call leaves an outcome", "Test before launch"] : ["Approved store knowledge", "Human handoff built in", "Permission-based personalization", "Location-specific control"]; return <section className={styles.trustRail}>{items.map((item,i)=><div key={item}><span>{String(i+1).padStart(2,"0")}</span><b>{item}</b></div>)}</section>; }
 
 function CallTranscript() { return <div className={styles.transcript} aria-label="Animated example call"><header><span><i /> Live call in progress</span><time>00:37</time></header><div className={styles.voiceWave} aria-hidden="true">{Array.from({length:28},(_,i)=><i key={i} />)}</div><p className={styles.callLine}><b>Caller</b> Do you have Blue Dream in stock?</p><p className={styles.callLine}><b>Sage</b> Downtown has three options available. Want the current sizes and today’s approved offer?</p><p className={styles.callLine}><b>Caller</b> Yes. I’ll stop by after work.</p><div className={styles.callActions}><span><MapPin /> Downtown selected</span><span><ShoppingBag /> Menu checked</span><span><PhoneCall /> Directions queued</span></div><footer><CircleCheck /> Visit intent captured · next step ready</footer></div>; }
@@ -77,8 +87,8 @@ function ConversationLibrary() { return <section className={styles.library}><div
 
 function Integrations({ concept }: { concept: ConceptId }) {
   const systems = [[Store,"POS / menu","Live inventory & pricing"],[ShoppingBag,"Promotions","Active deals & rules"],[UserRoundCheck,"Loyalty","Customer history & preferences"],[PhoneCall,"Sage","Answers, sells & captures intent"],[Headphones,"Reports","Call outcomes & insights"]] as const;
-  if (concept === "sale-in-call") return <section id="integrations" className={`${styles.integrations} ${styles.saleSystems}`}><h2>Connected to your stack. Powered by your data.</h2><div className={styles.systemRail}>{systems.map(([Icon,label,detail],i)=>{const I=Icon as typeof Store;return <article key={label}><I/><b>{label}</b><span>{detail}</span>{i<systems.length-1&&<ArrowRight/>}</article>})}</div><p><LockKeyhole/> Secure, read-only connections. Your store remains in control.</p></section>;
-  return <section id="integrations" className={styles.integrations}><div className={styles.sectionLead}><span>Connected to your store</span><h2>{concept === "calm-control" ? "One trusted source. Every system." : "Works where you work."}</h2><p>Sage connects to the tools you already use, so store information stays current and every call leaves a usable record.</p></div><div className={styles.integrationLine}>{systems.map(([Icon,label],i)=>{const I=Icon as typeof Store;return <div key={label}><I/><b>{label}</b>{i<systems.length-1&&<ArrowRight/>}</div>})}</div></section>;
+  if (concept === "sale-in-call") return <section id="integrations" className={`${styles.integrations} ${styles.saleSystems}`}><h2>Connected to your stack. Powered by your data.</h2><div className={styles.systemRail}>{systems.map(([Icon,label,detail],i)=>{const I=Icon as typeof Store;return <article key={label}><I/><b>{label}</b><span>{detail}</span>{i<systems.length-1&&<ArrowRight className={styles.railArrow}/>}</article>})}</div><p><LockKeyhole/> Secure, read-only connections. Your store remains in control.</p></section>;
+  return <section id="integrations" className={styles.integrations}><div className={styles.sectionLead}><span>Connected to your store</span><h2>{concept === "calm-control" ? "One trusted source. Every system." : "Works where you work."}</h2><p>Sage connects to the tools you already use, so store information stays current and every call leaves a usable record.</p></div><div className={styles.integrationLine}>{systems.map(([Icon,label],i)=>{const I=Icon as typeof Store;return <div key={label}><I/><b>{label}</b>{i<systems.length-1&&<ArrowRight className={styles.railArrow}/>}</div>})}</div></section>;
 }
 
 function Personalization({ concept }: { concept: ConceptId }) {
