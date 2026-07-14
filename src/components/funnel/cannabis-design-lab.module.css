@@ -77,3 +77,5 @@
 .afterHoursPricing{border-top:4px solid #ff6418}.afterHoursPricing .pricingLead>span{color:#d94f0f}.afterHoursPricing .featuredPlan{background:#0c1713!important}.saleInCallPricing{border-top:4px solid #0b32d4}.saleInCallPricing .pricingLead>span{color:#0b32d4}.saleInCallPricing .featuredPlan{background:#0d2aa8!important}.calmControlPricing{border-top:4px solid #b95f3c}.calmControlPricing .pricingLead>span{color:#9a4d31}.calmControlPricing .featuredPlan{background:#315c53!important}
 
 .afterCopy h1,.saleCopy h1,.calmCopy h1{font-family:var(--font-bricolage),sans-serif!important;font-weight:680;letter-spacing:-.035em}.afterCopy h1{line-height:.91}.saleCopy h1{line-height:.88}.calmCopy h1{line-height:.94}
+
+.calmControl h1,.calmControl h2,.calmControl h3{font-family:var(--font-geist-sans),Arial,sans-serif!important;font-weight:560;letter-spacing:-.04em}.calmControl .calmCopy h1{font-weight:520;line-height:.96}.calmControl .nav,.calmControl p,.calmControl li,.calmControl button,.calmControl a{font-family:var(--font-geist-sans),Arial,sans-serif}
