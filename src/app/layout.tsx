@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo_Black, Bricolage_Grotesque, Geist, Geist_Mono, Oswald } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Oswald } from "next/font/google";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import { AnimatedGradient } from "@/components/funnel/animated-gradient";
 import { ExitIntentModal, Footer, MobileStickyCTA, Navbar } from "@/components/funnel/navigation";
@@ -23,12 +23,6 @@ const bricolage = Bricolage_Grotesque({
 
 const oswald = Oswald({
   variable: "--font-oswald",
-  subsets: ["latin"],
-});
-
-const archivoBlack = Archivo_Black({
-  variable: "--font-archivo-black",
-  weight: "400",
   subsets: ["latin"],
 });
 
@@ -67,7 +61,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${oswald.variable} ${archivoBlack.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${oswald.variable} dark h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
         <TooltipProvider>
